@@ -10,15 +10,14 @@ Plateforme de customer support IA multi-applications avec escalade humaine autom
 
 
 
-\- \*\*Widget JavaScript\*\* intégrable dans n'importe quelle application
-
-\- \*\*Chatbot IA\*\* (Claude API) qui répond automatiquement via une base de connaissance
-
-\- \*\*Escalade Discord\*\* quand le bot ne peut pas répondre (à faire)
-
-\- \*\*Interface admin\*\* pour que les agents répondent(à faire)
-
-\- \*\*Base de connaissance\*\* modifiable (FAQ, documents)(à faire)
+- **Widget JavaScript** intégrable dans n'importe quelle application *(à venir - Jour 4)*
+- **Chatbot IA** (Claude API / mock) qui répond automatiquement via une base de connaissance ✅
+- **Escalade Discord** quand le bot ne peut pas répondre ✅
+- **Interface admin React** pour que les agents répondent ✅
+- **Base de connaissance** modifiable (FAQ) ✅
+- **Upload de documents** (PDF/TXT) *(à venir - Jour 5)*
+- **Mode clair/sombre** avec icône lune/soleil ✅
+- **Design responsive** adapté mobile ✅
 
 
 
@@ -32,16 +31,13 @@ Plateforme de customer support IA multi-applications avec escalade humaine autom
 
 
 
-\- \*\*Backend\*\* : Django + Django REST Framework
-
-\- \*\*Base de données\*\* : PostgreSQL
-
-\- \*\*IA\*\* : Claude API (mock pour développement)
-
-\- \*\*Notifications\*\* : Discord Webhook
-
-\- \*\*Frontend\*\* : React (widget + admin)
-
+ **Backend** : Django + Django REST Framework
+- **Base de données** : PostgreSQL
+- **IA** : Claude API (mock pour développement)
+- **Notifications** : Discord Webhook
+- **Frontend Admin** : React + Vite + Axios
+- **Styles** : CSS personnalisé avec mode clair/sombre
+- **Police** : Playfair Display (serif) + Poppins (sans-serif)
 
 
 \##  Installation
@@ -57,7 +53,7 @@ Plateforme de customer support IA multi-applications avec escalade humaine autom
 \- PostgreSQL
 
 \- Git
-
+\- Node.js (pour React)
 
 
 \### 1. Cloner le projet
@@ -214,38 +210,32 @@ Agent répond
 
 
 
-support\_platform/
-
+support_platform/
 ├── manage.py
-
 ├── requirements.txt
-
 ├── .env
-
 ├── .gitignore
-
 ├── README.md
-
-├── support\_platform/
-
+├── support_platform/
 │   ├── settings.py
-
 │   └── urls.py
-
-└── chatbot/
-
-&#x20;   ├── models.py
-
-&#x20;   ├── views.py
-
-&#x20;   ├── serializers.py
-
-&#x20;   ├── ai\_engine.py
-
-&#x20;   ├── admin.py
-
-&#x20;   └── urls.py
-
+├── chatbot/
+│   ├── models.py
+│   ├── views.py
+│   ├── serializers.py
+│   ├── ai_engine.py
+│   ├── admin.py
+│   └── urls.py
+└── admin/                     # Interface admin React
+    ├── src/
+    │   ├── App.jsx
+    │   ├── App.css
+    │   ├── api.js
+    │   └── components/
+    │       ├── ConversationList.jsx
+    │       └── ConversationDetail.jsx
+    ├── package.json
+    └── vite.config.js
 \## Planning de la semaine
 
 
@@ -264,31 +254,33 @@ support\_platform/
 
 
 
-Jour 2 
+✅ Jour 2 – Mercredi (Terminé)
 
-\- Brancher la vraie API Claude (remplacer le mock)
+\- Bot détecte les questions hors FAQ
+\- Webhook Discord fonctionnel
+\- Endpoint agent POST /api/agent/reply/
+\- Client ne voit jamais de fallback
+\- Flux complet : client → Discord → agent → réponse
 
-\- Détecter quand le bot ne sait pas répondre
+\- Tests OK :
+\- Question FAQ ==> bot répond
+\- Question hors FAQ ==> Discord notifié → agent répond
 
-\- Créer le webhook Discord pour notifier l'équipe
-
-\- Créer l'endpoint POST /api/agent/reply/
-
-\- Tester : question inconnue → Discord notifié → agent répond
+ \- Visible aussi dans l'admin Django
 
 
 
-Jour 3 
+✅ Jour 3 – Jeudi (Terminé)
 
-\- Créer l'interface admin React
-
-&#x20; - Liste des conversations escaladées
-
-&#x20; - Vue détail avec historique
-
-&#x20; - Formulaire pour répondre
-
-\- Tester que la réponse agent arrive bien
+\- Interface admin React avec Vite
+\- Liste des conversations escaladées
+\- Vue détail avec historique des messages
+\- Formulaire pour répondre depuis l'interface
+\- Auto-refresh toutes les 5 secondes
+\- Design responsive (web + mobile)
+\- Mode clair/sombre avec icône lune/soleil
+\- Menu burger pour mobile
+\- Test validé : réponse agent bien reçue et affichée
 
 
 
@@ -334,3 +326,38 @@ Critères de validation
 
 ✅ Client reçoit la réponse
 
+
+## Interface Admin
+🎨 Design et Palette de couleurs
+\- Vert profond (#0F3B2C) : utilisé pour les fonds principaux et les gradients
+\- Vert menthe (#2D5A4A) : utilisé pour les accents, les boutons et les titres
+\- Or doux (#C9A87C) : utilisé pour les bordures actives et les éléments interactifs
+\- Beige clair (#F5F0E8) : utilisé pour le fond des messages et les arrière-plans
+\- Blanc cassé (#E8E0D5) : utilisé pour les cartes et les conteneurs
+\- Rouge corail (#E07A5F) : utilisé pour le badge "Escaladée" et les messages d'erreur
+
+# Typographie
+\- Playfair Display (police serif) : utilisée pour les titres et les noms de sections
+\- Poppins (police sans-serif) : utilisée pour le corps de texte, les messages et les boutons
+
+# Mode clair / sombre
+\- Icône de toggle : 🌙 pour passer en mode clair, ☀️ pour passer en mode sombre
+\- Mode clair : fond beige chaud, messages blancs, accents verts
+\- Mode sombre : fond vert foncé, messages gris foncé, accents or
+\- Transition fluide entre les deux modes
+\-Sauvegarde du choix utilisateur dans le localStorage
+
+# Responsive Design
+\- Desktop : sidebar fixe à gauche, zone principale à droite
+\- Tablette : sidebar réductible avec menu burger
+\- Mobile : sidebar masquée par défaut, menu burger pour la navigation, titres adaptés à la taille d'écran
+
+# Fonctionnalités UI
+\- Auto-refresh des conversations toutes les 5 secondes
+\- Badge "Escaladée" de couleur rouge corail pour les conversations en attente de réponse
+\- Affichage d'un avatar 👤 pour les messages clients et 🤖 pour les messages bot
+\- Animation fadeIn pour l'apparition des nouveaux messages
+\- Effet hover sur les conversations et les boutons
+\- Conversation active surlignée avec une bordure dorée
+\- Formulaire de réponse avec champ texte et bouton d'envoi
+\- Indicateur de chargement pendant l'envoi d'une réponse
