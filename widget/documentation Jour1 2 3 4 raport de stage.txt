@@ -1,0 +1,382 @@
+================================================================================
+                    RAPPORT DE STAGE - PLATEFORME DE SUPPORT IA
+                                   JOURS 1 À 4
+================================================================================
+
+Auteur : FaKylian
+Projet : Plateforme de Customer Support IA multi-applications
+Stack : Django + PostgreSQL + React + Discord Webhook
+
+================================================================================
+                               JOUR 1 - MARDI
+                          SETUP + API BACKEND + BOT IA
+================================================================================
+
+OBJECTIFS DU JOUR :
+------------------
+- Installer Django, DRF, PostgreSQL
+- Créer les modèles de base de données
+- Créer l'endpoint POST /api/message/
+- Brancher le moteur IA (mock)
+- Peupler la base de connaissance FAQ
+
+RÉALISATIONS :
+--------------
+✅ Installation de l'environnement virtuel Python
+✅ Installation des dépendances : Django, DRF, anthropic, psycopg2, python-dotenv, corsheaders
+✅ Configuration de PostgreSQL (base: support_platform)
+✅ Création du projet Django (support_platform)
+✅ Création de l'application chatbot
+
+MODÈLES CRÉÉS (chatbot/models.py) :
+-----------------------------------
+- Tenant : Application cliente avec clé API
+- KnowledgeItem : Base de connaissance (FAQ)
+- Conversation : Historique des discussions
+- Message : Messages individuels (role: user/bot)
+
+BASE DE CONNAISSANCE (FAQ) :
+----------------------------
+1. "Qu'est-ce que le marketing digital ?" → Définition du marketing digital
+2. "C'est quoi le SEO ?" → Définition du référencement
+3. "Qu'est-ce que le développement web ?" → Définition du dev web
+4. "Quels langages pour le backend ?" → Python, JS, Java, PHP, Ruby
+5. "Comment fonctionne l'IA dans ce chatbot ?" → Explication Claude API
+
+ENDPOINTS CRÉÉS :
+-----------------
+- POST /api/message/ → Envoi de message, retourne réponse bot
+- GET /api/conversation/<id>/ → Récupération historique
+
+TESTS EFFECTUÉS :
+-----------------
+- Test Postman : envoi question FAQ → réponse correcte
+- Test Postman : envoi question hors FAQ → fallback
+
+API KEY GÉNÉRÉE :
+-----------------
+31d4efff-2b32-481f-a17f-d2017982f7ed
+
+--------------------------------------------------------------------------------
+                                JOUR 2 - MERCREDI
+                          BOT IA + DISCORD + ENDPOINT AGENT
+--------------------------------------------------------------------------------
+
+OBJECTIFS DU JOUR :
+------------------
+- Détecter quand le bot ne sait pas répondre
+- Créer le webhook Discord pour notifier l'équipe
+- Créer l'endpoint POST /api/agent/reply/
+- Tester le flux complet : question inconnue → Discord → agent répond
+
+RÉALISATIONS :
+--------------
+✅ Amélioration de la détection des questions hors base de connaissance
+✅ Création d'un webhook Discord (URL régénérée)
+✅ Notification automatique sur Discord en cas d'échec du bot
+✅ Endpoint POST /api/agent/reply/ pour que l'agent réponde
+✅ Flux transparent : client ne voit aucun message de fallback
+
+NOTIFICATION DISCORD (contenu) :
+--------------------------------
+🚨 Nouvelle conversation escaladée !
+Conversation ID: X
+Message client: [contenu]
+Pour répondre via API: {...}
+
+ENDPOINTS CRÉÉS (Jour 2) :
+--------------------------
+- POST /api/agent/reply/ → Agent répond à une conversation
+
+TESTS EFFECTUÉS :
+-----------------
+✅ Question FAQ → bot répond directement
+✅ Question hors FAQ → Discord notifié → agent répond → client reçoit
+✅ Historique conversation : uniquement user + bot (réponse agent)
+
+--------------------------------------------------------------------------------
+                                JOUR 3 - JEUDI
+                         INTERFACE ADMIN REACT + MODE SOMBRE/CLAIR
+--------------------------------------------------------------------------------
+
+OBJECTIFS DU JOUR :
+------------------
+- Créer l'interface admin React
+- Liste des conversations escaladées
+- Vue détail avec historique des messages
+- Formulaire pour répondre
+- Design responsive (web + mobile)
+- Mode clair/sombre
+
+RÉALISATIONS :
+--------------
+✅ Création du projet React avec Vite (admin/)
+✅ Installation de axios, react-router-dom
+✅ Configuration CORS dans Django
+✅ Pages : login (simplifié), liste conversations, détail conversation
+✅ Auto-refresh toutes les 5 secondes
+✅ Design responsive avec menu burger
+✅ Mode clair/sombre avec icône 🌙/☀️
+✅ Badge "Escaladée" pour les conversations en attente
+✅ Avatar 👤 pour client, 🤖 pour bot
+
+PALETTE DE COULEURS - ADMIN (Mode Clair) :
+------------------------------------------
+- Fond principal : #F5F0E8 (Beige clair)
+- Cartes : #FFFFFF (Blanc)
+- Texte principal : #0F3B2C (Vert profond)
+- Texte secondaire : #2D5A4A (Vert menthe)
+- Bordures : #E8E0D5 (Blanc cassé)
+- Messages client : Dégradé #0F3B2C → #2D5A4A
+- Messages bot : #FFFFFF
+- Badge Escaladée : #E07A5F (Rouge corail)
+- Header sidebar : Dégradé #0F3B2C → #2D5A4A
+
+PALETTE DE COULEURS - ADMIN (Mode Sombre) :
+-------------------------------------------
+- Fond principal : #1A2420 (Vert foncé)
+- Cartes : #1E2A24 (Vert grisâtre)
+- Texte principal : #F5F0E8 (Beige clair)
+- Texte secondaire : #C9A87C (Or doux)
+- Bordures : #2A3A32
+- Messages client : Dégradé #0F3B2C → #2D5A4A
+- Messages bot : #2A3A32
+- Badge Escaladée : #E07A5F
+
+TYPOGRAPHIE :
+-------------
+- Titres : Playfair Display (serif)
+- Texte : Poppins (sans-serif)
+
+ENDPOINTS ADMIN CRÉÉS (sans authentification pour MVP) :
+---------------------------------------------------------
+- GET /admin/conversations/ → Liste des conversations escaladées
+- GET /admin/conversations/<id>/ → Détail d'une conversation
+- POST /admin/conversations/<id>/ → Répondre à une conversation
+
+--------------------------------------------------------------------------------
+                                JOUR 4 - VENDREDI
+                           WIDGET CLIENT + INTÉGRATION
+--------------------------------------------------------------------------------
+
+OBJECTIFS DU JOUR :
+------------------
+- Créer le widget React côté client
+- Bouton flottant + fenêtre de chat latérale
+- Envoi de messages avec polling 4 secondes
+- Interface inspirée de Claude
+- Menu latéral avec historique
+- Barre de recherche pour filtrer
+- Bouton nouvelle discussion
+- Mode clair/sombre
+
+RÉALISATIONS :
+--------------
+✅ Widget React avec bouton flottant 💬
+✅ Fenêtre de chat latérale coulissante (inspirée Claude)
+✅ Menu latéral avec historique des conversations
+✅ Barre de recherche 🔍 pour filtrer les discussions
+✅ Bouton "+ Nouvelle discussion"
+✅ Envoi de messages avec indicateur "bot écrit..."
+✅ Polling toutes les 4 secondes
+✅ Mode clair/sombre avec un seul bouton basculant
+✅ Build Vite pour intégration (dist/widget.umd.cjs)
+✅ Page de test (test.html)
+✅ Documentation d'intégration (3 lignes de code)
+
+PALETTE DE COULEURS - WIDGET (Mode Clair) :
+-------------------------------------------
+- Fond principal : #F7F7F8 (Gris très clair)
+- Cartes / Sidebar : #FFFFFF (Blanc)
+- Texte principal : #1F1F1F (Noir/gris)
+- Texte secondaire : #6E6E6E (Gris moyen)
+- Bordures : #E5E5E5
+- Messages client : Dégradé #C9A87C → #B8965A (Or doux)
+- Messages bot : #FFFFFF
+- Bouton flottant : Dégradé #C9A87C → #B8965A
+- Header chat : #FFFFFF
+- Icônes : #5A5A5A
+- Active/hover : #F0F0F0
+
+PALETTE DE COULEURS - WIDGET (Mode Sombre) :
+--------------------------------------------
+- Fond principal : #1E1E1E (Gris foncé)
+- Cartes / Sidebar : #2A2A2A
+- Texte principal : #EDEDED (Blanc cassé)
+- Texte secondaire : #A0A0A0 (Gris clair)
+- Bordures : #3A3A3A
+- Messages client : Dégradé #C9A87C → #B8965A
+- Messages bot : #2A2A2A
+- Bouton flottant : Dégradé #C9A87C → #B8965A
+- Header chat : #2A2A2A
+- Icônes : #A0A0A0
+- Active/hover : #3A3A3A
+
+INTÉGRATION DU WIDGET (3 lignes) :
+----------------------------------
+<script src="https://unpkg.com/react@18.2.0/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.development.js"></script>
+<script src="dist/widget.umd.cjs"></script>
+<script>
+    ChatWidget.init({
+        apiKey: "VOTRE_API_KEY",
+        appName: "Nom Application",
+        theme: "light"
+    });
+</script>
+
+================================================================================
+                          RÉSUMÉ DES ENDPOINTS API
+================================================================================
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| POST    | /api/message/                    | Envoyer un message (client → bot/agent) |
+| GET     | /api/conversation/<id>/          | Récupérer l'historique d'une conversation |
+| POST    | /api/agent/reply/                | Agent répond à une conversation |
+| GET     | /admin/conversations/            | Liste des conversations (admin/widget) |
+| POST    | /admin/conversations/<id>/       | Répondre à une conversation (admin) |
+
+================================================================================
+                          ARCHITECTURE DU PROJET
+================================================================================
+
+support_platform/
+├── manage.py
+├── requirements.txt
+├── .env                          # Variables d'environnement (API keys)
+├── .gitignore
+├── README.md
+│
+├── support_platform/             # Configuration Django
+│   ├── settings.py               # Base de données, CORS, apps
+│   └── urls.py
+│
+├── chatbot/                      # Application principale
+│   ├── models.py                 # Tenant, KnowledgeItem, Conversation, Message
+│   ├── views.py                  # API endpoints + Discord webhook
+│   ├── serializers.py
+│   ├── ai_engine.py              # Mock IA + détection FAQ
+│   ├── admin.py
+│   └── urls.py
+│
+├── admin/                        # Interface admin React
+│   ├── src/
+│   │   ├── App.jsx
+│   │   ├── App.css
+│   │   ├── api.js
+│   │   └── components/
+│   │       ├── ConversationList.jsx
+│   │       └── ConversationDetail.jsx
+│   └── package.json
+│
+└── widget/                       # Widget client React
+    ├── ChatWidget.jsx
+    ├── index.js
+    ├── simple-widget.js          # Version finale fonctionnelle
+    ├── vite.config.js
+    ├── package.json
+    ├── test.html
+    └── dist/
+        └── widget.umd.cjs        # Fichier buildé à intégrer
+
+================================================================================
+                          TECHNOLOGIES UTILISÉES
+================================================================================
+
+Backend :
+---------
+- Django 6.0.3
+- Django REST Framework 3.17.1
+- PostgreSQL
+- python-dotenv
+- django-cors-headers
+- requests (pour Discord webhook)
+
+Frontend (Admin) :
+------------------
+- React 18.2.0
+- Vite
+- Axios
+- CSS personnalisé (mode clair/sombre)
+- Playfair Display + Poppins (Google Fonts)
+
+Frontend (Widget) :
+-------------------
+- React 18.2.0 (via CDN pour intégration)
+- Axios
+- Vite (build)
+- CSS personnalisé (inspiré Claude)
+
+Notifications :
+---------------
+- Discord Webhook
+
+================================================================================
+                              TESTS EFFECTUÉS
+================================================================================
+
+✅ Test 1 : Question FAQ (via Postman)
+   → Bot répond correctement avec la FAQ
+
+✅ Test 2 : Question hors FAQ (via Postman)
+   → Discord reçoit notification, agent répond, client reçoit
+
+✅ Test 3 : Interface admin (React)
+   → Liste des conversations, historique, réponse agent
+
+✅ Test 4 : Mode clair/sombre (admin)
+   → Bascule fluide entre les deux modes
+
+✅ Test 5 : Widget client (bouton flottant)
+   → Envoi message, polling, réponse reçue
+
+✅ Test 6 : Mode clair/sombre (widget)
+   → Bascule fluide entre les deux modes
+
+✅ Test 7 : Menu latéral widget
+   → Historique affiché, recherche fonctionnelle
+
+✅ Test 8 : Nouvelle discussion
+   → Création d'une nouvelle conversation
+
+================================================================================
+                              PROCHAINE ÉTAPE
+================================================================================
+
+Jour 5 (Samedi) - Livraison finale :
+-------------------------------------
+- Upload de documents (PDF/TXT) dans la base de connaissance
+- Extraction du texte comme contexte Claude
+- Tests finaux du flux complet
+- Préparation de la démo (scénarios de test)
+- Livraison du MVP + documentation finale
+
+================================================================================
+                         CRITÈRES DE VALIDATION MVP
+================================================================================
+
+| Critère                                    | Statut |
+|--------------------------------------------|--------|
+| Widget fonctionne sur app externe          | ✅     |
+| Bot répond aux questions de la FAQ         | ✅     |
+| Escalade déclenche notification Discord    | ✅     |
+| Agent peut répondre depuis l'admin         | ✅     |
+| Client reçoit la réponse                   | ✅     |
+| Interface admin responsive                 | ✅     |
+| Mode clair/sombre (admin)                  | ✅     |
+| Mode clair/sombre (widget)                 | ✅     |
+| Historique des conversations               | ✅     |
+| Recherche de discussions                   | ✅     |
+| Nouvelle discussion                        | ✅     |
+
+================================================================================
+                                ÉQUIPE
+================================================================================
+
+Développeur : FaKylian
+Projet : Stage de 6 mois - Plateforme de Customer Support IA
+
+================================================================================
+                                FIN DU RAPPORT
+================================================================================

@@ -361,3 +361,72 @@ Critères de validation
 \- Conversation active surlignée avec une bordure dorée
 \- Formulaire de réponse avec champ texte et bouton d'envoi
 \- Indicateur de chargement pendant l'envoi d'une réponse
+
+"✅ Jour 4 - Widget client React (inspiré Claude)
+
+✨ NOUVELLES FONCTIONNALITÉS :
+
+1. Widget client React
+   - Bouton flottant 💬 pour ouvrir le chat
+   - Fenêtre de chat latérale coulissante
+   - Envoi de messages avec indicateur 'bot écrit...'
+   - Polling automatique toutes les 4 secondes
+   - Design inspiré de Claude (moderne et élégant)
+
+2. Menu latéral (sidebar)
+   - Historique complet des conversations
+   - Barre de recherche 🔍 pour filtrer les discussions
+   - Bouton '+ Nouvelle discussion'
+   - Affichage de l'aperçu des messages
+
+3. Mode clair/sombre
+   - Bascule avec un seul bouton 🌙/☀️
+   - Sauvegarde du choix utilisateur
+   - Palette de couleurs adaptée
+
+4. Responsive design
+   - Mobile first
+   - Desktop adapté
+   - Menu burger pour mobile
+
+🎨 PALETTE DE COULEURS (Widget) :
+
+Mode Clair :
+- Fond : #F7F7F8
+- Cartes : #FFFFFF
+- Messages user : Dégradé #C9A87C → #B8965A (Or doux)
+- Messages bot : #FFFFFF
+
+Mode Sombre :
+- Fond : #1E1E1E
+- Cartes : #2A2A2A
+- Messages user : Dégradé #C9A87C → #B8965A
+- Messages bot : #2A2A2A
+
+📁 FICHIERS AJOUTÉS :
+- widget/ChatWidget.jsx (composant principal)
+- widget/index.js (point d'entrée)
+- widget/simple-widget.js (version finale fonctionnelle)
+- widget/vite.config.js (configuration build)
+- widget/package.json
+- widget/test.html (page de test)
+- widget/dist/widget.umd.cjs (fichier buildé)
+
+🔧 MODIFICATIONS :
+- support_platform/settings.py (ajout CORS pour localhost:8080)
+
+ TESTS VALIDÉS :
+- ✅ Bouton flottant fonctionnel
+- ✅ Envoi et réception de messages
+- ✅ Polling fonctionnel
+- ✅ Mode clair/sombre
+- ✅ Recherche de conversations
+- ✅ Nouvelle discussion
+
+INTÉGRATION (3 lignes de code) :
+<script src='https://unpkg.com/react@18.2.0/umd/react.development.js'></script>
+<script src='https://unpkg.com/react-dom@18.2.0/umd/react-dom.development.js'></script>
+<script src='dist/widget.umd.cjs'></script>
+<script>ChatWidget.init({ apiKey: '...', appName: '...', theme: 'light' });</script>
+
+ Prochaine étape : Jour 5 - Upload de documents + Démo finale"
