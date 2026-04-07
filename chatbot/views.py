@@ -1,12 +1,26 @@
+import os, re
 import requests
 from django.conf import settings
+from django.core.files.storage import default_storage
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Tenant, Conversation, Message
+from .models import Tenant, Conversation, Message, KnowledgeItem, Document
 from .serializers import SendMessageSerializer, MessageSerializer, ConversationSerializer
 from .ai_engine import get_bot_response
+import PyPDF2
+from PIL import Image
+import pytesseract
 
+# Extraction de texte pour PDF
+try:
+    import PyPDF2
+except ImportError:
+    PyPDF2 = None
+
+# Configurer le chemin de Tesseract pour Windows
+if os.name == 'nt':  # Windows
+    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 class SendMessageView(APIView):
     """
@@ -14,7 +28,6 @@ class SendMessageView(APIView):
     """
     
     def post(self, request):
-        # Valider les données entrantes
         serializer = SendMessageSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -24,7 +37,6 @@ class SendMessageView(APIView):
         content = data['content']
         conversation_id = data.get('conversation_id')
         
-        # Vérifier la clé API
         try:
             tenant = Tenant.objects.get(api_key=api_key)
         except Tenant.DoesNotExist:
@@ -33,7 +45,6 @@ class SendMessageView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED
             )
         
-        # Récupérer ou créer la conversation
         if conversation_id:
             try:
                 conversation = Conversation.objects.get(id=conversation_id, tenant=tenant)
@@ -45,17 +56,14 @@ class SendMessageView(APIView):
         else:
             conversation = Conversation.objects.create(tenant=tenant)
         
-        # Sauvegarder le message utilisateur
         user_message = Message.objects.create(
             conversation=conversation,
             role='user',
             content=content
         )
         
-        # Obtenir la réponse du bot
         bot_response_text, bot_success = get_bot_response(content, tenant)
         
-        # Si le bot a une réponse, la sauvegarder et la retourner immédiatement
         if bot_success and bot_response_text:
             bot_message = Message.objects.create(
                 conversation=conversation,
@@ -69,12 +77,9 @@ class SendMessageView(APIView):
             }
             return Response(response_data, status=status.HTTP_200_OK)
         
-        # Si le bot ne sait pas répondre : ne pas sauvegarder de message bot
-        # Marquer la conversation pour escalation
         conversation.escalated = True
         conversation.save()
         
-        # Envoyer notification Discord
         webhook_url = getattr(settings, 'DISCORD_WEBHOOK_URL', '')
         
         if webhook_url:
@@ -102,7 +107,6 @@ class SendMessageView(APIView):
             except Exception as e:
                 print(f"❌ Erreur envoi Discord: {e}")
         
-        # Retourner seulement le message utilisateur, sans message bot
         response_data = {
             'conversation_id': conversation.id,
             'user_message': MessageSerializer(user_message).data,
@@ -162,7 +166,6 @@ class AgentReplyView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        # Vérifier la clé API
         try:
             tenant = Tenant.objects.get(api_key=api_key)
         except Tenant.DoesNotExist:
@@ -171,7 +174,6 @@ class AgentReplyView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED
             )
         
-        # Vérifier que la conversation appartient au tenant
         try:
             conversation = Conversation.objects.get(id=conversation_id, tenant=tenant)
         except Conversation.DoesNotExist:
@@ -180,14 +182,12 @@ class AgentReplyView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
         
-        # Ajouter la réponse de l'agent
         agent_message = Message.objects.create(
             conversation=conversation,
             role='bot',
             content=content
         )
         
-        # Réinitialiser le flag escalated
         conversation.escalated = False
         conversation.save()
         
@@ -198,15 +198,11 @@ class AgentReplyView(APIView):
 
 
 class AdminConversationsListView(APIView):
-    """Liste des conversations pour l'admin - sans authentification"""
+    """Liste de TOUTES les conversations pour l'admin"""
     
     def get(self, request):
-        conversations = Conversation.objects.filter(
-            escalated=True
-        ).order_by('-updated_at')
-        
-        if not conversations.exists():
-            conversations = Conversation.objects.all().order_by('-created_at')[:10]
+        # Récupérer TOUTES les conversations, pas seulement les escaladées
+        conversations = Conversation.objects.all().order_by('-updated_at')
         
         serializer = ConversationSerializer(conversations, many=True)
         return Response(serializer.data)
@@ -256,3 +252,174 @@ class AdminConversationDetailView(APIView):
             'success': True,
             'message': MessageSerializer(agent_message).data
         })
+
+
+# ==================== UPLOAD DOCUMENTS ====================
+
+class UploadDocumentView(APIView):
+    def post(self, request):
+        api_key = request.data.get('api_key')
+        title = request.data.get('title')
+        file = request.FILES.get('file')
+        
+        if not all([api_key, title, file]):
+            return Response(
+                {"error": "api_key, title et file sont requis"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            tenant = Tenant.objects.get(api_key=api_key)
+        except Tenant.DoesNotExist:
+            return Response(
+                {"error": "Clé API invalide"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        file_extension = os.path.splitext(file.name)[1].lower()
+        content = ""
+        doc_type = "pdf"
+        
+        # 1. TRAITEMENT PDF
+        if file_extension == '.pdf':
+            doc_type = "pdf"
+            if PyPDF2 is None:
+                return Response({"error": "PyPDF2 non installé"}, status=500)
+            
+            pdf_reader = PyPDF2.PdfReader(file)
+            total_pages = len(pdf_reader.pages)
+            full_text = []
+            
+            for page_num, page in enumerate(pdf_reader.pages):
+                page_text = page.extract_text()
+                if page_text:
+                    full_text.append(f"\n{'='*60}\n📄 PAGE {page_num + 1}/{total_pages}\n{'='*60}\n")
+                    full_text.append(page_text)
+                else:
+                    full_text.append(f"\n⚠️ Page {page_num + 1} : contenu non extractible (peut-être une image)\n")
+            
+            content = "\n".join(full_text)
+        
+        # 2. TRAITEMENT TXT
+        elif file_extension == '.txt':
+            doc_type = "txt"
+            content = file.read().decode('utf-8')
+        
+        # 3. TRAITEMENT IMAGES (PNG, JPG, JPEG)
+        elif file_extension in ['.png', '.jpg', '.jpeg']:
+            doc_type = "image"
+            try:
+                image = Image.open(file)
+                # OCR en français
+                content = pytesseract.image_to_string(image, lang='fra')
+                if not content.strip():
+                    content = pytesseract.image_to_string(image, lang='eng')
+            except Exception as e:
+                return Response(
+                    {"error": f"Erreur lecture image: {str(e)}"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+        
+        else:
+            return Response(
+                {"error": "Formats acceptés: PDF, TXT, PNG, JPG, JPEG"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Nettoyer le texte
+        content = re.sub(r'[^\x20-\x7E\x0A\x0D\xC0-\xFF\u00C0-\u00FF]', ' ', content)
+        content = re.sub(r'\s+', ' ', content).strip()
+        
+        # Sauvegarder
+        document = Document.objects.create(
+            tenant=tenant,
+            title=title,
+            document_type=doc_type,
+            content=content
+        )
+        
+        file_path = default_storage.save(f'documents/{tenant.id}/{file.name}', file)
+        document.file = file_path
+        document.save()
+        
+        # Ajouter à la base de connaissance
+        KnowledgeItem.objects.create(
+            tenant=tenant,
+            question=None,
+            answer=content[:10000],  # Limite pour la base
+            category='document'
+        )
+        
+        return Response({
+            'success': True,
+            'document_id': document.id,
+            'title': document.title,
+            'document_type': doc_type,
+            'content_preview': content[:500],
+            'content_length': len(content),
+            'message': f"Document '{title}' analysé avec succès !"
+        })
+
+class ListDocumentsView(APIView):
+    """Liste des documents uploadés"""
+    
+    def get(self, request):
+        api_key = request.query_params.get('api_key')
+        
+        if not api_key:
+            return Response(
+                {"error": "API key requise"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            tenant = Tenant.objects.get(api_key=api_key)
+        except Tenant.DoesNotExist:
+            return Response(
+                {"error": "Clé API invalide"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        documents = Document.objects.filter(tenant=tenant)
+        data = [{
+            'id': doc.id,
+            'title': doc.title,
+            'uploaded_at': doc.uploaded_at,
+            'content_preview': doc.content[:200]
+        } for doc in documents]
+        
+        return Response(data)
+
+
+class DeleteDocumentView(APIView):
+    """Supprimer un document"""
+    
+    def delete(self, request, document_id):
+        api_key = request.data.get('api_key')
+        
+        if not api_key:
+            return Response(
+                {"error": "API key requise"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            tenant = Tenant.objects.get(api_key=api_key)
+        except Tenant.DoesNotExist:
+            return Response(
+                {"error": "Clé API invalide"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        try:
+            document = Document.objects.get(id=document_id, tenant=tenant)
+            KnowledgeItem.objects.filter(tenant=tenant, answer=document.content, category='document').delete()
+            if document.file:
+                default_storage.delete(document.file.name)
+            document.delete()
+            return Response({'success': True})
+        except Document.DoesNotExist:
+            return Response(
+                {"error": "Document non trouvé"},
+                status=status.HTTP_404_NOT_FOUND
+            )

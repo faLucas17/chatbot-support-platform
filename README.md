@@ -429,4 +429,63 @@ INTÉGRATION (3 lignes de code) :
 <script src='dist/widget.umd.cjs'></script>
 <script>ChatWidget.init({ apiKey: '...', appName: '...', theme: 'light' });</script>
 
- Prochaine étape : Jour 5 - Upload de documents + Démo finale"
+
+Jour 5 – Mardi (Livraison) - Ce que tu as réalisé
+Objectifs du jour :
+Upload de documents (PDF/TXT/Images) dans la base de connaissance
+Extraction du texte comme contexte pour le bot
+Tests finaux du flux complet
+Préparation de la démo
+
+
+Livraison du MVP
+
+Réalisations du Jour 5 :
+1. Upload de documents
+Endpoint POST /api/documents/upload/
+Support des formats : PDF, TXT, PNG, JPG, JPEG
+Extraction complète du texte des PDF (PyPDF2)
+OCR pour les images (Tesseract)
+Stockage du contenu dans la base de données
+
+2. Interface client améliorée
+Menu contextuel avec deux options : 📄 Upload document / 📸 Prendre photo
+Fichier attaché visible dans la zone de saisie
+Upload manuel avant envoi du message
+Auto-resize de la zone de saisie (textarea qui s'agrandit)
+
+3. Icônes d'action sur les messages
+📋 Copier le message (fonctionne pour tous)
+✏️ Modifier le message (pour l'utilisateur)
+🔄 Régénérer la réponse (pour le bot)
+Icônes en gris (#888888)
+Affichées au survol du message
+
+4. Affichage des messages
+Heure affichée EN DEHORS de la bulle
+Messages COMPLETS (pas de troncature)
+Pas de bouton "Afficher plus/moins"
+Scroll automatique vers le dernier message
+
+5. Intelligence du bot
+Compréhension des questions sur les documents
+Résumé automatique du document uploadé
+Réponse à "Que parle ce document ?" avec titre, auteur, contexte
+Base de connaissances marketing enrichie
+
+6. Corrections finales
+Admin voit TOUTES les conversations (pas seulement les escaladées)
+Message de bienvenue "👋 Comment puis-je vous aider ?" au démarrage
+Zone de saisie auto-resize
+Bouton copier fonctionnel pour les messages bot
+
+
+
+Structure finale du projet
+text
+support_platform/
+├── chatbot/           # Backend Django
+├── admin/             # Interface admin React
+└── widget/            # Widget client React
+
+Jour 6: documentation finale

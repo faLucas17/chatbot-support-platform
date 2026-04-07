@@ -25,7 +25,7 @@ class Conversation(models.Model):
     tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name='conversations')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    escalated = models.BooleanField(default=False)  # Pour l'escalade Discord
+    escalated = models.BooleanField(default=False)
     
     def __str__(self):
         return f"Conversation {self.id} - {self.tenant.name}"
@@ -47,3 +47,21 @@ class Message(models.Model):
     
     def __str__(self):
         return f"{self.role}: {self.content[:50]}"
+
+
+class Document(models.Model):
+    DOCUMENT_TYPES = [
+        ('pdf', 'PDF'),
+        ('txt', 'TXT'),
+        ('image', 'Image'),
+    ]
+    
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name='documents')
+    title = models.CharField(max_length=255)
+    file = models.FileField(upload_to='documents/', blank=True, null=True)  # ← ajoute blank=True, null=True
+    document_type = models.CharField(max_length=10, choices=DOCUMENT_TYPES, default='pdf')
+    content = models.TextField(blank=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.title} ({self.get_document_type_display()})"

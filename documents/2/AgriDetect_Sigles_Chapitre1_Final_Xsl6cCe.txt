@@ -1,0 +1,401 @@
+========================================================
+LISTE DES SIGLES ET ABRÉVIATIONS
+========================================================
+
+Sigle / Abréviation    Signification
+
+ACMD    : African Cassava Mosaic Disease (Mosaïque africaine du manioc)
+API     : Application Programming Interface (Interface de programmation applicative)
+CBSD    : Cassava Brown Streak Disease (Striure brune du manioc)
+CCMT    : Crop and Cassava Multi-label Threat (Ensemble de données)
+CMD     : Cassava Mosaic Disease (Mosaïque du manioc)
+CNN     : Convolutional Neural Network (Réseau de neurones convolutif)
+CPU     : Central Processing Unit (Unité centrale de traitement)
+DL      : Deep Learning (Apprentissage profond)
+FAO     : Food and Agriculture Organization (Organisation des Nations Unies pour l'alimentation et l'agriculture)
+GPU     : Graphics Processing Unit (Unité de traitement graphique)
+IA      : Intelligence Artificielle
+ImageNet : Base de données d'images de référence pour la vision par ordinateur
+JSON    : JavaScript Object Notation
+Keras   : API de deep learning de haut niveau intégrée à TensorFlow
+MB      : Mégaoctet
+ML      : Machine Learning (Apprentissage automatique)
+MSV     : Maize Streak Virus (Virus des stries du maïs)
+PIB     : Produit Intérieur Brut
+ReLU    : Rectified Linear Unit (Unité linéaire rectifiée)
+REST    : Representational State Transfer
+RGB     : Red Green Blue (Rouge Vert Bleu)
+SGD     : Stochastic Gradient Descent (Descente de gradient stochastique)
+TensorFlow : Bibliothèque open-source de deep learning de Google
+UENR    : Université de l'Énergie et des Ressources Naturelles (Ghana)
+VGG     : Visual Geometry Group (groupe de recherche ayant développé l'architecture VGG)
+
+
+========================================================
+CHAPITRE 1 : ÉTAT DE L'ART
+========================================================
+
+Ce chapitre dresse un panorama des connaissances et des travaux existants
+sur lesquels s'appuie ce mémoire. Il s'organise en quatre volets
+complémentaires : la situation du diagnostic phytosanitaire en Afrique de
+l'Ouest, les fondements techniques des réseaux de neurones convolutifs,
+les principes du transfer learning, et enfin un tour d'horizon des
+recherches récentes appliquées à la détection des maladies agricoles par
+intelligence artificielle.
+
+
+--------------------------------------------------------
+1.1 Diagnostic des maladies agricoles en Afrique de l'Ouest
+--------------------------------------------------------
+
+L'agriculture en Afrique de l'Ouest se trouve face à un paradoxe difficile
+à résoudre. D'un côté, elle constitue le pilier de l'économie régionale,
+employant plus de 60 % de la population active et assurant la sécurité
+alimentaire de plusieurs centaines de millions de personnes. De l'autre,
+elle reste structurellement vulnérable face aux aléas climatiques et aux
+attaques de ravageurs et de maladies. Cette vulnérabilité est d'autant plus
+critique que la grande majorité des exploitations sont de petite taille,
+gérées par des familles qui tirent l'essentiel de leurs revenus et de leur
+subsistance de ces cultures.
+
+
+1.1.1 Principales cultures et pathologies associées
+
+Le manioc (Manihot esculenta) est sans doute la culture la plus stratégique
+de la région. Cultivé sur des millions d'hectares, il constitue la base
+alimentaire de plus de 800 millions de personnes à travers le continent
+africain. Deux maladies virales menacent particulièrement cette culture.
+La mosaïque du manioc (CMD), transmise par la mouche blanche Bemisia tabaci,
+se manifeste par des déformations et une coloration en mosaïque des feuilles,
+entraînant des pertes pouvant atteindre 100 % dans les cas les plus sévères.
+La striure brune du manioc (CBSD), pathologie plus récente, s'attaque aux
+racines tubéreuses en les rendant impropres à la consommation. À ces
+pathologies virales s'ajoutent des infections bactériennes comme la brûlure
+bactérienne (Xanthomonas axonopodis pv. manihotis), qui provoque le
+flétrissement et la mort des plants, et la tache brune qui altère la
+surface foliaire.
+
+Le maïs (Zea mays) est la céréale la plus consommée en Afrique de l'Ouest.
+Sa culture est menacée par un cortège de ravageurs et de maladies. La
+légionnaire d'automne (Spodoptera frugiperda), papillon nocturne originaire
+des Amériques, a envahi le continent à partir de 2016 et provoque des pertes
+estimées à 40 % de la production dans certains pays, représentant plusieurs
+milliards de dollars de manque à gagner annuellement. Le virus des stries
+du maïs (MSV), transmis par des cicadelles, constitue une autre menace
+virale persistante qui provoque des nécroses foliaires caractéristiques.
+Les maladies fongiques comme la brûlure des feuilles et la tache foliaire
+affectent également le feuillage, réduisant la photosynthèse et in fine
+le rendement.
+
+La tomate (Solanum lycopersicum) est une culture maraîchère de grande
+importance économique pour les producteurs de la région. Elle est sensible
+à de nombreuses maladies fongiques et virales. La septoriose, la brûlure
+des feuilles et la verticilliose sont des infections fongiques courantes
+qui se traduisent par des taches nécrotiques sur les feuilles et les fruits,
+pouvant anéantir une récolte en quelques jours si elles ne sont pas traitées
+rapidement. Le virus de l'enroulement des feuilles, transmis par l'aleurode,
+provoque une déformation et un jaunissement du feuillage qui compromet
+gravement la productivité.
+
+L'anacardier (Anacardium occidentale), culture de rente par excellence pour
+des pays comme la Côte d'Ivoire, le Ghana et le Bénin, est confronté à
+l'anthracnose (Colletotrichum gloeosporioides), maladie fongique qui attaque
+les inflorescences, les feuilles et les fruits. La gommose, qui se manifeste
+par des écoulements de gomme sur le tronc, affaiblit progressivement
+l'arbre sur plusieurs saisons. La mineuse des feuilles et la rouille rouge
+constituent d'autres bioagresseurs fréquents dans les vergers de la
+sous-région, affectant à la fois la qualité et le rendement des noix de cajou.
+
+
+1.1.2 Les limites du diagnostic traditionnel
+
+Dans les zones rurales d'Afrique de l'Ouest, le diagnostic des maladies
+repose encore largement sur l'observation visuelle directe. L'agriculteur
+examine ses plants, compare les symptômes observés avec ceux qu'il a déjà
+rencontrés par le passé et décide d'intervenir ou non. Cette approche, si
+elle peut fonctionner pour les pathologies les plus répandues et
+reconnaissables, atteint rapidement ses limites face à des maladies
+émergentes ou à des symptômes qui se ressemblent à un stade précoce.
+
+Le recours à un agent de vulgarisation agricole constitue une alternative
+théoriquement disponible, mais leur nombre est notoirement insuffisant
+pour couvrir les besoins. Dans certains pays de la sous-région, on dénombre
+moins d'un agent pour deux mille exploitations. L'agent ne peut donc se
+déplacer que ponctuellement, et le délai entre l'apparition des premiers
+symptômes et son intervention peut être fatal pour la récolte, notamment
+pour des maladies à progression rapide comme la légionnaire d'automne sur
+le maïs ou le mildiou sur la tomate.
+
+L'envoi d'échantillons à un laboratoire de phytopathologie spécialisé
+constitue l'option diagnostique la plus fiable, mais elle est rarement
+accessible pour l'exploitant moyen. Les coûts de transport et d'analyse
+sont souvent prohibitifs par rapport au revenu généré par la parcelle
+concernée, et les délais de retour des résultats peuvent atteindre
+plusieurs semaines, pendant lesquelles la maladie poursuit sa progression
+inexorablement. Cette combinaison de facteurs — absence d'experts de
+proximité, délais d'intervention, coûts élevés — conduit fréquemment
+à des traitements tardifs ou inappropriés. Dans les cas les plus défavorables,
+l'agriculteur applique à l'aveugle des produits phytosanitaires, avec des
+risques de résistance, de contamination de l'environnement et de dépenses
+inutiles qui fragilisent davantage des exploitations déjà précaires.
+
+C'est précisément dans cet écart entre un besoin de diagnostic urgent et
+une offre structurellement défaillante que les technologies de l'intelligence
+artificielle appliquées à l'analyse d'images peuvent jouer un rôle
+transformateur, à condition toutefois que les solutions proposées soient
+adaptées aux réalités du terrain africain.
+
+
+--------------------------------------------------------
+1.2 Réseaux de neurones convolutifs pour la classification d'images
+--------------------------------------------------------
+
+Les réseaux de neurones convolutifs (CNN) constituent une famille
+d'architectures de réseaux de neurones profonds spécialement conçues
+pour le traitement des données structurées en grille, comme les images.
+Leur développement s'inscrit dans une longue trajectoire de recherche
+qui remonte aux travaux fondateurs de LeCun et al. (1998) sur le réseau
+LeNet-5, conçu pour la reconnaissance de chiffres manuscrits. Pendant
+plus d'une décennie, les CNN sont restés des outils de niche, limités par
+la puissance de calcul disponible et la rareté des grandes bases de données
+annotées. La rupture est venue en 2012 avec AlexNet, développé par
+Krizhevsky, Sutskever et Hinton, qui a remporté le concours ImageNet avec
+un taux d'erreur deux fois inférieur aux meilleures méthodes classiques
+de vision par ordinateur. Depuis, les architectures CNN n'ont cessé de
+se perfectionner.
+
+
+1.2.1 Principes de fonctionnement
+
+Un CNN typique alterne plusieurs types de couches, chacune ayant une
+fonction précise dans le processus d'extraction et de classification
+des caractéristiques visuelles.
+
+Les couches convolutionnelles constituent le cœur de l'architecture.
+Chaque couche applique un ensemble de filtres, aussi appelés noyaux,
+de petite taille — typiquement 3×3 ou 5×5 — sur l'image d'entrée.
+Chaque filtre parcourt l'image en effectuant un produit scalaire à chaque
+position, produisant une carte d'activation (feature map) qui met en
+évidence les régions où le motif appris par ce filtre est présent.
+Dans les premières couches, les filtres détectent des caractéristiques
+simples comme les contours, les lignes ou les gradients de couleur.
+Dans les couches plus profondes, ils capturent des structures de plus en
+plus abstraites : textures, formes, patterns visuels spécifiques à une
+classe. La force de la convolution repose sur deux propriétés essentielles :
+la sparsité des connexions, qui réduit le nombre de paramètres à apprendre,
+et le partage des poids, qui confère au réseau une invariance aux translations.
+
+Les couches de pooling effectuent un sous-échantillonnage spatial.
+Le max-pooling, le plus utilisé, ne conserve que la valeur maximale dans
+chaque fenêtre de réduction. Cette opération réduit la dimensionnalité
+des représentations, accélère les calculs et confère une certaine invariance
+aux petites variations de position des symptômes sur la feuille.
+
+La normalisation par lots (batch normalization), introduite par Ioffe et
+Szegedy en 2015, normalise les activations de chaque couche pour maintenir
+une distribution stable pendant l'entraînement, accélérant la convergence
+et réduisant la sensibilité au choix du taux d'apprentissage.
+
+Les fonctions d'activation introduisent la non-linéarité indispensable à
+la capacité d'approximation du réseau. La fonction ReLU, définie par
+f(x) = max(0, x), est devenue la référence dans les couches intermédiaires.
+La fonction softmax est utilisée en sortie pour les problèmes de
+classification multiclasse : elle transforme le vecteur de scores bruts
+en une distribution de probabilités sur l'ensemble des classes.
+
+Les couches entièrement connectées, placées en fin de réseau, combinent
+les caractéristiques extraites par les couches convolutionnelles pour
+effectuer la classification finale. L'entraînement repose sur la
+rétropropagation du gradient et l'optimiseur Adam, une variante efficace
+de la descente de gradient stochastique. La fonction de perte entropie
+croisée catégorielle est standard pour les problèmes multiclasses.
+
+
+1.2.2 Évolution des architectures
+
+Depuis AlexNet, plusieurs architectures ont marqué l'évolution du domaine
+et sont directement pertinentes pour ce travail.
+
+VGG16, proposé par Simonyan et Zisserman (2014) du groupe Visual Geometry
+Group de l'Université d'Oxford, a démontré qu'augmenter la profondeur du
+réseau avec des filtres 3×3 uniformes améliore significativement les
+performances. Mais cette profondeur se paie au prix d'une explosion du
+nombre de paramètres — 138 millions pour VGG16 — et d'un coût
+computationnel élevé.
+
+ResNet, proposé par Microsoft Research en 2015, a résolu le problème de
+la dégradation du gradient qui limitait la profondeur des réseaux.
+L'introduction des connexions résiduelles (skip connections) permet au
+gradient de circuler directement à travers le réseau, rendant possible
+l'entraînement de réseaux de 50, 101 ou 152 couches. ResNet50, une version
+de 50 couches, est devenue une architecture de référence pour de nombreuses
+applications de classification d'images.
+
+InceptionV3, développé par Google, a exploré une autre direction en
+utilisant des convolutions de différentes tailles (1×1, 3×3, 5×5) en
+parallèle au sein d'un même bloc. Cette approche permet d'extraire des
+caractéristiques à différentes échelles simultanément, avec un nombre de
+paramètres modéré.
+
+MobileNetV2, également développé par Google, a été conçu spécifiquement
+pour les applications mobiles et embarquées. Sa contribution majeure est
+la convolution séparable en profondeur (depthwise separable convolution),
+qui décompose la convolution standard en deux opérations plus légères,
+réduisant le nombre de paramètres d'un facteur proche de 8 à 10 sans
+sacrifier significativement la précision. Cette légèreté en fait un candidat
+naturel pour un déploiement sur smartphones en zone rurale.
+
+EfficientNetB0, publié en 2019, propose une approche systématique pour
+équilibrer la profondeur du réseau, sa largeur et la résolution des images
+d'entrée en les faisant varier de façon cohérente. Le résultat est une
+famille de modèles qui atteignent des performances de pointe avec une
+efficacité paramétrique inégalée.
+
+
+--------------------------------------------------------
+1.3 Transfer Learning en vision par ordinateur
+--------------------------------------------------------
+
+Le transfer learning, ou apprentissage par transfert, est une stratégie
+d'entraînement qui consiste à réutiliser les connaissances acquises par
+un modèle sur une tâche source pour améliorer son apprentissage sur une
+tâche cible différente mais connexe. En vision par ordinateur, la tâche
+source est presque toujours la classification d'images sur ImageNet, un
+jeu de données de plus d'un million d'images réparties en 1000 classes.
+
+
+1.3.1 Pourquoi cela fonctionne
+
+La justification théorique repose sur l'observation que les premières
+couches d'un CNN entraîné sur ImageNet apprennent des représentations
+génériques et réutilisables : détection de contours, de textures, de formes
+et de patterns visuels présents dans pratiquement toutes les catégories
+d'images. Seules les couches les plus profondes et la tête de classification
+encodent des connaissances spécifiques à la tâche d'origine. Il est donc
+pertinent de réutiliser les représentations génériques et de n'adapter
+que la partie finale du réseau à la nouvelle tâche.
+
+La feature extraction consiste à geler l'ensemble des paramètres du modèle
+pré-entraîné et à ne réentraîner que la tête de classification sur les
+données cibles. Cette approche est particulièrement efficace lorsque les
+données disponibles pour la tâche cible sont peu nombreuses.
+
+Le fine-tuning va plus loin en dégelant une partie des couches profondes
+pour les ré-entraîner avec un taux d'apprentissage très faible, de l'ordre
+de 1e-5. Cela permet d'adapter graduellement les représentations aux
+spécificités visuelles de la tâche cible tout en préservant les
+connaissances génériques, évitant ainsi le catastrophic forgetting.
+
+
+1.3.2 Application à notre travail
+
+Dans ce mémoire, nous avons adopté une stratégie en deux phases combinant
+ces deux modalités. La première phase consiste en un transfer learning pur :
+les couches du modèle pré-entraîné sont toutes gelées, et seule la tête
+de classification personnalisée est entraînée avec un taux d'apprentissage
+de 1e-4 pendant 15 epochs au maximum. Cette phase permet une convergence
+rapide vers de bonnes performances initiales. La deuxième phase correspond
+au fine-tuning : les 25 % dernières couches du modèle de base sont dégelées
+et ré-entraînées avec un taux d'apprentissage réduit à 1e-5 pendant
+10 epochs supplémentaires.
+
+Le transfer learning présente trois avantages décisifs dans notre contexte.
+Sur le plan de l'efficacité, il permet d'obtenir des modèles performants
+avec un dataset de taille raisonnable, sans nécessiter les millions d'images
+qu'exigerait un entraînement from scratch. Sur le plan de la rapidité,
+le temps d'entraînement est considérablement réduit, rendant possible la
+comparaison de cinq architectures différentes dans un délai raisonnable.
+Sur le plan des performances enfin, les modèles bénéficient d'une expérience
+visuelle riche acquise sur ImageNet, qui se transfère partiellement et
+efficacement au domaine agricole.
+
+
+--------------------------------------------------------
+1.4 Travaux existants sur la détection de maladies agricoles
+--------------------------------------------------------
+
+La détection automatique des maladies agricoles par intelligence artificielle
+a connu une expansion remarquable au cours de la dernière décennie, stimulée
+par la disponibilité croissante de datasets annotés et par les progrès
+spectaculaires des architectures CNN. Cette section présente les travaux
+les plus significatifs, en progressant des études pionnières vers les
+recherches récentes centrées sur le contexte africain.
+
+
+1.4.1 PlantVillage : une référence fondatrice
+
+Le travail de Mohanty, Hughes et Salathé (2016), publié dans Frontiers in
+Plant Science, constitue la référence fondatrice dans le domaine. Les
+auteurs ont constitué un jeu de données de 54 306 images de feuilles saines
+et malades, couvrant 14 cultures et 26 maladies. Les images ont été
+collectées dans des conditions de laboratoire contrôlées, avec des fonds
+uniformes et un éclairage standardisé. En utilisant des architectures CNN
+classiques, ils ont obtenu des accuracies supérieures à 99 % sur la plupart
+des classes. Ces résultats impressionnants ont démontré la faisabilité de
+l'approche, mais ont également mis en lumière une limitation majeure : les
+modèles entraînés sur ces images de laboratoire peinent à généraliser aux
+conditions de terrain réelles, où les fonds sont hétérogènes et l'éclairage
+variable. Ferentinos (2018) a prolongé cette étude en comparant plusieurs
+architectures CNN sur le même dataset, obtenant jusqu'à 99,53 % de
+précision et confirmant la supériorité des architectures profondes pour
+cette tâche.
+
+
+1.4.2 Travaux sur le manioc en contexte africain
+
+Plus proche de notre problématique, des travaux se sont concentrés sur le
+manioc en Afrique. Ramcharan et al. (2017) ont entraîné un modèle InceptionV3
+sur 2 756 images de feuilles de manioc collectées sur le terrain en Tanzanie
+et ont obtenu une accuracy de 93 % pour la détection de la mosaïque et de
+la brûlure bactérienne. L'originalité de leur approche réside dans le
+déploiement du modèle sur smartphone Android, démontrant la faisabilité
+d'un diagnostic mobile en contexte africain réel. Ce travail a directement
+inspiré l'application Nuru, déployée au Kenya et en Tanzanie.
+
+Mwebaze et al. (2019) ont développé un modèle de détection des maladies du
+manioc en Ouganda, en utilisant des images collectées via une application
+mobile. Leur étude a mis en évidence les défis spécifiques au contexte
+africain : variabilité des conditions d'acquisition, qualité variable des
+images collectées par des agriculteurs non formés, et importance cruciale
+de la conception d'interfaces adaptées aux usages mobiles en zone rurale.
+Les performances obtenues, comprises entre 80 % et 88 %, illustrent bien
+la différence entre les conditions de laboratoire et les conditions réelles.
+
+
+1.4.3 Le dataset CCMT comme contribution récente
+
+Mensah Kwabena et al. (2023) ont publié le dataset CCMT que nous utilisons
+dans ce travail. Il constitue à ce jour le dataset le plus complet et le
+plus représentatif pour les cultures d'Afrique de l'Ouest, avec 105 271
+images augmentées issues de 24 881 images brutes collectées sur le terrain
+au Ghana. Toutes les images ont été validées par des virologues végétaux
+experts avant publication. Ce travail représente une avancée significative
+pour la communauté scientifique en fournissant des données librement
+accessibles et ancrées dans les conditions réelles de la sous-région.
+
+
+1.4.4 Enseignements et positionnement de ce travail
+
+La synthèse de ces travaux permet d'identifier plusieurs enseignements
+importants qui orientent directement notre démarche.
+
+Premièrement, le transfer learning à partir de modèles pré-entraînés sur
+ImageNet est systématiquement plus efficace que l'entraînement from scratch
+pour les datasets agricoles de taille limitée. Deuxièmement, les
+architectures légères comme MobileNetV2 et EfficientNetB0 offrent un
+compromis particulièrement intéressant entre performance et déployabilité
+mobile, ce qui est crucial pour un usage en zone rurale. Troisièmement,
+les performances obtenues en conditions de laboratoire sont généralement
+supérieures à celles obtenues en conditions de terrain, soulignant
+l'importance de l'augmentation des données et de la diversité des conditions
+de collecte.
+
+Quatrièmement, et c'est là que se situe l'originalité de ce mémoire, aucun
+des travaux existants ne propose une comparaison systématique et dans un
+cadre méthodologique unifié de plusieurs architectures CNN sur les quatre
+cultures du dataset CCMT. La plupart des études s'arrêtent à l'évaluation
+du modèle sans proposer de chaîne logicielle complète incluant l'API,
+l'interface utilisateur et le déploiement Docker. Notre travail comble
+ces deux lacunes simultanément, en produisant à la fois une analyse
+comparative rigoureuse et un système opérationnel directement utilisable
+par les acteurs de terrain.
