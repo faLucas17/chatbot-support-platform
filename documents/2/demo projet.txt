@@ -1,0 +1,374 @@
+================================================================================
+                    LISTE COMPLÈTE DES RÉALISATIONS
+                    Du début du projet jusqu'à aujourd'hui
+================================================================================
+
+
+================================================================================
+PARTIE 1 : BACKEND DJANGO (Jours 1-2)
+================================================================================
+
+MODÈLES CRÉÉS :
+--------------------------------------------------------------------------------
+1. Tenant              → Application cliente avec clé API
+2. KnowledgeItem       → Base de connaissance (FAQ et textes)
+3. Conversation        → Historique des discussions
+4. Message             → Messages individuels (user/bot)
+5. Document            → Documents uploadés (PDF, TXT, images)
+
+FONCTIONNALITÉS BACKEND :
+--------------------------------------------------------------------------------
+1. Authentification par API Key
+2. Détection des questions hors base de connaissance
+3. Escalade automatique vers Discord
+4. Upload de documents (PDF, TXT, PNG, JPG, JPEG)
+5. Extraction de texte des PDF (PyPDF2)
+6. OCR pour les images (Tesseract)
+7. Base de connaissances marketing (SEO, SEA, réseaux sociaux...)
+8. Gestion des conversations par utilisateur
+
+
+================================================================================
+PARTIE 2 : API ENDPOINTS (À tester sur Postman)
+================================================================================
+
+ENDPOINTS DE BASE :
+--------------------------------------------------------------------------------
+
+1. POST /api/message/
+   Description : Envoyer un message et recevoir une réponse du bot
+   Body : {
+       "api_key": "31d4efff-2b32-481f-a17f-d2017982f7ed",
+       "conversation_id": null,
+       "content": "Votre question ici"
+   }
+
+2. GET /api/conversation/<id>/
+   Description : Récupérer l'historique d'une conversation
+   Query params : api_key=...
+
+3. POST /api/agent/reply/
+   Description : L'agent répond à une conversation
+   Body : {
+       "api_key": "31d4efff-2b32-481f-a17f-d2017982f7ed",
+       "conversation_id": 1,
+       "content": "Réponse de l'agent"
+   }
+
+4. GET /admin/conversations/
+   Description : Liste de toutes les conversations
+
+5. POST /admin/conversations/<id>/
+   Description : Répondre à une conversation (admin)
+
+6. GET /api/user/conversations/
+   Description : Liste des conversations de l'utilisateur connecté
+
+ENDPOINTS POUR DOCUMENTS :
+--------------------------------------------------------------------------------
+
+7. POST /api/documents/upload/
+   Description : Uploader un document (PDF, TXT, image)
+   Body (form-data) : {
+       "api_key": "31d4efff-2b32-481f-a17f-d2017982f7ed",
+       "title": "Nom du document",
+       "file": (fichier à uploader)
+   }
+
+8. GET /api/documents/
+   Description : Liste des documents uploadés
+   Query params : api_key=...
+
+9. DELETE /api/documents/<id>/
+   Description : Supprimer un document
+   Body : { "api_key": "..." }
+
+
+================================================================================
+PARTIE 3 : INTERFACE ADMIN REACT (Jour 3)
+================================================================================
+
+FONCTIONNALITÉS :
+--------------------------------------------------------------------------------
+1. Page de connexion admin (simplifiée)
+2. Liste des conversations avec badge "Escaladée"
+3. Vue détail d'une conversation avec historique
+4. Formulaire pour répondre aux clients
+5. Auto-refresh toutes les 5 secondes
+6. Mode clair / sombre (icône 🌙/☀️)
+7. Design responsive (desktop, tablette, mobile)
+8. Menu burger pour mobile
+9. Avatar 👤 pour client, 🤖 pour bot
+10. Animation fadeIn pour les nouveaux messages
+
+PALETTE DE COULEURS (Admin) :
+--------------------------------------------------------------------------------
+Mode Clair :
+- Fond principal : #F5F0E8
+- Cartes : #FFFFFF
+- Messages client : Dégradé #C9A87C → #B8965A
+- Messages bot : #FFFFFF
+- Badge escaladée : #E07A5F
+
+Mode Sombre :
+- Fond principal : #1A2420
+- Cartes : #1E2A24
+- Messages client : Dégradé #C9A87C → #B8965A
+- Messages bot : #2A3A32
+- Badge escaladée : #E07A5F
+
+
+================================================================================
+PARTIE 4 : WIDGET CLIENT (Jour 4)
+================================================================================
+
+FONCTIONNALITÉS :
+--------------------------------------------------------------------------------
+1. Bouton flottant 💬 pour ouvrir le chat
+2. Fenêtre de chat latérale coulissante
+3. Envoi de messages avec indicateur "bot écrit..."
+4. Polling automatique toutes les 4 secondes
+5. Menu latéral avec historique des conversations
+6. Barre de recherche 🔍 pour filtrer
+7. Bouton "+ Nouvelle discussion"
+8. Mode clair/sombre (icône unique 🌙/☀️)
+9. Icônes d'action sur les messages :
+   - 📋 Copier le message
+   - ✏️ Modifier le message (pour l'utilisateur)
+   - 🔄 Régénérer la réponse (pour le bot)
+10. Heure affichée sous chaque message
+11. Upload de documents (PDF, TXT, images)
+12. Auto-resize de la zone de saisie
+13. Design responsive (mobile first)
+
+PALETTE DE COULEURS (Widget) :
+--------------------------------------------------------------------------------
+Mode Clair :
+- Fond : #F7F7F8
+- Cartes : #FFFFFF
+- Messages user : Dégradé #C9A87C → #B8965A
+- Messages bot : #FFFFFF
+
+Mode Sombre :
+- Fond : #1E1E1E
+- Cartes : #2A2A2A
+- Messages user : Dégradé #C9A87C → #B8965A
+- Messages bot : #2A2A2A
+
+
+================================================================================
+PARTIE 5 : AUTHENTIFICATION ET PAGES UTILISATEURS (Jour 5)
+================================================================================
+
+PAGES CRÉÉES :
+--------------------------------------------------------------------------------
+1. Page de connexion (/login/)
+   - Illustration à gauche (🤖✨)
+   - Formulaire à droite avec icônes 👤 et 🔒
+   - Lien "Mot de passe oublié"
+   - Lien "Créer un compte"
+
+2. Page d'inscription (/register/)
+   - Formulaire avec icônes 👤, 📧, 🔒, ✓
+   - Lien vers connexion
+
+3. Page "Mot de passe oublié" (/password-reset/)
+   - Illustration 🔐 à gauche
+   - Formulaire email à droite
+   - Email affiché dans la console (développement)
+
+4. Dashboard utilisateur (/dashboard/)
+   - Redirection automatique après connexion
+   - Salutation selon l'heure (Bonjour/Bonsoir/Bonne nuit)
+   - Menu latéral avec historique des conversations
+   - Barre de recherche
+   - Zone de chat complète
+   - Déconnexion dans le footer de la sidebar
+
+5. Page d'accueil (/)
+   - Redirige vers login ou dashboard
+
+
+================================================================================
+PARTIE 6 : ESCALADE DISCORD
+================================================================================
+
+FONCTIONNALITÉS :
+--------------------------------------------------------------------------------
+1. Webhook Discord configuré
+2. Notification automatique quand le bot ne peut pas répondre
+3. Message incluant :
+   - Conversation ID
+   - Message client
+   - Lien vers l'admin
+   - Exemple de requête API pour répondre
+
+
+================================================================================
+PARTIE 7 : BOT IA (MOCK INTELLIGENT)
+================================================================================
+
+QUESTIONS QUE LE BOT PEUT RÉPONDRE :
+--------------------------------------------------------------------------------
+Marketing digital :
+- Qu'est-ce que le marketing digital ?
+- C'est quoi l'e-marketing ?
+- Définition du marketing en ligne
+
+SEO :
+- C'est quoi le SEO ?
+- Qu'est-ce que le référencement naturel ?
+- Comment fonctionne le SEO ?
+
+SEA :
+- C'est quoi le SEA ?
+- Qu'est-ce que Google Ads ?
+
+Réseaux sociaux :
+- Quels sont les réseaux sociaux ?
+- À quoi sert Facebook ?
+- C'est quoi Instagram ?
+- À quoi sert LinkedIn ?
+- C'est quoi TikTok ?
+
+Email marketing :
+- Qu'est-ce que l'email marketing ?
+- Comment fonctionne l'email marketing ?
+
+Content marketing :
+- Qu'est-ce que le content marketing ?
+- C'est quoi le marketing de contenu ?
+
+Conversion et ROI :
+- Qu'est-ce que la conversion ?
+- Comment calculer le taux de conversion ?
+- Qu'est-ce que le ROI ?
+
+Autres :
+- À quoi sert un CRM ?
+- C'est quoi un persona ?
+- Qu'est-ce que le funnel de conversion ?
+- C'est quoi un lead ?
+- Qu'est-ce que la fidélisation client ?
+- À quoi sert Google Analytics ?
+
+QUESTIONS QUI DÉCLENCHENT UNE ESCALADE DISCORD :
+--------------------------------------------------------------------------------
+- Quel est votre numéro de téléphone ?
+- Comment vous contacter ?
+- Quels sont vos horaires d'ouverture ?
+- Combien coûtent vos services ?
+- Où se trouve votre agence ?
+- Comment annuler ma commande ?
+- Quel est le délai de livraison ?
+- Acceptez-vous PayPal ?
+
+
+================================================================================
+PARTIE 8 : LISTE COMPLÈTE DES FICHIERS CRÉÉS
+================================================================================
+
+BACKEND (Django) :
+--------------------------------------------------------------------------------
+chatbot/
+├── models.py           → Tenant, KnowledgeItem, Conversation, Message, Document
+├── views.py            → Toutes les vues API et authentification
+├── urls.py             → Routes API et pages
+├── serializers.py      → Sérialiseurs DRF
+├── ai_engine.py        → Logique du bot (mock intelligent)
+├── admin.py            → Interface admin Django
+├── templates/
+│   ├── registration/
+│   │   ├── login.html
+│   │   ├── password_reset_custom.html
+│   │   ├── password_reset_done_custom.html
+│   │   └── password_reset_confirm.html
+│   └── chatbot/
+│       ├── register.html
+│       └── user_dashboard.html
+└── static/
+    └── simple-widget.js
+
+FRONTEND ADMIN (React) :
+--------------------------------------------------------------------------------
+admin/
+├── src/
+│   ├── App.jsx
+│   ├── App.css
+│   ├── api.js
+│   └── components/
+│       ├── ConversationList.jsx
+│       └── ConversationDetail.jsx
+├── package.json
+└── vite.config.js
+
+WIDGET CLIENT (React embarquable) :
+--------------------------------------------------------------------------------
+widget/
+├── simple-widget.js
+├── ChatWidget.jsx
+├── index.js
+├── vite.config.js
+├── package.json
+├── test.html
+└── dist/
+    └── widget.umd.cjs
+
+
+================================================================================
+PARTIE 9 : CRITÈRES DE VALIDATION - TOUS ATTEINTS
+================================================================================
+
+✅ Widget fonctionne sur une app externe
+✅ Bot répond correctement à une FAQ
+✅ Escalade déclenche Discord
+✅ Agent peut répondre depuis l'admin
+✅ L'utilisateur reçoit la réponse
+✅ Mode clair/sombre (admin + widget)
+✅ Design responsive (web + mobile)
+✅ Upload de documents (PDF, TXT, images)
+✅ Authentification (login, register, password reset)
+✅ Dashboard utilisateur avec historique personnel
+
+
+================================================================================
+PARTIE 10 : TECHNOLOGIES UTILISÉES
+================================================================================
+
+BACKEND :
+--------------------------------------------------------------------------------
+- Django 6.0.3
+- Django REST Framework 3.17.1
+- PostgreSQL
+- PyPDF2 (lecture PDF)
+- Pillow + Tesseract (OCR pour images)
+- python-dotenv
+- django-cors-headers
+- django-allauth
+
+FRONTEND ADMIN :
+--------------------------------------------------------------------------------
+- React 18.2.0
+- Vite
+- Axios
+- CSS personnalisé
+
+WIDGET CLIENT :
+--------------------------------------------------------------------------------
+- React 18.2.0 (embarquable via CDN)
+- Axios
+- Vite (build)
+
+AUTHENTIFICATION :
+--------------------------------------------------------------------------------
+- Django allauth
+- Sessions utilisateur
+
+NOTIFICATIONS :
+--------------------------------------------------------------------------------
+- Discord Webhook
+
+
+================================================================================
+                            FIN DU DOCUMENT
+================================================================================

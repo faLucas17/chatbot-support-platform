@@ -7,6 +7,7 @@ function ConversationDetail({ conversation, onUpdate }) {
   const [sending, setSending] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [userName, setUserName] = useState(conversation.user_name || 'Anonyme');
 
   useEffect(() => {
     const handleResize = () => {
@@ -18,6 +19,7 @@ function ConversationDetail({ conversation, onUpdate }) {
 
   useEffect(() => {
     setMessages(conversation.messages || []);
+    setUserName(conversation.user_name || 'Anonyme');
   }, [conversation]);
 
   const handleRefresh = async () => {
@@ -25,6 +27,7 @@ function ConversationDetail({ conversation, onUpdate }) {
     try {
       const res = await getConversation(conversation.id);
       setMessages(res.data.messages);
+      setUserName(res.data.user_name || 'Anonyme');
     } catch (err) {
       console.error('Erreur rafraîchissement', err);
     } finally {
@@ -42,7 +45,7 @@ function ConversationDetail({ conversation, onUpdate }) {
       setReply('');
       const res = await getConversation(conversation.id);
       setMessages(res.data.messages);
-      onUpdate({ ...conversation, messages: res.data.messages, escalated: false });
+      onUpdate({ ...conversation, messages: res.data.messages, escalated: false, user_name: res.data.user_name });
     } catch (err) {
       console.error('Erreur envoi réponse', err);
       alert('Erreur lors de l\'envoi');
@@ -58,7 +61,12 @@ function ConversationDetail({ conversation, onUpdate }) {
   return (
     <div className="conversation-detail">
       <div className="detail-header">
-        <h2>Conversation #{conversation.id}</h2>
+        <div>
+          <h2>Conversation #{conversation.id}</h2>
+          <p className="conv-user-info">
+            👤 Utilisateur: <strong>{userName}</strong>
+          </p>
+        </div>
         <button onClick={handleRefresh} disabled={refreshing} className="refresh-btn">
           {refreshing ? '↻' : '⟳'} {!isMobile && 'Rafraîchir'}
         </button>

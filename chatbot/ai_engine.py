@@ -1,105 +1,100 @@
-import re
+import os
+from openai import OpenAI
+
+# Initialiser le client Grok (xAI)
+GROK_API_KEY = os.getenv('GROK_API_KEY')
+if GROK_API_KEY:
+    client = OpenAI(
+        api_key=GROK_API_KEY,
+        base_url="https://api.x.ai/v1",
+    )
+    print("✅ Grok (xAI) configuré avec succès")
+else:
+    client = None
+    print("⚠️ GROK_API_KEY non trouvée dans .env")
 
 def get_bot_response(message_content, tenant):
     """
-    Mock amélioré qui répond RÉELLEMENT aux questions sur le document
+    Utilise l'API Grok (xAI) - Gratuite avec crédits
+    """
+    print(f"🔍 Message reçu: {message_content}")
+    
+    if client is None:
+        print("❌ Grok non configuré, utilisation du mock")
+        return mock_response(message_content, tenant)
+    
+    try:
+        response = client.chat.completions.create(
+            model="grok-4.20-reasoning",
+            messages=[
+                {
+                    "role": "system",
+                    "content": """Tu es un assistant de support client. Tu réponds en français, naturellement.
+
+RÈGLES :
+- Réponds à toutes les questions du client.
+- Sois concis et utile."""
+                },
+                {
+                    "role": "user",
+                    "content": message_content
+                }
+            ],
+            temperature=0.3,
+            max_tokens=500
+        )
+        
+        bot_response = response.choices[0].message.content
+        print("✅ Grok: réponse trouvée")
+        return bot_response, True
+        
+    except Exception as e:
+        print(f"❌ Erreur API Grok: {e}")
+        # En cas d'erreur (crédits insuffisants), utiliser le mock
+        return mock_response(message_content, tenant)
+
+
+def mock_response(message_content, tenant):
+    """
+    Mock de secours (base marketing intégrée)
     """
     message_lower = message_content.lower().strip()
     
-    # ==================== 1. RÉPONDRE À "QUE PARLE CE DOCUMENT ?" ====================
-    if any(phrase in message_lower for phrase in ['que parle ce document', 'de quoi parle ce document', 'quel est le contenu', 'résumé du document', 'présente le document']):
-        documents = tenant.documents.all()
-        if documents.exists():
-            # Prendre le document le plus récent
-            doc = documents.last()
-            # Extraire un résumé intelligent
-            lines = doc.content.split('\n')
-            title = ""
-            author = ""
-            description = ""
-            
-            for i, line in enumerate(lines):
-                if 'Présentée par' in line or 'Auteur' in line:
-                    author = line.strip()
-                if 'Projet' in line or 'Titre' in line:
-                    title = line.strip()
-                if 'Master' in line or 'Université' in line:
-                    description = line.strip()
-            
-            summary = f"📄 **Résumé du document '{doc.title}':**\n\n"
-            if title:
-                summary += f"📌 **Titre:** {title}\n"
-            if author:
-                summary += f"👤 **Auteur:** {author}\n"
-            if description:
-                summary += f"🏫 **Contexte:** {description}\n"
-            
-            # Ajouter le début du document
-            first_500 = doc.content[:500]
-            summary += f"\n📖 **Extrait:**\n{first_500}..."
-            
-            return summary, True
-        else:
-            return "Aucun document n'a été uploadé. Veuillez d'abord uploader un document.", False
-    
-    # ==================== 2. RÉPONDRE AUX QUESTIONS SPÉCIFIQUES ====================
-    documents = tenant.documents.all()
-    knowledge_items = tenant.knowledge_items.all()
-    
-    # Chercher dans les documents
-    for doc in documents:
-        doc_lower = doc.content.lower()
-        
-        # Question sur les pays
-        if 'pays' in message_lower or 'cedeau' in message_lower:
-            if 'liste' in message_lower or 'quels' in message_lower:
-                # Chercher la liste des pays
-                import re
-                match = re.search(r'(Bénin|Burkina|Cap-Vert|Côte d\'Ivoire|Gambie|Ghana|Guinée|Guinée-Bissau|Liberia|Mali|Niger|Nigeria|Sénégal|Sierra Leone|Togo)', doc.content)
-                if match:
-                    return f"📄 **D'après le document '{doc.title}' :**\n\nLa CEDEAO (Communauté Économique des États de l'Afrique de l'Ouest) compte 15 pays membres : Bénin, Burkina Faso, Cap-Vert, Côte d'Ivoire, Gambie, Ghana, Guinée, Guinée-Bissau, Liberia, Mali, Niger, Nigeria, Sénégal, Sierra Leone et Togo.", True
-        
-        # Question sur l'objectif
-        if 'objectif' in message_lower or 'but' in message_lower:
-            for line in doc.content.split('\n'):
-                if 'Objectif' in line or 'objectif' in line:
-                    return f"📄 **D'après le document '{doc.title}' :**\n\n{line}", True
-        
-        # Recherche générique par mots-clés
-        message_words = set(re.findall(r'\b\w+\b', message_lower))
-        doc_words = set(re.findall(r'\b\w+\b', doc.content.lower()))
-        common_words = message_words.intersection(doc_words)
-        
-        if len(common_words) >= 3:
-            # Extraire la phrase pertinente
-            for word in common_words:
-                idx = doc.content.lower().find(word)
-                if idx != -1:
-                    start = max(0, idx - 150)
-                    end = min(len(doc.content), idx + 200)
-                    excerpt = doc.content[start:end]
-                    if start > 0:
-                        excerpt = "..." + excerpt
-                    if end < len(doc.content):
-                        excerpt = excerpt + "..."
-                    return f"📄 **D'après le document '{doc.title}' :**\n\n{excerpt}", True
-    
-    # ==================== 3. BASE DE CONNAISSANCES MARKETING ====================
     marketing_knowledge = {
-        'marketing digital': "Le marketing digital regroupe toutes les actions marketing sur les canaux numériques : sites web, réseaux sociaux, email, publicité en ligne, SEO...",
+        'marketing digital': "Le marketing digital regroupe toutes les actions marketing sur les canaux numériques : sites web, réseaux sociaux, email, publicité en ligne, SEO, SEA, etc.",
+        'marketing': "Le marketing est l'ensemble des actions visant à satisfaire les besoins des consommateurs.",
         'seo': "Le SEO (Search Engine Optimization) optimise la visibilité d'un site dans les résultats naturels des moteurs de recherche.",
-        'sea': "Le SEA (Search Engine Advertising) est la publicité payante sur les moteurs de recherche (Google Ads).",
-        'conversion': "La conversion est l'action par laquelle un visiteur réalise un objectif (achat, inscription, téléchargement).",
+        'sea': "Le SEA (Search Engine Advertising) est la publicité payante sur les moteurs de recherche.",
+        'reseaux sociaux': "Les réseaux sociaux permettent de créer du contenu et d'interagir avec les clients.",
+        'email marketing': "L'email marketing envoie des emails personnalisés pour promouvoir des produits.",
+        'conversion': "La conversion est l'action par laquelle un visiteur réalise un objectif.",
+        'taux de conversion': "Le taux de conversion = (nombre de conversions / nombre de visiteurs) × 100.",
+        'roi': "Le ROI (Return On Investment) = (Gain - Coût) / Coût × 100.",
+        'crm': "Un CRM gère la relation client et centralise les informations.",
+        'lead': "Un lead est un contact potentiellement intéressé.",
+        'prospect': "Un prospect est un lead qualifié.",
+        'fidélisation': "La fidélisation incite les clients à acheter à nouveau.",
+        'acquisition': "L'acquisition attire de nouveaux clients.",
     }
     
     for key, value in marketing_knowledge.items():
         if key in message_lower:
+            print(f"✅ Mock: match marketing ({key})")
             return value, True
     
-    # ==================== 4. FAQ ====================
+    knowledge_items = tenant.knowledge_items.all()
     for item in knowledge_items:
-        if item.question and item.question.lower() in message_lower:
-            return item.answer, True
+        if item.question:
+            if item.question.lower() in message_lower or message_lower in item.question.lower():
+                print(f"✅ Mock: match FAQ ({item.question})")
+                return item.answer, True
     
-    # ==================== 5. RÉPONSE PAR DÉFAUT ====================
+    documents = tenant.documents.all()
+    for doc in documents:
+        if doc.content:
+            if len(message_lower) > 5 and doc.content.lower().find(message_lower[:20]) != -1:
+                print(f"✅ Mock: match document ({doc.title})")
+                return f"📄 **D'après '{doc.title}' :**\n\n{doc.content[:500]}...", True
+    
+    print("❌ Mock: aucune réponse, escalade vers agent")
     return None, False

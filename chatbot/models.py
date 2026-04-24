@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 class Tenant(models.Model):
     """Application cliente"""
@@ -22,13 +23,15 @@ class KnowledgeItem(models.Model):
 
 class Conversation(models.Model):
     """Une conversation entre un client et le bot/agent"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='conversations', null=True, blank=True)
     tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name='conversations')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     escalated = models.BooleanField(default=False)
     
     def __str__(self):
-        return f"Conversation {self.id} - {self.tenant.name}"
+        user_name = self.user.username if self.user else "Anonyme"
+        return f"Conversation {self.id} - {user_name} - {self.tenant.name}"
 
 class Message(models.Model):
     """Un message dans une conversation"""

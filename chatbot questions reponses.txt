@@ -1,0 +1,213 @@
+================================================================================
+                    LISTE DES QUESTIONS POUR LE BOT (MOCK)
+================================================================================
+
+QUESTIONS QUE LE BOT PEUT RÉPONDRE (MARKETING)
+================================================================================
+
+MARKETING DIGITAL
+-----------------
+- Qu'est-ce que le marketing digital ?
+- Définition du marketing digital
+- C'est quoi le marketing en ligne ?
+- Qu'est-ce que l'e-marketing ?
+
+SEO (RÉFÉRENCEMENT NATUREL)
+----------------------------
+- C'est quoi le SEO ?
+- Qu'est-ce que le référencement naturel ?
+- Définition du SEO
+- Comment fonctionne le SEO ?
+
+SEA (PUBLICITÉ PAYANTE)
+------------------------
+- C'est quoi le SEA ?
+- Qu'est-ce que Google Ads ?
+- Définition du SEA
+- Comment fonctionne le SEA ?
+
+RÉSEAUX SOCIAUX
+----------------
+- Quels sont les réseaux sociaux ?
+- À quoi sert Facebook ?
+- C'est quoi Instagram ?
+- À quoi sert LinkedIn ?
+- C'est quoi TikTok ?
+- Quel réseau social utiliser pour mon entreprise ?
+
+EMAIL MARKETING
+----------------
+- Qu'est-ce que l'email marketing ?
+- Comment fonctionne l'email marketing ?
+- Définition de l'email marketing
+
+CONTENT MARKETING (MARKETING DE CONTENU)
+------------------------------------------
+- Qu'est-ce que le content marketing ?
+- C'est quoi le marketing de contenu ?
+- Définition du content marketing
+
+INBOUND MARKETING
+------------------
+- Qu'est-ce que l'inbound marketing ?
+- Définition de l'inbound marketing
+
+OUTBOUND MARKETING
+-------------------
+- C'est quoi l'outbound marketing ?
+- Définition de l'outbound marketing
+
+CONVERSION
+------------
+- Qu'est-ce que la conversion ?
+- Définition de la conversion en marketing
+
+TAUX DE CONVERSION
+--------------------
+- Comment calculer le taux de conversion ?
+- Formule du taux de conversion
+- Qu'est-ce que le taux de conversion ?
+
+ROI (RETOUR SUR INVESTISSEMENT)
+--------------------------------
+- Qu'est-ce que le ROI ?
+- Comment calculer le retour sur investissement ?
+- Définition du ROI
+
+CRM (GESTION DE LA RELATION CLIENT)
+-------------------------------------
+- À quoi sert un CRM ?
+- Qu'est-ce qu'un CRM ?
+- Définition du CRM
+
+PERSONA
+---------
+- C'est quoi un persona ?
+- Qu'est-ce qu'un persona en marketing ?
+- Définition du persona
+
+FUNNEL DE CONVERSION (ENTONNOIR)
+----------------------------------
+- Qu'est-ce que le funnel de conversion ?
+- Définition de l'entonnoir de conversion
+
+LEAD
+------
+- C'est quoi un lead ?
+- Qu'est-ce qu'un lead ?
+- Définition d'un lead
+
+PROSPECT
+---------
+- Quelle est la différence entre lead et prospect ?
+- C'est quoi un prospect ?
+
+FIDÉLISATION CLIENT
+---------------------
+- Qu'est-ce que la fidélisation client ?
+- Définition de la fidélisation
+
+ACQUISITION CLIENT
+--------------------
+- C'est quoi l'acquisition client ?
+- Définition de l'acquisition
+
+NOTORIÉTÉ DE MARQUE
+---------------------
+- Qu'est-ce que la notoriété de marque ?
+- Définition de la notoriété
+
+POSITIONNEMENT MARKETING
+--------------------------
+- C'est quoi le positionnement marketing ?
+- Définition du positionnement
+
+SEGMENTATION MARKETING
+------------------------
+- Qu'est-ce que la segmentation marketing ?
+- Définition de la segmentation
+
+CIBLAGE MARKETING
+-------------------
+- C'est quoi le ciblage marketing ?
+- Définition du ciblage
+
+GOOGLE ANALYTICS
+-----------------
+- À quoi sert Google Analytics ?
+- Qu'est-ce que Google Analytics ?
+- Définition de Google Analytics
+
+GROWTH HACKING
+----------------
+- C'est quoi le growth hacking ?
+- Qu'est-ce que le growth hacking ?
+
+STORYTELLING MARKETING
+------------------------
+- Qu'est-ce que le storytelling en marketing ?
+- Définition du storytelling
+
+================================================================================
+QUESTIONS QUI DÉCLENCHENT UNE ESCALADE DISCORD
+================================================================================
+
+CONTACT
+--------
+- Quel est votre numéro de téléphone ?
+- Comment vous contacter ?
+- Quelle est votre adresse email ?
+- Avez-vous un service client ?
+
+HORAIRES
+---------
+- Quels sont vos horaires d'ouverture ?
+- Vous êtes ouverts le dimanche ?
+- Êtes-vous disponible le week-end ?
+
+TARIFS
+-------
+- Combien coûtent vos services ?
+- Quels sont vos prix ?
+- C'est gratuit ?
+- Quel est le prix de votre solution ?
+
+LOCALISATION
+-------------
+- Où se trouve votre agence ?
+- Vous êtes basés où ?
+- Quelle est votre adresse ?
+
+SUPPORT CLIENT
+---------------
+- Comment annuler ma commande ?
+- Comment modifier ma commande ?
+- Quel est le délai de livraison ?
+- Puis-je retourner un produit ?
+- Comment suivre ma commande ?
+
+PAIEMENT
+---------
+- Acceptez-vous PayPal ?
+- Paiement en plusieurs fois ?
+- Quels moyens de paiement acceptez-vous ?
+- Puis-je payer par carte bancaire ?
+
+PROBLÈMES TECHNIQUES
+---------------------
+- Comment réinitialiser mon mot de passe ?
+- L'application ne fonctionne pas
+- Je n'arrive pas à me connecter
+- Le site est lent
+
+GÉNÉRAL
+--------
+- Qui êtes-vous ?
+- Parle-moi de ton entreprise
+- Depuis combien de temps existez-vous ?
+- Avez-vous des témoignages clients ?
+- Quels sont vos engagements ?
+
+================================================================================
+                    FIN DE LA LISTE
+================================================================================
