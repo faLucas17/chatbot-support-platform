@@ -211,3 +211,15 @@ GÉNÉRAL
 ================================================================================
                     FIN DE LA LISTE
 ================================================================================
+
+
+Pour Easy Events, voici où l'intégrer :
+
+Frontend web (React/Vite) → widget JS flottant pour les participants
+App mobile (React Native) → chatbot intégré pour les organisateurs
+
+avec les diffs users:
+
+- Participant 
+- Organisateur 
+- Agent PDV 

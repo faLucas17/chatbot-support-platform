@@ -10,6 +10,8 @@ SECRET_KEY = 'django-insecure-l7wj*4r0etn1xhqs5yfturbuc*t%hycbhi!izx5u-joj#@g!k*
 
 DEBUG = True
 
+LARAVEL_URL = os.getenv('LARAVEL_URL', 'http://localhost:8000')
+
 ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
@@ -34,7 +36,7 @@ INSTALLED_APPS = [
 AUTH_USER_MODEL = 'auth.User'
 
 LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = '/admin'
 LOGOUT_REDIRECT_URL = '/login/'
 
 # Django Allauth (nouvelle syntaxe)
@@ -106,17 +108,36 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 DISCORD_WEBHOOK_URL = os.getenv('DISCORD_WEBHOOK_URL', '')
 
-# CORS - Configuration unique et propre
+# ============================================================
+# CORS - Configuration corrigée
+# ============================================================
 CORS_ALLOW_ALL_ORIGINS = True  # Pour le développement uniquement
 CORS_ALLOW_CREDENTIALS = True
+
+# ✅ AJOUT : Autoriser les headers nécessaires
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+    'x-support-username',  # ← Header pour le support admin
+]
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
+    "http://localhost:8001",
+    "http://127.0.0.1:8001",
     "http://localhost:8080",
     "http://127.0.0.1:8080",
 ]
-
 
 # Email configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

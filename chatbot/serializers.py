@@ -17,6 +17,7 @@ class SendMessageSerializer(serializers.Serializer):
     api_key = serializers.CharField()
     conversation_id = serializers.IntegerField(required=False, allow_null=True)
     content = serializers.CharField()
+    sanctum_token = serializers.CharField(required=False, allow_blank=True, allow_null=True)
 
 class MessageResponseSerializer(serializers.Serializer):
     conversation_id = serializers.IntegerField()

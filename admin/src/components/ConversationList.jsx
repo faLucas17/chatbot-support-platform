@@ -1,6 +1,33 @@
 import React from 'react';
 
 function ConversationList({ conversations, onSelect, selectedId }) {
+  // ✅ MODIFICATION : Obtenir le titre de la conversation (premier message utilisateur)
+  const getConversationTitle = (messages) => {
+    if (!messages || messages.length === 0) return 'Nouvelle conversation';
+    
+    // Chercher le premier message de l'utilisateur
+    const firstUserMessage = messages.find(msg => msg.role === 'user');
+    if (firstUserMessage) {
+      const content = firstUserMessage.content.trim();
+      if (content.length > 45) {
+        return content.substring(0, 45) + '...';
+      }
+      return content;
+    }
+    
+    // Fallback: premier message (bot ou autre)
+    const firstMessage = messages[0];
+    if (firstMessage) {
+      const content = firstMessage.content.trim();
+      if (content.length > 45) {
+        return content.substring(0, 45) + '...';
+      }
+      return content;
+    }
+    
+    return 'Nouvelle conversation';
+  };
+
   const getPreview = (messages) => {
     if (!messages || messages.length === 0) return 'Aucun message';
     const lastMessage = messages[messages.length - 1];
@@ -42,7 +69,8 @@ function ConversationList({ conversations, onSelect, selectedId }) {
               className={`conversation-item ${selectedId === conv.id ? 'active' : ''}`}
               onClick={() => onSelect(conv)}
             >
-              <div className="conv-id">#{conv.id}</div>
+              {/* ✅ MODIFICATION : Remplacer #{conv.id} par le titre de la conversation */}
+              <div className="conv-title">{getConversationTitle(conv.messages)}</div>
               <div className="conv-preview">{getPreview(conv.messages)}</div>
               <div className="conv-date">{new Date(conv.created_at).toLocaleString()}</div>
               {conv.escalated && <span className="badge">Escaladée</span>}
