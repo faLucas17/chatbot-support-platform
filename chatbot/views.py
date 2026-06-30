@@ -471,17 +471,19 @@ class AdminConversationsListView(APIView):
         
         print(f"🔍 AdminConversationsListView - Header X-Support-Username: '{support_username}'")
         
-        if not support_username or support_username == 'anonymous' or support_username == 'null' or support_username == '':
-            print(f"📋 Utilisateur non connecté ou header invalide → retour liste vide")
-            return Response([])
-        
-        try:
-            user = User.objects.get(username=support_username)
-            conversations = Conversation.objects.filter(user=user).order_by('-updated_at')
-            print(f"📋 {conversations.count()} conversations trouvées pour l'utilisateur '{support_username}'")
-        except User.DoesNotExist:
-            print(f"⚠️ Utilisateur '{support_username}' non trouvé dans Django → retour liste vide")
-            return Response([])
+        # Si pas de username ou username invalide → toutes les conversations escaladées
+        if not support_username or support_username in ['anonymous', 'null', '', 'Anonyme', 'None']:
+            conversations = Conversation.objects.filter(escalated=True).order_by('-updated_at')
+            print(f"📋 User anonyme → {conversations.count()} conversations escaladées retournées")
+        else:
+            try:
+                user = User.objects.get(username=support_username)
+                conversations = Conversation.objects.filter(user=user).order_by('-updated_at')
+                print(f"📋 {conversations.count()} conversations trouvées pour '{support_username}'")
+            except User.DoesNotExist:
+                # Username pas trouvé → toutes les escalades
+                conversations = Conversation.objects.filter(escalated=True).order_by('-updated_at')
+                print(f"⚠️ '{support_username}' non trouvé → conversations escaladées retournées")
         
         data = []
         for conv in conversations:
