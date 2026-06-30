@@ -24,8 +24,8 @@ from django.utils.html import format_html
 from django.template.loader import render_to_string
 
 # Configuration
-LARAVEL_URL = 'http://localhost:8000'
-SUPPORT_URL = 'http://localhost:5174'
+LARAVEL_URL = os.getenv('LARAVEL_URL', 'https://api-easyevent.bakeli.tech')
+SUPPORT_URL = os.getenv('SUPPORT_URL', 'https://support-platform-admin.onrender.com')
 
 # ============================================================
 # FONCTION POUR ENVOYER UN EMAIL PROFESSIONNEL AVEC COULEURS
@@ -181,7 +181,7 @@ EasyEvent Support
         html_message=html_content,
         from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[admin_email],
-        fail_silently=False,
+        fail_silently=True,
     )
 
 

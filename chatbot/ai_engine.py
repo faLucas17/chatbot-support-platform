@@ -316,7 +316,7 @@ Vous recevrez un QR code par email qui vous servira de billet d'entrée !
     # ============================================================
     # 7. QU'EST-CE QU'UN QR CODE ?
     # ============================================================
-    if any(mot in message_lower for mot in ['qr code', 'c\'est quoi un qr code', 'billet', 'ticket', 'code qr', 'qr-code']):
+    if any(mot in message_lower for mot in ['qr code', 'c\'est quoi un qr code','code qr', 'qr-code']):
         return """Le QR code sur Easy Events est votre billet d'entrée numérique !
 
 Lorsque vous vous inscrivez à un événement, vous recevez un QR code unique par email. Ce QR code sera scanné à l'entrée par l'organisateur ou un agent PDV.
