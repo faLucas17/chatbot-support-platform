@@ -117,6 +117,7 @@ function LoginPage({ onLogin, theme }) {
 
   return (
     <div style={{
+      width: '100vw',
       height: '100vh',
       background: isDark ? '#1A2420' : '#F7F3EE',
       display: 'flex',
@@ -147,8 +148,8 @@ function LoginPage({ onLogin, theme }) {
         overflow: 'hidden',
       }}>
         <h1 style={{
-          fontSize: '38px',
-          fontWeight: '800',
+          fontSize: '46px',
+          fontWeight: '900',
           color: isDark ? '#F5F0E8' : '#1A1A1A',
           margin: '0 0 16px 0',
           lineHeight: '1.3',
@@ -214,7 +215,8 @@ function LoginPage({ onLogin, theme }) {
         alignItems: 'center',
         justifyContent: 'center',
         padding: '24px 40px',
-        width: '460px',
+        width: '100%',
+        maxWidth: '520px',
         flexShrink: 0,
       }}>
         <div style={{
