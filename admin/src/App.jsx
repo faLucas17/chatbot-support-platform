@@ -12,7 +12,7 @@ const ADMIN_EMAIL = 'admin@admin.com';
 const ADMIN_PASSWORD = 'passer@12';
 
 // ============================================================
-// PAGE DE LOGIN — Design EasyEvent identique à l'image
+// PAGE DE LOGIN — Design EasyEvent avec "Se souvenir de moi"
 // ============================================================
 function LoginPage({ onLogin, theme }) {
   const [email, setEmail] = useState('');
@@ -20,6 +20,7 @@ function LoginPage({ onLogin, theme }) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   useEffect(() => {
@@ -38,6 +39,11 @@ function LoginPage({ onLogin, theme }) {
     setTimeout(() => {
       if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
         localStorage.setItem('support_admin_logged', 'true');
+        if (rememberMe) {
+          localStorage.setItem('support_remember_email', email);
+        } else {
+          localStorage.removeItem('support_remember_email');
+        }
         onLogin();
       } else {
         setError('Email ou mot de passe incorrect.');
@@ -46,7 +52,16 @@ function LoginPage({ onLogin, theme }) {
     }, 600);
   };
 
-  // SVG icons pour les inputs
+  // Charger l'email mémorisé au chargement
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('support_remember_email');
+    if (savedEmail) {
+      setEmail(savedEmail);
+      setRememberMe(true);
+    }
+  }, []);
+
+  // Icônes SVG
   const EmailIcon = () => (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#AAAAAA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
@@ -74,25 +89,9 @@ function LoginPage({ onLogin, theme }) {
     </svg>
   );
 
-  // SVG logos sociaux réels
-  const GoogleLogo = () => (
-    <svg width="22" height="22" viewBox="0 0 48 48">
-      <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-      <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-      <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-    </svg>
-  );
-
-  const LinkedInLogo = () => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="#0077B5">
-      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-    </svg>
-  );
-
-  const GitHubLogo = () => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill={isDark ? '#F5F0E8' : '#333'}>
-      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+  const CheckIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#15AD84" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 6 9 17 4 12"/>
     </svg>
   );
 
@@ -106,19 +105,6 @@ function LoginPage({ onLogin, theme }) {
     boxSizing: 'border-box',
     color: isDark ? '#F5F0E8' : '#333',
     background: isDark ? '#2A3A32' : 'white',
-    transition: 'border-color 0.2s, box-shadow 0.2s',
-  };
-
-  const socialBtnStyle = {
-    flex: 1,
-    padding: '10px 0',
-    border: `1.5px solid ${isDark ? '#3A4A42' : '#E0E0E0'}`,
-    borderRadius: '8px',
-    background: isDark ? '#2A3A32' : 'white',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
     transition: 'border-color 0.2s, box-shadow 0.2s',
   };
 
@@ -172,7 +158,7 @@ function LoginPage({ onLogin, theme }) {
           lineHeight: '1.25',
           maxWidth: '100%',
         }}>
-          Bienvenue sur{' '}
+          Espace Support Admin AI {' '}
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', verticalAlign: 'middle' }}>
             <span style={{
               background: '#FF9900',
@@ -209,7 +195,7 @@ function LoginPage({ onLogin, theme }) {
           les administrateurs.
         </p>
 
-        {/* Courbe décorative — centrée sous le texte, avec ses deux points de couleur */}
+        {/* Courbe décorative */}
         <div style={{ position: 'relative', width: isMobile ? '100%' : '340px', maxWidth: '100%', textAlign: 'center', paddingTop: '14px', paddingBottom: '14px' }}>
           <div style={{
             position: 'absolute', top: '0px', left: '50%', transform: 'translateX(-50%)',
@@ -246,7 +232,7 @@ function LoginPage({ onLogin, theme }) {
         justifyContent: 'center',
         padding: isMobile ? '10px 20px 32px' : '24px 40px',
         width: '100%',
-        maxWidth: isMobile ? '100%' : '480px',
+        maxWidth: isMobile ? '100%' : '520px',
         minWidth: 0,
         flexShrink: 1,
         marginRight: isMobile ? 0 : '10px',
@@ -285,6 +271,13 @@ function LoginPage({ onLogin, theme }) {
           </div>
 
           {/* Titre */}
+          <h2 style={{
+            fontSize: '22px',
+            fontWeight: '700',
+            color: isDark ? '#F5F0E8' : '#1A1A1A',
+            margin: '0 0 4px 0',
+            textAlign: 'center',
+          }}>Support Admin AI</h2>
           <h2 style={{
             fontSize: '22px',
             fontWeight: '700',
@@ -366,14 +359,42 @@ function LoginPage({ onLogin, theme }) {
               </button>
             </div>
 
-            {/* Mot de passe oublié */}
-            <div style={{ textAlign: 'right', marginBottom: '14px' }}>
-              <a href="#" style={{
+            {/* Se souvenir de moi - CHECKBOX */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '16px',
+            }}>
+              <label style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                cursor: 'pointer',
                 fontSize: '13px',
-                color: '#FF9900',
-                textDecoration: 'none',
                 fontWeight: '500',
-              }}>Mot de passe oublié ?</a>
+                color: isDark ? '#C5C9C6' : '#555',
+              }}>
+                <div
+                  onClick={() => setRememberMe(!rememberMe)}
+                  style={{
+                    width: '18px',
+                    height: '18px',
+                    borderRadius: '4px',
+                    border: `2px solid ${rememberMe ? '#15AD84' : isDark ? '#4A5A52' : '#CCC'}`,
+                    background: rememberMe ? '#15AD84' : 'transparent',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s',
+                    cursor: 'pointer',
+                    flexShrink: 0,
+                  }}
+                >
+                  {rememberMe && <CheckIcon />}
+                </div>
+                Se souvenir de moi
+              </label>
             </div>
 
             {/* Erreur */}
@@ -414,50 +435,6 @@ function LoginPage({ onLogin, theme }) {
             >
               {loading ? 'Connexion...' : 'Se connecter'}
             </button>
-
-            {/* Divider OU */}
-            <div style={{
-              display: 'flex', alignItems: 'center',
-              margin: '14px 0', gap: '12px',
-            }}>
-              <div style={{ flex: 1, height: '1px', background: isDark ? '#3A4A42' : '#E0E0E0' }} />
-              <span style={{ fontSize: '13px', color: isDark ? '#9AB3A5' : '#999', fontWeight: '500' }}>OU</span>
-              <div style={{ flex: 1, height: '1px', background: isDark ? '#3A4A42' : '#E0E0E0' }} />
-            </div>
-
-            {/* Boutons sociaux — vrais logos SVG */}
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '14px' }}>
-              <button type="button" style={socialBtnStyle}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#15AD84'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = isDark ? '#3A4A42' : '#E0E0E0'; }}
-              >
-                <GoogleLogo />
-              </button>
-              <button type="button" style={socialBtnStyle}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#15AD84'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = isDark ? '#3A4A42' : '#E0E0E0'; }}
-              >
-                <LinkedInLogo />
-              </button>
-              <button type="button" style={socialBtnStyle}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#15AD84'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = isDark ? '#3A4A42' : '#E0E0E0'; }}
-              >
-                <GitHubLogo />
-              </button>
-            </div>
-
-            {/* Créer un compte */}
-            <div style={{ textAlign: 'center' }}>
-              <span style={{ fontSize: '14px', color: isDark ? '#9AB3A5' : '#666' }}>
-                Vous n'avez pas de compte ?{' '}
-                <a href="#" style={{
-                  color: '#FF9900',
-                  textDecoration: 'none',
-                  fontWeight: '600',
-                }}>Créer un compte</a>
-              </span>
-            </div>
 
           </form>
         </div>
