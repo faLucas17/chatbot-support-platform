@@ -5,10 +5,9 @@ import ConversationList from './components/ConversationList';
 import ConversationDetail from './components/ConversationDetail';
 import './App.css';
 
-// Composant pour la page de détail d'une conversation (accès direct via URL Filament)
+// Composant pour la page de détail d'une conversation (accès direct via URL Discord/Filament)
 function ConversationPage({ conversations, onUpdateConversation }) {
   const { id } = useParams();
-  const [searchParams] = useSearchParams();
   const [conversation, setConversation] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -16,7 +15,7 @@ function ConversationPage({ conversations, onUpdateConversation }) {
   useEffect(() => {
     if (!id) return;
 
-    // 1. D'abord chercher dans la liste déjà chargée (évite un appel réseau)
+    // 1. Chercher dans la liste déjà chargée
     const existing = conversations.find(c => String(c.id) === String(id));
     if (existing) {
       setConversation(existing);
@@ -32,7 +31,6 @@ function ConversationPage({ conversations, onUpdateConversation }) {
     setLoading(true);
     try {
       const res = await getConversation(id);
-      // AdminConversationDetailView retourne user_name + messages via ConversationSerializer
       setConversation(res.data);
       console.log(`✅ Conversation ${id} chargée depuis l'API`);
     } catch (err) {
@@ -85,15 +83,17 @@ function App() {
 
   const [searchParams] = useSearchParams();
 
-  // ✅ Lire username depuis l'URL en PREMIER, avant tout chargement
-  // (Filament envoie ?username=ockylian10&conversation_id=134)
+  // ✅ Lire username depuis l'URL EN PREMIER
+  // Si username = "Anonyme" → on le stocke quand même pour que Django
+  // retourne toutes les conversations escaladées (comportement voulu)
   useEffect(() => {
     const username = searchParams.get('username');
     const token = searchParams.get('token');
 
-    if (username && username !== 'Anonyme') {
+    if (username) {
+      // ✅ On accepte TOUS les usernames y compris "Anonyme"
       setUsername(username);
-      console.log(`✅ Username stocké depuis URL Filament: ${username}`);
+      console.log(`✅ Username stocké: ${username}`);
     }
 
     if (token) {
@@ -117,10 +117,10 @@ function App() {
   }, []);
 
   useEffect(() => {
-    // Petit délai pour laisser le useEffect du username s'exécuter en premier
+    // Délai pour laisser le useEffect du username s'exécuter en premier
     const timer = setTimeout(() => {
       loadConversations();
-    }, 100);
+    }, 150);
 
     const interval = setInterval(loadConversations, 5000);
     return () => {
