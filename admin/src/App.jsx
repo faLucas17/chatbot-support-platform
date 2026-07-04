@@ -159,13 +159,13 @@ function LoginPage({ onLogin, theme }) {
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: isMobile ? 'center' : 'flex-start',
-        padding: isMobile ? '36px 24px 20px' : '40px 40px 40px 110px',
+        padding: isMobile ? '36px 24px 20px' : '40px 30px 40px 80px',
         overflow: 'hidden',
         boxSizing: 'border-box',
         textAlign: isMobile ? 'center' : 'left',
       }}>
         <h1 style={{
-          fontSize: isMobile ? 'clamp(26px, 7vw, 34px)' : 'clamp(34px, 4.4vw, 58px)',
+          fontSize: isMobile ? 'clamp(24px, 6.5vw, 32px)' : 'clamp(30px, 3.2vw, 44px)',
           fontWeight: '900',
           color: isDark ? '#F5F0E8' : '#1A1A1A',
           margin: '0 0 18px 0',
@@ -187,36 +187,41 @@ function LoginPage({ onLogin, theme }) {
         </h1>
 
         <p style={{
-          fontSize: isMobile ? '15px' : '18px',
+          fontSize: isMobile ? '15px' : '19px',
           fontWeight: '700',
           color: isDark ? '#F5F0E8' : '#1A1A1A',
           margin: '0 0 16px 0',
           lineHeight: '1.5',
-          maxWidth: isMobile ? '100%' : '460px',
+          maxWidth: isMobile ? '100%' : '620px',
         }}>
           Votre espace d'administration intelligent, propulsé par l'IA.
         </p>
 
         <p style={{
-          fontSize: isMobile ? '14px' : '16px',
+          fontSize: isMobile ? '14px' : '18px',
           color: isDark ? '#9AB3A5' : '#555',
           margin: '0 0 28px 0',
-          lineHeight: '1.8',
-          maxWidth: isMobile ? '100%' : '460px',
+          lineHeight: '1.7',
+          maxWidth: isMobile ? '100%' : '620px',
         }}>
           Suivez les conversations, répondez à vos utilisateurs et pilotez
           tout votre support client depuis une seule interface pensée pour
           les administrateurs.
         </p>
 
-        {/* Courbe décorative — centrée sous le texte */}
-        <div style={{ width: isMobile ? '100%' : '460px', maxWidth: '100%', textAlign: 'center' }}>
-          <svg width="220" height="30" viewBox="0 0 300 40" style={{ display: 'inline-block' }}>
+        {/* Courbe décorative — centrée sous le texte, avec ses deux points de couleur */}
+        <div style={{ position: 'relative', width: isMobile ? '100%' : '340px', maxWidth: '100%', textAlign: 'center', paddingTop: '14px', paddingBottom: '14px' }}>
+          <div style={{
+            position: 'absolute', top: '0px', left: '50%', transform: 'translateX(-50%)',
+            width: '14px', height: '14px', borderRadius: '50%',
+            background: '#15AD84',
+          }} />
+          <svg width="260" height="34" viewBox="0 0 300 40" style={{ display: 'inline-block' }}>
             <path
               d="M 0 30 Q 75 5 150 20 Q 225 35 300 15"
               fill="none"
               stroke="url(#curveGrad)"
-              strokeWidth="3"
+              strokeWidth="6"
               strokeLinecap="round"
             />
             <defs>
@@ -226,6 +231,11 @@ function LoginPage({ onLogin, theme }) {
               </linearGradient>
             </defs>
           </svg>
+          <div style={{
+            position: 'absolute', bottom: '0px', left: isMobile ? '20%' : '10px',
+            width: '12px', height: '12px', borderRadius: '50%',
+            background: '#FF9900',
+          }} />
         </div>
       </div>
 
@@ -236,10 +246,10 @@ function LoginPage({ onLogin, theme }) {
         justifyContent: 'center',
         padding: isMobile ? '10px 20px 32px' : '24px 40px',
         width: '100%',
-        maxWidth: isMobile ? '100%' : '520px',
+        maxWidth: isMobile ? '100%' : '480px',
         minWidth: 0,
         flexShrink: 1,
-        marginRight: isMobile ? 0 : '40px',
+        marginRight: isMobile ? 0 : '10px',
         boxSizing: 'border-box',
       }}>
         <div style={{
