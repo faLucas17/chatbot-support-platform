@@ -8,17 +8,20 @@ import './App.css';
 // ============================================================
 // CREDENTIALS ADMIN (à changer en variables d'environnement en prod)
 // ============================================================
-const ADMIN_EMAIL = 'admin@easyevent.com';
-const ADMIN_PASSWORD = 'Admin@2026';
+const ADMIN_EMAIL = 'admin@admin.com';
+const ADMIN_PASSWORD = 'passer@12';
 
 // ============================================================
-// PAGE DE LOGIN — Design EasyEvent
+// PAGE DE LOGIN — Design EasyEvent (style premium)
 // ============================================================
 function LoginPage({ onLogin, theme }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const isDark = theme === 'dark';
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -36,111 +39,175 @@ function LoginPage({ onLogin, theme }) {
     }, 600);
   };
 
-  return (
-    <div style={{
+  const styles = {
+    container: {
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #15AD84 0%, #FF9900 100%)',
+      background: isDark ? '#1A2420' : '#F5F0E8',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-    }}>
-      <div style={{
-        background: 'white',
-        borderRadius: '24px',
-        padding: '48px 40px',
-        width: '100%',
-        maxWidth: '420px',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
-      }}>
-        {/* Logo */}
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '64px',
-            height: '64px',
-            borderRadius: '18px',
-            background: 'linear-gradient(135deg, #15AD84 0%, #FF9900 100%)',
-            marginBottom: '16px',
-          }}>
-            <span style={{ fontSize: '24px', fontWeight: '800', color: 'white', letterSpacing: '-1px' }}>EE</span>
+      padding: '20px',
+    },
+    card: {
+      background: isDark ? '#1E2A24' : 'white',
+      borderRadius: '24px',
+      padding: '48px 40px',
+      width: '100%',
+      maxWidth: '420px',
+      boxShadow: isDark ? '0 20px 60px rgba(0,0,0,0.4)' : '0 20px 60px rgba(0,0,0,0.08)',
+    },
+    logoContainer: {
+      textAlign: 'center',
+      marginBottom: '32px',
+    },
+    logoWrapper: {
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '64px',
+      height: '64px',
+      borderRadius: '18px',
+      background: 'linear-gradient(135deg, #15AD84 0%, #FF9900 100%)',
+      marginBottom: '16px',
+    },
+    logoText: {
+      fontSize: '24px',
+      fontWeight: '800',
+      color: 'white',
+      letterSpacing: '-1px',
+    },
+    title: {
+      margin: '0 0 4px 0',
+      fontSize: '24px',
+      fontWeight: '700',
+      color: isDark ? '#F5F0E8' : '#1A1A1A',
+    },
+    subtitle: {
+      margin: 0,
+      fontSize: '14px',
+      color: '#9AB3A5',
+    },
+    label: {
+      display: 'block',
+      fontSize: '13px',
+      fontWeight: '600',
+      color: isDark ? '#F5F0E8' : '#2D3E35',
+      marginBottom: '8px',
+    },
+    inputWrapper: {
+      position: 'relative',
+    },
+    input: {
+      width: '100%',
+      padding: '12px 16px',
+      border: `1.5px solid ${isDark ? '#3A4A42' : '#E8E0D5'}`,
+      borderRadius: '12px',
+      fontSize: '14px',
+      outline: 'none',
+      boxSizing: 'border-box',
+      color: isDark ? '#F5F0E8' : '#1A1A1A',
+      background: isDark ? '#2A3A32' : '#F5F0E8',
+      transition: 'border-color 0.2s',
+    },
+    inputFocus: {
+      borderColor: '#15AD84',
+    },
+    passwordToggle: {
+      position: 'absolute',
+      right: '12px',
+      top: '50%',
+      transform: 'translateY(-50%)',
+      background: 'none',
+      border: 'none',
+      cursor: 'pointer',
+      fontSize: '18px',
+      color: isDark ? '#9AB3A5' : '#999',
+      padding: '4px',
+    },
+    errorBox: {
+      background: isDark ? '#3A1A1A' : '#FFF0F0',
+      border: `1px solid ${isDark ? '#5A2A2A' : '#FFCDD2'}`,
+      borderRadius: '10px',
+      padding: '12px 16px',
+      marginBottom: '20px',
+      fontSize: '13px',
+      color: '#FF6B6B',
+    },
+    button: {
+      width: '100%',
+      padding: '14px',
+      background: loading ? '#ccc' : 'linear-gradient(135deg, #15AD84 0%, #FF9900 100%)',
+      color: 'white',
+      border: 'none',
+      borderRadius: '12px',
+      fontSize: '15px',
+      fontWeight: '700',
+      cursor: loading ? 'not-allowed' : 'pointer',
+      transition: 'opacity 0.2s',
+    },
+    footer: {
+      textAlign: 'center',
+      marginTop: '24px',
+      fontSize: '12px',
+      color: '#9AB3A5',
+    },
+    inputGroup: {
+      marginBottom: '20px',
+    },
+  };
+
+  return (
+    <div style={styles.container}>
+      <div style={styles.card}>
+        <div style={styles.logoContainer}>
+          <div style={styles.logoWrapper}>
+            <span style={styles.logoText}>EE</span>
           </div>
-          <h1 style={{ margin: '0 0 4px 0', fontSize: '24px', fontWeight: '700', color: '#1A1A1A' }}>
-            Support Admin
-          </h1>
-          <p style={{ margin: 0, fontSize: '14px', color: '#9AB3A5' }}>
-            Connectez-vous pour accéder aux conversations
-          </p>
+          <h1 style={styles.title}>Support Admin</h1>
+          <p style={styles.subtitle}>Connectez-vous pour accéder aux conversations</p>
         </div>
 
-        {/* Formulaire */}
         <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#2D3E35', marginBottom: '8px' }}>
-              Email
-            </label>
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@easyevent.com"
+              placeholder="admin@admin.com"
               required
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                border: '1.5px solid #E8E0D5',
-                borderRadius: '12px',
-                fontSize: '14px',
-                outline: 'none',
-                boxSizing: 'border-box',
-                color: '#1A1A1A',
-                background: '#F5F0E8',
-                transition: 'border-color 0.2s',
-              }}
+              style={styles.input}
               onFocus={(e) => e.target.style.borderColor = '#15AD84'}
-              onBlur={(e) => e.target.style.borderColor = '#E8E0D5'}
+              onBlur={(e) => e.target.style.borderColor = isDark ? '#3A4A42' : '#E8E0D5'}
             />
           </div>
 
-          <div style={{ marginBottom: '24px' }}>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#2D3E35', marginBottom: '8px' }}>
-              Mot de passe
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                border: '1.5px solid #E8E0D5',
-                borderRadius: '12px',
-                fontSize: '14px',
-                outline: 'none',
-                boxSizing: 'border-box',
-                color: '#1A1A1A',
-                background: '#F5F0E8',
-                transition: 'border-color 0.2s',
-              }}
-              onFocus={(e) => e.target.style.borderColor = '#15AD84'}
-              onBlur={(e) => e.target.style.borderColor = '#E8E0D5'}
-            />
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>Mot de passe</label>
+            <div style={styles.inputWrapper}>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                style={styles.input}
+                onFocus={(e) => e.target.style.borderColor = '#15AD84'}
+                onBlur={(e) => e.target.style.borderColor = isDark ? '#3A4A42' : '#E8E0D5'}
+              />
+              <button
+                type="button"
+                style={styles.passwordToggle}
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? '👁️' : '👁️‍🗨️'}
+              </button>
+            </div>
           </div>
 
           {error && (
-            <div style={{
-              background: '#FFF0F0',
-              border: '1px solid #FFCDD2',
-              borderRadius: '10px',
-              padding: '12px 16px',
-              marginBottom: '20px',
-              fontSize: '13px',
-              color: '#C62828',
-            }}>
+            <div style={styles.errorBox}>
               {error}
             </div>
           )}
@@ -148,24 +215,13 @@ function LoginPage({ onLogin, theme }) {
           <button
             type="submit"
             disabled={loading}
-            style={{
-              width: '100%',
-              padding: '14px',
-              background: loading ? '#ccc' : 'linear-gradient(135deg, #15AD84 0%, #FF9900 100%)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '12px',
-              fontSize: '15px',
-              fontWeight: '700',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              transition: 'opacity 0.2s',
-            }}
+            style={styles.button}
           >
             {loading ? 'Connexion...' : 'Se connecter'}
           </button>
         </form>
 
-        <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '12px', color: '#9AB3A5' }}>
+        <p style={styles.footer}>
           EasyEvent Support Platform © 2026
         </p>
       </div>
