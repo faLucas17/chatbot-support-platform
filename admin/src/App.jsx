@@ -117,16 +117,17 @@ function LoginPage({ onLogin, theme }) {
 
   return (
     <div style={{
-      minHeight: '100vh',
+      height: '100vh',
       background: isDark ? '#1A2420' : '#F7F3EE',
       display: 'flex',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       position: 'relative',
       overflow: 'hidden',
+      boxSizing: 'border-box',
     }}>
       {/* Décoration bulles fond */}
       <div style={{
-        position: 'absolute', top: '60px', right: '420px',
+        position: 'absolute', top: '60px', right: '460px',
         width: '12px', height: '12px', borderRadius: '50%',
         background: '#15AD84', opacity: 0.5,
       }} />
@@ -142,22 +143,19 @@ function LoginPage({ onLogin, theme }) {
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
-        padding: '60px 80px',
-        maxWidth: '55%',
+        padding: '40px 60px',
+        overflow: 'hidden',
       }}>
         <h1 style={{
-          fontSize: '42px',
+          fontSize: '38px',
           fontWeight: '800',
           color: isDark ? '#F5F0E8' : '#1A1A1A',
-          margin: '0 0 20px 0',
-          lineHeight: '1.2',
+          margin: '0 0 16px 0',
+          lineHeight: '1.3',
+          whiteSpace: 'nowrap',
         }}>
           Bienvenue sur{' '}
-          <span style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '2px',
-          }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', verticalAlign: 'middle' }}>
             <span style={{
               background: '#FF9900',
               color: 'white',
@@ -165,30 +163,27 @@ function LoginPage({ onLogin, theme }) {
               borderRadius: '6px',
               fontWeight: '800',
             }}>Easy</span>
-            <span style={{
-              color: '#15AD84',
-              fontWeight: '800',
-            }}>Event</span>
+            <span style={{ color: '#15AD84', fontWeight: '800' }}>Event</span>
           </span>
           !
         </h1>
 
         <p style={{
-          fontSize: '16px',
+          fontSize: '15px',
           color: isDark ? '#9AB3A5' : '#555',
-          margin: '0 0 24px 0',
+          margin: '0 0 18px 0',
           lineHeight: '1.6',
-          maxWidth: '420px',
+          maxWidth: '400px',
         }}>
           Gérez tous vos événements en quelques clics.
         </p>
 
         <p style={{
-          fontSize: '16px',
+          fontSize: '15px',
           color: isDark ? '#9AB3A5' : '#555',
-          margin: '0 0 48px 0',
+          margin: '0 0 36px 0',
           lineHeight: '1.8',
-          maxWidth: '420px',
+          maxWidth: '400px',
         }}>
           Parcourez l'univers EasyEvent, gérez vos places et participez à
           des événements exclusifs, directement depuis votre espace
@@ -196,7 +191,7 @@ function LoginPage({ onLogin, theme }) {
         </p>
 
         {/* Courbe décorative */}
-        <svg width="300" height="40" viewBox="0 0 300 40">
+        <svg width="280" height="36" viewBox="0 0 300 40">
           <path
             d="M 0 30 Q 75 5 150 20 Q 225 35 300 15"
             fill="none"
@@ -218,25 +213,25 @@ function LoginPage({ onLogin, theme }) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '40px',
-        minWidth: '420px',
-        maxWidth: '480px',
+        padding: '24px 40px',
+        width: '460px',
+        flexShrink: 0,
       }}>
         <div style={{
           width: '100%',
           background: isDark ? '#243028' : 'white',
           borderRadius: '20px',
-          padding: '40px 36px',
+          padding: '32px 36px',
           boxShadow: isDark ? '0 4px 32px rgba(0,0,0,0.4)' : '0 4px 32px rgba(0,0,0,0.08)',
         }}>
 
           {/* Logo */}
-          <div style={{ textAlign: 'center', marginBottom: '8px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '4px' }}>
             <div style={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: '2px',
-              marginBottom: '14px',
+              marginBottom: '8px',
             }}>
               <span style={{
                 background: '#FF9900',
@@ -259,21 +254,21 @@ function LoginPage({ onLogin, theme }) {
             fontSize: '22px',
             fontWeight: '700',
             color: isDark ? '#F5F0E8' : '#1A1A1A',
-            margin: '0 0 6px 0',
+            margin: '0 0 4px 0',
             textAlign: 'center',
           }}>Connexion</h2>
           <p style={{
             fontSize: '13px',
             color: isDark ? '#9AB3A5' : '#888',
             textAlign: 'center',
-            margin: '0 0 28px 0',
+            margin: '0 0 20px 0',
           }}>Connectez-vous pour accéder à votre espace</p>
 
           {/* Formulaire */}
           <form onSubmit={handleSubmit}>
 
             {/* Email */}
-            <div style={{ marginBottom: '14px', position: 'relative' }}>
+            <div style={{ marginBottom: '10px', position: 'relative' }}>
               <div style={{
                 position: 'absolute', left: '14px', top: '50%',
                 transform: 'translateY(-50%)', pointerEvents: 'none',
@@ -337,7 +332,7 @@ function LoginPage({ onLogin, theme }) {
             </div>
 
             {/* Mot de passe oublié */}
-            <div style={{ textAlign: 'right', marginBottom: '20px' }}>
+            <div style={{ textAlign: 'right', marginBottom: '14px' }}>
               <a href="#" style={{
                 fontSize: '13px',
                 color: '#FF9900',
@@ -388,7 +383,7 @@ function LoginPage({ onLogin, theme }) {
             {/* Divider OU */}
             <div style={{
               display: 'flex', alignItems: 'center',
-              margin: '20px 0', gap: '12px',
+              margin: '14px 0', gap: '12px',
             }}>
               <div style={{ flex: 1, height: '1px', background: isDark ? '#3A4A42' : '#E0E0E0' }} />
               <span style={{ fontSize: '13px', color: isDark ? '#9AB3A5' : '#999', fontWeight: '500' }}>OU</span>
@@ -396,7 +391,7 @@ function LoginPage({ onLogin, theme }) {
             </div>
 
             {/* Boutons sociaux — vrais logos SVG */}
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '14px' }}>
               <button type="button" style={socialBtnStyle}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#15AD84'; }}
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = isDark ? '#3A4A42' : '#E0E0E0'; }}
