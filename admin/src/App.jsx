@@ -20,6 +20,13 @@ function LoginPage({ onLogin, theme }) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const isDark = theme === 'dark';
 
@@ -118,43 +125,51 @@ function LoginPage({ onLogin, theme }) {
   return (
     <div style={{
       width: '100vw',
-      height: '100vh',
+      height: isMobile ? 'auto' : '100vh',
+      minHeight: '100vh',
       background: isDark ? '#1A2420' : '#F7F3EE',
       display: 'flex',
+      flexDirection: isMobile ? 'column' : 'row',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       position: 'relative',
-      overflow: 'hidden',
+      overflow: isMobile ? 'auto' : 'hidden',
       boxSizing: 'border-box',
     }}>
       {/* Décoration bulles fond */}
-      <div style={{
-        position: 'absolute', top: '60px', right: '460px',
-        width: '12px', height: '12px', borderRadius: '50%',
-        background: '#15AD84', opacity: 0.5,
-      }} />
-      <div style={{
-        position: 'absolute', top: '30px', right: '60px',
-        width: '10px', height: '10px', borderRadius: '50%',
-        background: '#FF9900', opacity: 0.5,
-      }} />
+      {!isMobile && (
+        <>
+          <div style={{
+            position: 'absolute', top: '60px', right: '460px',
+            width: '12px', height: '12px', borderRadius: '50%',
+            background: '#15AD84', opacity: 0.5,
+          }} />
+          <div style={{
+            position: 'absolute', top: '30px', right: '60px',
+            width: '10px', height: '10px', borderRadius: '50%',
+            background: '#FF9900', opacity: 0.5,
+          }} />
+        </>
+      )}
 
-      {/* ========== COLONNE GAUCHE ========== */}
+      {/* ========== COLONNE GAUCHE — TEXTE ========== */}
       <div style={{
-        flex: '1 1 0%',
+        flex: isMobile ? 'none' : '1 1 0%',
         minWidth: 0,
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
-        padding: '40px 60px',
+        alignItems: isMobile ? 'center' : 'flex-start',
+        padding: isMobile ? '36px 24px 20px' : '40px 40px 40px 110px',
         overflow: 'hidden',
         boxSizing: 'border-box',
+        textAlign: isMobile ? 'center' : 'left',
       }}>
         <h1 style={{
-          fontSize: 'clamp(28px, 3.6vw, 46px)',
+          fontSize: isMobile ? 'clamp(26px, 7vw, 34px)' : 'clamp(34px, 4.4vw, 58px)',
           fontWeight: '900',
           color: isDark ? '#F5F0E8' : '#1A1A1A',
-          margin: '0 0 16px 0',
-          lineHeight: '1.3',
+          margin: '0 0 18px 0',
+          lineHeight: '1.25',
           maxWidth: '100%',
         }}>
           Bienvenue sur{' '}
@@ -172,43 +187,46 @@ function LoginPage({ onLogin, theme }) {
         </h1>
 
         <p style={{
-          fontSize: '15px',
-          color: isDark ? '#9AB3A5' : '#555',
-          margin: '0 0 18px 0',
-          lineHeight: '1.6',
-          maxWidth: '400px',
+          fontSize: isMobile ? '15px' : '18px',
+          fontWeight: '700',
+          color: isDark ? '#F5F0E8' : '#1A1A1A',
+          margin: '0 0 16px 0',
+          lineHeight: '1.5',
+          maxWidth: isMobile ? '100%' : '460px',
         }}>
-          Gérez tous vos événements en quelques clics.
+          Votre espace d'administration intelligent, propulsé par l'IA.
         </p>
 
         <p style={{
-          fontSize: '15px',
+          fontSize: isMobile ? '14px' : '16px',
           color: isDark ? '#9AB3A5' : '#555',
-          margin: '0 0 36px 0',
+          margin: '0 0 28px 0',
           lineHeight: '1.8',
-          maxWidth: '400px',
+          maxWidth: isMobile ? '100%' : '460px',
         }}>
-          Parcourez l'univers EasyEvent, gérez vos places et participez à
-          des événements exclusifs, directement depuis votre espace
-          personnel.
+          Suivez les conversations, répondez à vos utilisateurs et pilotez
+          tout votre support client depuis une seule interface pensée pour
+          les administrateurs.
         </p>
 
-        {/* Courbe décorative */}
-        <svg width="280" height="36" viewBox="0 0 300 40">
-          <path
-            d="M 0 30 Q 75 5 150 20 Q 225 35 300 15"
-            fill="none"
-            stroke="url(#curveGrad)"
-            strokeWidth="3"
-            strokeLinecap="round"
-          />
-          <defs>
-            <linearGradient id="curveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#15AD84" />
-              <stop offset="100%" stopColor="#FF9900" />
-            </linearGradient>
-          </defs>
-        </svg>
+        {/* Courbe décorative — centrée sous le texte */}
+        <div style={{ width: isMobile ? '100%' : '460px', maxWidth: '100%', textAlign: 'center' }}>
+          <svg width="220" height="30" viewBox="0 0 300 40" style={{ display: 'inline-block' }}>
+            <path
+              d="M 0 30 Q 75 5 150 20 Q 225 35 300 15"
+              fill="none"
+              stroke="url(#curveGrad)"
+              strokeWidth="3"
+              strokeLinecap="round"
+            />
+            <defs>
+              <linearGradient id="curveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#15AD84" />
+                <stop offset="100%" stopColor="#FF9900" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
       </div>
 
       {/* ========== COLONNE DROITE — FORMULAIRE ========== */}
@@ -216,18 +234,19 @@ function LoginPage({ onLogin, theme }) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '24px 40px',
+        padding: isMobile ? '10px 20px 32px' : '24px 40px',
         width: '100%',
-        maxWidth: '520px',
+        maxWidth: isMobile ? '100%' : '520px',
         minWidth: 0,
         flexShrink: 1,
+        marginRight: isMobile ? 0 : '40px',
         boxSizing: 'border-box',
       }}>
         <div style={{
           width: '100%',
           background: isDark ? '#243028' : 'white',
           borderRadius: '20px',
-          padding: '32px 36px',
+          padding: isMobile ? '24px 22px' : '32px 36px',
           boxShadow: isDark ? '0 4px 32px rgba(0,0,0,0.4)' : '0 4px 32px rgba(0,0,0,0.08)',
         }}>
 
