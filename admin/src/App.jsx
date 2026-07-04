@@ -12,7 +12,7 @@ const ADMIN_EMAIL = 'admin@admin.com';
 const ADMIN_PASSWORD = 'passer@12';
 
 // ============================================================
-// PAGE DE LOGIN — Design EasyEvent (style premium)
+// PAGE DE LOGIN — Design EasyEvent (identique à l'image)
 // ============================================================
 function LoginPage({ onLogin, theme }) {
   const [email, setEmail] = useState('');
@@ -39,8 +39,8 @@ function LoginPage({ onLogin, theme }) {
     }, 600);
   };
 
-  const styles = {
-    container: {
+  return (
+    <div style={{
       minHeight: '100vh',
       background: isDark ? '#1A2420' : '#F5F0E8',
       display: 'flex',
@@ -48,180 +48,296 @@ function LoginPage({ onLogin, theme }) {
       justifyContent: 'center',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       padding: '20px',
-    },
-    card: {
-      background: isDark ? '#1E2A24' : 'white',
-      borderRadius: '24px',
-      padding: '48px 40px',
-      width: '100%',
-      maxWidth: '420px',
-      boxShadow: isDark ? '0 20px 60px rgba(0,0,0,0.4)' : '0 20px 60px rgba(0,0,0,0.08)',
-    },
-    logoContainer: {
-      textAlign: 'center',
-      marginBottom: '32px',
-    },
-    logoWrapper: {
-      display: 'inline-flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      width: '64px',
-      height: '64px',
-      borderRadius: '18px',
-      background: 'linear-gradient(135deg, #15AD84 0%, #FF9900 100%)',
-      marginBottom: '16px',
-    },
-    logoText: {
-      fontSize: '24px',
-      fontWeight: '800',
-      color: 'white',
-      letterSpacing: '-1px',
-    },
-    title: {
-      margin: '0 0 4px 0',
-      fontSize: '24px',
-      fontWeight: '700',
-      color: isDark ? '#F5F0E8' : '#1A1A1A',
-    },
-    subtitle: {
-      margin: 0,
-      fontSize: '14px',
-      color: '#9AB3A5',
-    },
-    label: {
-      display: 'block',
-      fontSize: '13px',
-      fontWeight: '600',
-      color: isDark ? '#F5F0E8' : '#2D3E35',
-      marginBottom: '8px',
-    },
-    inputWrapper: {
-      position: 'relative',
-    },
-    input: {
-      width: '100%',
-      padding: '12px 16px',
-      border: `1.5px solid ${isDark ? '#3A4A42' : '#E8E0D5'}`,
-      borderRadius: '12px',
-      fontSize: '14px',
-      outline: 'none',
-      boxSizing: 'border-box',
-      color: isDark ? '#F5F0E8' : '#1A1A1A',
-      background: isDark ? '#2A3A32' : '#F5F0E8',
-      transition: 'border-color 0.2s',
-    },
-    inputFocus: {
-      borderColor: '#15AD84',
-    },
-    passwordToggle: {
-      position: 'absolute',
-      right: '12px',
-      top: '50%',
-      transform: 'translateY(-50%)',
-      background: 'none',
-      border: 'none',
-      cursor: 'pointer',
-      fontSize: '18px',
-      color: isDark ? '#9AB3A5' : '#999',
-      padding: '4px',
-    },
-    errorBox: {
-      background: isDark ? '#3A1A1A' : '#FFF0F0',
-      border: `1px solid ${isDark ? '#5A2A2A' : '#FFCDD2'}`,
-      borderRadius: '10px',
-      padding: '12px 16px',
-      marginBottom: '20px',
-      fontSize: '13px',
-      color: '#FF6B6B',
-    },
-    button: {
-      width: '100%',
-      padding: '14px',
-      background: loading ? '#ccc' : 'linear-gradient(135deg, #15AD84 0%, #FF9900 100%)',
-      color: 'white',
-      border: 'none',
-      borderRadius: '12px',
-      fontSize: '15px',
-      fontWeight: '700',
-      cursor: loading ? 'not-allowed' : 'pointer',
-      transition: 'opacity 0.2s',
-    },
-    footer: {
-      textAlign: 'center',
-      marginTop: '24px',
-      fontSize: '12px',
-      color: '#9AB3A5',
-    },
-    inputGroup: {
-      marginBottom: '20px',
-    },
-  };
-
-  return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <div style={styles.logoContainer}>
-          <div style={styles.logoWrapper}>
-            <span style={styles.logoText}>EE</span>
+    }}>
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        width: '100%',
+        maxWidth: '480px',
+      }}>
+        {/* Logo EasyEvent */}
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '4px',
+            marginBottom: '12px',
+          }}>
+            <span style={{
+              fontSize: '32px',
+              fontWeight: '800',
+              background: 'linear-gradient(135deg, #15AD84 0%, #FF9900 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              letterSpacing: '-0.5px',
+            }}>Easy</span>
+            <span style={{
+              fontSize: '32px',
+              fontWeight: '800',
+              color: '#15AD84',
+              letterSpacing: '-0.5px',
+            }}>Event</span>
           </div>
-          <h1 style={styles.title}>Support Admin</h1>
-          <p style={styles.subtitle}>Connectez-vous pour accéder aux conversations</p>
+          <p style={{
+            margin: 0,
+            fontSize: '14px',
+            color: isDark ? '#9AB3A5' : '#666',
+          }}>
+            Support Admin
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Email</label>
+        {/* Titre Connexion */}
+        <div style={{ width: '100%', marginBottom: '32px' }}>
+          <h2 style={{
+            fontSize: '24px',
+            fontWeight: '700',
+            color: isDark ? '#F5F0E8' : '#1A1A1A',
+            margin: 0,
+            marginBottom: '6px',
+            textAlign: 'center',
+          }}>Connexion</h2>
+          <p style={{
+            fontSize: '14px',
+            color: isDark ? '#9AB3A5' : '#666',
+            textAlign: 'center',
+            margin: 0,
+          }}>Connectez-vous pour accéder à votre espace</p>
+        </div>
+
+        {/* Formulaire */}
+        <form onSubmit={handleSubmit} style={{ width: '100%' }}>
+          {/* Email */}
+          <div style={{ marginBottom: '16px' }}>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@admin.com"
+              placeholder="Entrez votre email..."
               required
-              style={styles.input}
-              onFocus={(e) => e.target.style.borderColor = '#15AD84'}
-              onBlur={(e) => e.target.style.borderColor = isDark ? '#3A4A42' : '#E8E0D5'}
+              style={{
+                width: '100%',
+                padding: '14px 18px',
+                border: `1.5px solid ${isDark ? '#3A4A42' : '#E8E0D5'}`,
+                borderRadius: '12px',
+                fontSize: '14px',
+                outline: 'none',
+                boxSizing: 'border-box',
+                color: isDark ? '#F5F0E8' : '#1A1A1A',
+                background: isDark ? '#2A3A32' : 'white',
+                transition: 'border-color 0.2s, box-shadow 0.2s',
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#15AD84';
+                e.target.style.boxShadow = '0 0 0 4px rgba(21,173,132,0.1)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = isDark ? '#3A4A42' : '#E8E0D5';
+                e.target.style.boxShadow = 'none';
+              }}
             />
           </div>
 
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Mot de passe</label>
-            <div style={styles.inputWrapper}>
-              <input
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                style={styles.input}
-                onFocus={(e) => e.target.style.borderColor = '#15AD84'}
-                onBlur={(e) => e.target.style.borderColor = isDark ? '#3A4A42' : '#E8E0D5'}
-              />
-              <button
-                type="button"
-                style={styles.passwordToggle}
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? '👁️' : '👁️‍🗨️'}
-              </button>
-            </div>
+          {/* Password */}
+          <div style={{ marginBottom: '12px', position: 'relative' }}>
+            <input
+              type={showPassword ? 'text' : 'password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Entrez votre mot de passe..."
+              required
+              style={{
+                width: '100%',
+                padding: '14px 18px',
+                paddingRight: '50px',
+                border: `1.5px solid ${isDark ? '#3A4A42' : '#E8E0D5'}`,
+                borderRadius: '12px',
+                fontSize: '14px',
+                outline: 'none',
+                boxSizing: 'border-box',
+                color: isDark ? '#F5F0E8' : '#1A1A1A',
+                background: isDark ? '#2A3A32' : 'white',
+                transition: 'border-color 0.2s, box-shadow 0.2s',
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#15AD84';
+                e.target.style.boxShadow = '0 0 0 4px rgba(21,173,132,0.1)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = isDark ? '#3A4A42' : '#E8E0D5';
+                e.target.style.boxShadow = 'none';
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              style={{
+                position: 'absolute',
+                right: '14px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '18px',
+                color: isDark ? '#9AB3A5' : '#999',
+                padding: '4px',
+              }}
+            >
+              {showPassword ? '👁️' : '👁️‍🗨️'}
+            </button>
           </div>
 
+          {/* Mot de passe oublié */}
+          <div style={{ textAlign: 'right', marginBottom: '24px' }}>
+            <a href="#" style={{
+              fontSize: '13px',
+              color: '#FF9900',
+              textDecoration: 'none',
+              fontWeight: '500',
+            }}>Mot de passe oublié ?</a>
+          </div>
+
+          {/* Erreur */}
           {error && (
-            <div style={styles.errorBox}>
+            <div style={{
+              background: isDark ? '#3A1A1A' : '#FFF0F0',
+              border: `1px solid ${isDark ? '#5A2A2A' : '#FFCDD2'}`,
+              borderRadius: '10px',
+              padding: '12px 16px',
+              marginBottom: '20px',
+              fontSize: '13px',
+              color: '#FF6B6B',
+              textAlign: 'center',
+            }}>
               {error}
             </div>
           )}
 
+          {/* Bouton Se connecter */}
           <button
             type="submit"
             disabled={loading}
-            style={styles.button}
+            style={{
+              width: '100%',
+              padding: '14px',
+              background: loading ? '#ccc' : 'linear-gradient(135deg, #15AD84 0%, #FF9900 100%)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '12px',
+              fontSize: '16px',
+              fontWeight: '700',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              transition: 'opacity 0.2s, transform 0.1s',
+            }}
+            onMouseEnter={(e) => {
+              if (!loading) e.target.style.transform = 'scale(1.01)';
+            }}
+            onMouseLeave={(e) => {
+              if (!loading) e.target.style.transform = 'scale(1)';
+            }}
           >
             {loading ? 'Connexion...' : 'Se connecter'}
           </button>
+
+          {/* Divider OU */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            margin: '24px 0',
+            gap: '16px',
+          }}>
+            <div style={{
+              flex: 1,
+              height: '1px',
+              background: isDark ? '#3A4A42' : '#E8E0D5',
+            }} />
+            <span style={{
+              fontSize: '13px',
+              color: isDark ? '#9AB3A5' : '#999',
+              fontWeight: '500',
+            }}>OU</span>
+            <div style={{
+              flex: 1,
+              height: '1px',
+              background: isDark ? '#3A4A42' : '#E8E0D5',
+            }} />
+          </div>
+
+          {/* Social buttons */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginBottom: '24px' }}>
+            <button type="button" style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '50%',
+              border: `1.5px solid ${isDark ? '#3A4A42' : '#E8E0D5'}`,
+              background: isDark ? '#2A3A32' : 'white',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '20px',
+              transition: 'border-color 0.2s',
+            }}>
+              <span style={{ fontSize: '22px' }}>🌐</span>
+            </button>
+            <button type="button" style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '50%',
+              border: `1.5px solid ${isDark ? '#3A4A42' : '#E8E0D5'}`,
+              background: isDark ? '#2A3A32' : 'white',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '20px',
+              transition: 'border-color 0.2s',
+            }}>
+              <span style={{ fontSize: '22px' }}>🔵</span>
+            </button>
+            <button type="button" style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '50%',
+              border: `1.5px solid ${isDark ? '#3A4A42' : '#E8E0D5'}`,
+              background: isDark ? '#2A3A32' : 'white',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '20px',
+              transition: 'border-color 0.2s',
+            }}>
+              <span style={{ fontSize: '22px' }}>🐙</span>
+            </button>
+          </div>
+
+          {/* Lien Créer un compte */}
+          <div style={{ textAlign: 'center' }}>
+            <span style={{
+              fontSize: '14px',
+              color: isDark ? '#9AB3A5' : '#666',
+            }}>
+              Vous n'avez pas de compte ?{' '}
+              <a href="#" style={{
+                color: '#FF9900',
+                textDecoration: 'none',
+                fontWeight: '600',
+              }}>Créer un compte</a>
+            </span>
+          </div>
         </form>
 
-        <p style={styles.footer}>
+        {/* Footer */}
+        <p style={{
+          marginTop: '32px',
+          fontSize: '12px',
+          color: isDark ? '#5A6A62' : '#CCC',
+          textAlign: 'center',
+        }}>
           EasyEvent Support Platform © 2026
         </p>
       </div>
