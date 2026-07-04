@@ -1,23 +1,45 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Poppins:wght@300;400;500;600;700&display=swap');
 
-* {
+/* ✅ Reset global SANS marge/padding qui crée la bordure noire */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0; /* ✅ Supprime les marges par défaut du navigateur (h1, p, etc.) qui pouvaient dépasser 100vh/100vw */
+}
+
+html, body, #root {
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
+  border: none;
+  width: 100%;
+  height: 100%;
+  max-width: 100vw;
+  background: #F7F3EE; /* ✅ Même couleur que la page de login dès le départ, évite tout flash blanc ou écart de teinte */
+  overflow: hidden; /* ✅ Supprime la scrollbar globale */
+  overflow-x: hidden; /* ✅ Empêche tout débordement horizontal (cause des lignes noires) */
 }
 
 body {
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   transition: background 0.3s ease, color 0.3s ease;
+  font-weight: 600; /* ✅ Texte en gras par défaut sur toute l'app */
+  -webkit-font-smoothing: antialiased; /* ✅ Texte plus net et plus lisible */
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  /* ✅ Pas de border, pas de background ici — géré par les composants */
 }
 
-/* Mode Clair (par défaut) — fond neutre, accents Easy Event marqués */
+/* ✅ Toutes les écritures en gras par défaut (les styles inline plus lourds restent prioritaires) */
+p, span, h1, h2, h3, label, a, button, input, textarea {
+  font-weight: 600;
+}
+
+/* Mode Clair (par défaut) — même teinte que la page de login pour ne jamais créer d'écart de couleur visible */
 body.light {
-  background: #F7F7F5;
+  background: #F7F3EE;
 }
 
 body.dark {
-  background: #11161A;
+  background: #1A2420;
 }
 
 /* Login */
@@ -136,6 +158,7 @@ body.dark .login-card input {
 .admin-container {
   display: flex;
   height: 100vh;
+  width: 100%;
   position: relative;
   transition: background 0.3s ease;
 }
@@ -777,67 +800,67 @@ body.dark .loading {
 
 /* Sections par utilisateur */
 .user-section {
-    margin-bottom: 16px;
-    border-bottom: 1px solid #ECECEA;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #ECECEA;
 }
 
 body.dark .user-section {
-    border-bottom-color: #2A3236;
+  border-bottom-color: #2A3236;
 }
 
 .user-section-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 12px;
-    border-radius: 12px;
-    margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  margin-bottom: 8px;
 }
 
 body.light .user-section-header {
-    background: linear-gradient(90deg, rgba(255, 153, 0, 0.08) 0%, rgba(21, 173, 132, 0.08) 100%);
+  background: linear-gradient(90deg, rgba(255, 153, 0, 0.08) 0%, rgba(21, 173, 132, 0.08) 100%);
 }
 
 body.dark .user-section-header {
-    background: linear-gradient(90deg, rgba(255, 153, 0, 0.1) 0%, rgba(21, 173, 132, 0.1) 100%);
+  background: linear-gradient(90deg, rgba(255, 153, 0, 0.1) 0%, rgba(21, 173, 132, 0.1) 100%);
 }
 
 .user-avatar {
-    font-size: 16px;
+  font-size: 16px;
 }
 
 .user-name {
-    font-weight: 600;
-    font-size: 14px;
-    flex: 1;
+  font-weight: 600;
+  font-size: 14px;
+  flex: 1;
 }
 
 body.light .user-name {
-    color: #1A1A1A;
+  color: #1A1A1A;
 }
 
 body.dark .user-name {
-    color: #F0F0EE;
+  color: #F0F0EE;
 }
 
 .user-count {
-    font-size: 11px;
-    background: linear-gradient(135deg, #FF9900 0%, #15AD84 100%);
-    color: white;
-    padding: 2px 8px;
-    border-radius: 20px;
+  font-size: 11px;
+  background: linear-gradient(135deg, #FF9900 0%, #15AD84 100%);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 20px;
 }
 
 .conv-user-info {
-    font-size: 12px;
-    margin-top: 4px;
-    font-weight: 600;
+  font-size: 12px;
+  margin-top: 4px;
+  font-weight: 600;
 }
 
 body.light .conv-user-info {
-    color: #15AD84;
+  color: #15AD84;
 }
 
 body.dark .conv-user-info {
-    color: #2BC79B;
+  color: #2BC79B;
 }
