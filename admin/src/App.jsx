@@ -140,20 +140,22 @@ function LoginPage({ onLogin, theme }) {
 
       {/* ========== COLONNE GAUCHE ========== */}
       <div style={{
-        flex: 1,
+        flex: '1 1 0%',
+        minWidth: 0,
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
         padding: '40px 60px',
         overflow: 'hidden',
+        boxSizing: 'border-box',
       }}>
         <h1 style={{
-          fontSize: '46px',
+          fontSize: 'clamp(28px, 3.6vw, 46px)',
           fontWeight: '900',
           color: isDark ? '#F5F0E8' : '#1A1A1A',
           margin: '0 0 16px 0',
           lineHeight: '1.3',
-          whiteSpace: 'nowrap',
+          maxWidth: '100%',
         }}>
           Bienvenue sur{' '}
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', verticalAlign: 'middle' }}>
@@ -217,7 +219,9 @@ function LoginPage({ onLogin, theme }) {
         padding: '24px 40px',
         width: '100%',
         maxWidth: '520px',
-        flexShrink: 0,
+        minWidth: 0,
+        flexShrink: 1,
+        boxSizing: 'border-box',
       }}>
         <div style={{
           width: '100%',
