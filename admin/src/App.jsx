@@ -6,10 +6,10 @@ import ConversationDetail from './components/ConversationDetail';
 import './App.css';
 
 // ============================================================
-// CREDENTIALS ADMIN (à changer en variables d'environnement en prod)
+// CREDENTIALS ADMIN - via variables d'environnement
 // ============================================================
-const ADMIN_EMAIL = 'admin@admin.com';
-const ADMIN_PASSWORD = 'passer@12';
+const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || 'admin@admin.com';
+const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'passer@12';
 
 // ============================================================
 // PAGE DE LOGIN — Design EasyEvent avec "Se souvenir de moi"
