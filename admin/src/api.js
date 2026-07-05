@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // ✅ URL de production Render
-const API_BASE = import.meta.env.VITE_API_BASE || 'https://support-platform-api-0h06.onrender.com';
+const API_BASE = import.meta.env.VITE_API_BASE || 'https://support-platform-admin.onrender.com';
 
 // Gestion du username pour le filtrage
 export const setUsername = (username) => {
