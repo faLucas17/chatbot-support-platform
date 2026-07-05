@@ -536,11 +536,12 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (!isLoggedIn) return;
-    const timer = setTimeout(() => { loadConversations(); }, 150);
-    const interval = setInterval(loadConversations, 5000);
-    return () => { clearTimeout(timer); clearInterval(interval); };
-  }, [isLoggedIn]);
+  if (!isLoggedIn) return;
+  if (selectedConversation) return; // pas de polling pendant qu'une conversation est ouverte
+  const timer = setTimeout(() => { loadConversations(); }, 150);
+  const interval = setInterval(loadConversations, 30000); // 30s au lieu de 5s
+  return () => { clearTimeout(timer); clearInterval(interval); };
+}, [isLoggedIn, selectedConversation]);
 
   const loadConversations = async () => {
     try {

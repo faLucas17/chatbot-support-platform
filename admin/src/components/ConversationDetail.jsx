@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { getConversation, replyToConversation } from '../api';
 import axios from 'axios';
 
+const LARAVEL_BASE = 'https://api-easyevent.bakeli.tech';
+
 // ── Logo EE stylisé (identique au frontend) ──────────────────
 const BotAvatar = () => (
   <div style={{
@@ -113,7 +115,7 @@ function ConversationDetail({ conversation, onUpdate }) {
       
       // ✅ Appel à Laravel pour marquer l'escalade comme résolue
       try {
-        await axios.post('http://127.0.0.1:8000/api/chatbot/escalations/mark-resolved', {
+        await axios.post(`${LARAVEL_BASE}/api/chatbot/escalations/mark-resolved`, {
           conversation_id: conversation.id
         });
         console.log(`✅ Escalade marquée comme résolue pour la conversation ${conversation.id}`);

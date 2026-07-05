@@ -149,7 +149,7 @@ def send_fancy_email(subject, user_name, user_email, conversation_id, conversati
 
   <table width="100%">
     <tr><td style="background: linear-gradient(90deg, #15AD84 0%, #FF9900 100%); height: 4px;"></td></tr>
-  追赶
+  </table>
 
 </body>
 </html>
@@ -473,7 +473,7 @@ class AdminConversationsListView(APIView):
         
         # Si pas de username ou username invalide → toutes les conversations escaladées
         if not support_username or support_username in ['anonymous', 'null', '', 'Anonyme', 'None']:
-            conversations = Conversation.objects.filter(escalated=True).order_by('-updated_at')
+            conversations = Conversation.objects.all().order_by('-updated_at')
             print(f"📋 User anonyme → {conversations.count()} conversations escaladées retournées")
         else:
             try:
@@ -482,7 +482,7 @@ class AdminConversationsListView(APIView):
                 print(f"📋 {conversations.count()} conversations trouvées pour '{support_username}'")
             except User.DoesNotExist:
                 # Username pas trouvé → toutes les escalades
-                conversations = Conversation.objects.filter(escalated=True).order_by('-updated_at')
+                conversations = Conversation.objects.all().order_by('-updated_at')
                 print(f"⚠️ '{support_username}' non trouvé → conversations escaladées retournées")
         
         data = []
