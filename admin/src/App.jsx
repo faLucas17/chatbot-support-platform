@@ -502,29 +502,32 @@ function App() {
             </button>
           </div>
           <div className="admin-navbar-right">
-            <div
-              className="admin-nav-user"
-              onClick={() => setAdminMenuOpen(!adminMenuOpen)}
-            >
-              <UserIcon size={16} />
-              <span className="admin-nav-label">Administrateur</span>
-              <span className="admin-nav-email">admin</span>
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-                style={{ transform: adminMenuOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>
-                <polyline points="6 9 12 15 18 9"/>
-              </svg>
-            </div>
-            {adminMenuOpen && (
-              <button
-                className="logout-nav-btn"
-                onClick={handleLogout}
-                title="Se déconnecter"
-              >
-                <LogoutIcon />
-              </button>
-            )}
-          </div>
+  <div
+    className="admin-nav-user"
+    onClick={() => setAdminMenuOpen(!adminMenuOpen)}
+  >
+    <UserIcon size={16} />
+    <span className="admin-nav-label">Administrateur</span>
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+      style={{ transform: adminMenuOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>
+      <polyline points="6 9 12 15 18 9"/>
+    </svg>
+  </div>
+  
+  {adminMenuOpen && (
+    <div className="admin-dropdown-menu">
+      <div className="admin-dropdown-email">admin</div>
+      <button
+        className="admin-dropdown-logout"
+        onClick={handleLogout}
+      >
+        <LogoutIcon />
+        Se déconnecter
+      </button>
+    </div>
+  )}
+</div>
         </div>
 
         {/* Contenu principal (liste ou conversation) */}

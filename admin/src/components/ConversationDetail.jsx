@@ -198,8 +198,8 @@ function ConversationDetail({ conversation, onUpdate }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: 'rgba(21,173,132,0.1)',
-          color: '#15AD84',
+          background: 'rgba(255,153,0,0.1)',
+          color: '#FF9900',
           flexShrink: 0,
           cursor: 'default',
         }}
@@ -214,7 +214,7 @@ function ConversationDetail({ conversation, onUpdate }) {
 
   return (
     <div className="conversation-detail">
-      {/* ✅ Header SUPPRIMÉ - plus de "Utilisateur : X" */}
+      {/* Header SUPPRIMÉ - plus de "Utilisateur : X" */}
 
       <div className="messages-container">
         {messages.length === 0 && (

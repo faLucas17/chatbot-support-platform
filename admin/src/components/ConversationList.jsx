@@ -71,7 +71,7 @@ function getPreview(messages) {
   if (!messages || messages.length === 0) return 'Aucun message';
   const lastMessage = messages[messages.length - 1];
   const text = lastMessage.content || '';
-  return text.length > 35 ? text.substring(0, 35) + '…' : text;
+  return text.length > 30 ? text.substring(0, 30) + '…' : text;
 }
 
 function formatDate(dateStr) {
@@ -275,7 +275,9 @@ export default function ConversationList({ conversations = [], onSelect, selecte
                 return (
                   <div
                     key={conv.id}
-                    onMouseEnter={() => setHoveredConvId(conv.id)}
+                    onMouseEnter={() => {
+                      setHoveredConvId(conv.id);
+                    }}
                     onMouseLeave={() => {
                       setHoveredConvId(null);
                       setShowDeleteMenu(null);
@@ -289,13 +291,17 @@ export default function ConversationList({ conversations = [], onSelect, selecte
                       cursor: 'pointer',
                       transition: 'background 0.15s, border-color 0.15s, box-shadow 0.15s',
                       background: isSelected ? 'var(--bg-active)' : 'var(--bg-card)',
-                      border: isSelected ? '1px solid rgba(21,173,132,0.3)' : '1px solid var(--border)',
+                      border: isSelected 
+                        ? '1px solid rgba(21,173,132,0.3)' 
+                        : isHovered 
+                          ? '1px solid var(--accent)' 
+                          : '1px solid var(--border)',
                       borderLeft: isSelected ? '2px solid #15AD84' : '2px solid transparent',
                       boxShadow: isSelected ? 'none' : 'var(--shadow-sm)',
                       position: 'relative',
                     }}
                   >
-                    {/* Date à GAUCHE + Titre + Badge Escal. */}
+                    {/* Date + Titre + Badge Escaladé (compact) */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <span style={{ fontSize: '8px', color: 'var(--text-muted)', flexShrink: 0 }}>
                         {dateStr}
@@ -315,19 +321,19 @@ export default function ConversationList({ conversations = [], onSelect, selecte
                         <span style={{
                           display: 'inline-flex',
                           alignItems: 'center',
-                          gap: '1px',
+                          gap: '2px',
                           background: 'rgba(255,153,0,0.08)',
                           color: '#CC7A00',
                           border: '1px solid rgba(255,153,0,0.15)',
                           borderRadius: '20px',
-                          fontSize: '6px',
+                          fontSize: '7px',
                           fontWeight: '700',
-                          padding: '0px 3px',
+                          padding: '1px 6px',
                           flexShrink: 0,
                           letterSpacing: '0.2px',
                         }}>
                           <AlertIcon />
-                          Escal.
+                          Escaladée
                         </span>
                       )}
                       
@@ -372,7 +378,10 @@ export default function ConversationList({ conversations = [], onSelect, selecte
                               padding: '4px',
                             }}>
                               <button
-                                onClick={(e) => handleDelete(conv.id, e)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDelete(conv.id, e);
+                                }}
                                 style={{
                                   display: 'flex',
                                   alignItems: 'center',
@@ -401,7 +410,7 @@ export default function ConversationList({ conversations = [], onSelect, selecte
                       )}
                     </div>
 
-                    {/* Aperçu */}
+                    {/* Aperçu - ESPACE RÉDUIT */}
                     <div style={{
                       fontSize: '10px',
                       color: 'var(--text-muted)',
