@@ -25,7 +25,7 @@ const MessageSquareIcon = () => (
 );
 
 const AlertIcon = () => (
-  <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
+  <svg width="8" height="8" viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
     <line x1="12" y1="9" x2="12" y2="13"/>
@@ -33,18 +33,36 @@ const AlertIcon = () => (
   </svg>
 );
 
-// ── Helpers (identiques à votre logique d'origine) ──────────
+const MoreIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+    <circle cx="12" cy="5" r="2" />
+    <circle cx="12" cy="12" r="2" />
+    <circle cx="12" cy="19" r="2" />
+  </svg>
+);
+
+const TrashIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="3 6 5 6 21 6"/>
+    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+    <line x1="10" y1="11" x2="10" y2="17"/>
+    <line x1="14" y1="11" x2="14" y2="17"/>
+  </svg>
+);
+
+// ── Helpers ──────────────────────────────────────────────
 function getConversationTitle(messages) {
   if (!messages || messages.length === 0) return 'Nouvelle conversation';
   const firstUserMessage = messages.find(msg => msg.role === 'user');
   if (firstUserMessage) {
     const content = firstUserMessage.content.trim();
-    return content.length > 45 ? content.substring(0, 45) + '…' : content;
+    return content.length > 25 ? content.substring(0, 25) + '…' : content;
   }
   const firstMessage = messages[0];
   if (firstMessage) {
     const content = firstMessage.content.trim();
-    return content.length > 45 ? content.substring(0, 45) + '…' : content;
+    return content.length > 25 ? content.substring(0, 25) + '…' : content;
   }
   return 'Nouvelle conversation';
 }
@@ -53,7 +71,7 @@ function getPreview(messages) {
   if (!messages || messages.length === 0) return 'Aucun message';
   const lastMessage = messages[messages.length - 1];
   const text = lastMessage.content || '';
-  return text.length > 55 ? text.substring(0, 55) + '…' : text;
+  return text.length > 35 ? text.substring(0, 35) + '…' : text;
 }
 
 function formatDate(dateStr) {
@@ -79,7 +97,6 @@ function getInitials(name) {
     : name.slice(0, 2).toUpperCase();
 }
 
-// Couleur d'avatar déterministe selon le nom
 const AVATAR_COLORS = [
   ['#15AD84', '#0D8A69'],
   ['#FF9900', '#CC7700'],
@@ -96,11 +113,12 @@ function avatarColor(name) {
 }
 
 // ── Composant ──────────────────────────────────────────────
-export default function ConversationList({ conversations = [], onSelect, selectedId }) {
+export default function ConversationList({ conversations = [], onSelect, selectedId, onDeleteConversation }) {
   const [search, setSearch] = useState('');
   const [expandedUsers, setExpandedUsers] = useState({});
+  const [hoveredConvId, setHoveredConvId] = useState(null);
+  const [showDeleteMenu, setShowDeleteMenu] = useState(null);
 
-  // Filtre sur le titre ou le nom utilisateur
   const filtered = conversations.filter(conv => {
     if (!search) return true;
     const q = search.toLowerCase();
@@ -109,7 +127,6 @@ export default function ConversationList({ conversations = [], onSelect, selecte
     return title.includes(q) || user.includes(q);
   });
 
-  // Grouper par utilisateur — même logique que votre code d'origine
   const grouped = filtered.reduce((acc, conv) => {
     const userName = conv.user_name || 'Anonyme';
     if (!acc[userName]) acc[userName] = [];
@@ -119,6 +136,16 @@ export default function ConversationList({ conversations = [], onSelect, selecte
 
   const toggleUser = (name) =>
     setExpandedUsers(prev => ({ ...prev, [name]: !prev[name] }));
+
+  const handleDelete = (convId, e) => {
+    e.stopPropagation();
+    if (window.confirm('Voulez-vous vraiment supprimer cette conversation ?')) {
+      if (onDeleteConversation) {
+        onDeleteConversation(convId);
+      }
+      setShowDeleteMenu(null);
+    }
+  };
 
   if (conversations.length === 0) {
     return (
@@ -174,10 +201,10 @@ export default function ConversationList({ conversations = [], onSelect, selecte
           const isAnon = userName === 'Anonyme';
           const initials = getInitials(userName);
           const [c1, c2] = avatarColor(userName);
-          const isOpen = expandedUsers[userName] !== false; // ouvert par défaut
+          const isOpen = expandedUsers[userName] !== false;
 
           return (
-            <div key={userName} style={{ marginBottom: '6px' }}>
+            <div key={userName} style={{ marginBottom: '4px' }}>
 
               {/* En-tête utilisateur */}
               <div
@@ -185,67 +212,62 @@ export default function ConversationList({ conversations = [], onSelect, selecte
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '8px',
-                  padding: '7px 10px',
-                  borderRadius: '9px',
+                  gap: '6px',
+                  padding: '4px 8px',
+                  borderRadius: '6px',
                   cursor: 'pointer',
                   userSelect: 'none',
                   transition: 'background 0.15s',
                   background: 'var(--bg-input)',
                   border: '1px solid var(--border)',
-                  marginBottom: '4px',
+                  marginBottom: '3px',
                 }}
                 onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'var(--bg-input)'}
               >
-                {/* Avatar utilisateur */}
                 <div style={{
-                  width: '26px',
-                  height: '26px',
+                  width: '20px',
+                  height: '20px',
                   borderRadius: '50%',
                   flexShrink: 0,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  background: isAnon
-                    ? 'rgba(21,173,132,0.1)'
-                    : `linear-gradient(135deg, ${c1}, ${c2})`,
+                  background: isAnon ? 'rgba(21,173,132,0.1)' : `linear-gradient(135deg, ${c1}, ${c2})`,
                   color: isAnon ? '#15AD84' : 'white',
-                  fontSize: '10px',
+                  fontSize: '8px',
                   fontWeight: '700',
                 }}>
-                  {isAnon ? <UserIcon size={13} /> : initials}
+                  {isAnon ? <UserIcon size={10} /> : initials}
                 </div>
 
-                {/* Nom */}
-                <span style={{ flex: 1, fontSize: '12px', fontWeight: '600', color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <span style={{ flex: 1, fontSize: '11px', fontWeight: '600', color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {userName}
                 </span>
 
-                {/* Badge nombre de conversations */}
                 <span style={{
                   background: 'rgba(21,173,132,0.12)',
                   color: '#15AD84',
                   border: '1px solid rgba(21,173,132,0.2)',
                   borderRadius: '20px',
-                  fontSize: '10px',
+                  fontSize: '8px',
                   fontWeight: '700',
-                  padding: '1px 7px',
+                  padding: '0px 5px',
                   flexShrink: 0,
                 }}>
                   {userConvs.length}
                 </span>
 
-                {/* Chevron */}
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
                   style={{ flexShrink: 0, transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>
                   <polyline points="6 9 12 15 18 9"/>
                 </svg>
               </div>
 
-              {/* Conversations de cet utilisateur */}
+              {/* Conversations */}
               {isOpen && userConvs.map(conv => {
                 const isSelected = String(selectedId) === String(conv.id);
+                const isHovered = hoveredConvId === conv.id;
                 const title = getConversationTitle(conv.messages);
                 const preview = getPreview(conv.messages);
                 const dateStr = formatDate(conv.created_at);
@@ -253,32 +275,30 @@ export default function ConversationList({ conversations = [], onSelect, selecte
                 return (
                   <div
                     key={conv.id}
+                    onMouseEnter={() => setHoveredConvId(conv.id)}
+                    onMouseLeave={() => {
+                      setHoveredConvId(null);
+                      setShowDeleteMenu(null);
+                    }}
                     onClick={() => onSelect(conv)}
                     style={{
-                      padding: '8px 10px 8px 14px',
-                      marginBottom: '5px',
-                      marginLeft: '8px',
-                      borderRadius: '9px',
+                      padding: '4px 8px 4px 10px',
+                      marginBottom: '3px',
+                      marginLeft: '4px',
+                      borderRadius: '5px',
                       cursor: 'pointer',
                       transition: 'background 0.15s, border-color 0.15s, box-shadow 0.15s',
-                      /* Cadre neutre — visible en permanence, cohérent light/dark */
                       background: isSelected ? 'var(--bg-active)' : 'var(--bg-card)',
-                      border: isSelected
-                        ? '1px solid rgba(21,173,132,0.35)'
-                        : '1px solid var(--border)',
-                      borderLeft: isSelected
-                        ? '3px solid #15AD84'
-                        : '3px solid transparent',
+                      border: isSelected ? '1px solid rgba(21,173,132,0.3)' : '1px solid var(--border)',
+                      borderLeft: isSelected ? '2px solid #15AD84' : '2px solid transparent',
                       boxShadow: isSelected ? 'none' : 'var(--shadow-sm)',
                       position: 'relative',
                     }}
-                    onMouseEnter={e => { if (!isSelected) { e.currentTarget.style.background = 'var(--bg-hover)'; e.currentTarget.style.borderColor = 'var(--accent)'; } }}
-                    onMouseLeave={e => { if (!isSelected) { e.currentTarget.style.background = 'var(--bg-card)'; e.currentTarget.style.borderColor = 'var(--border)'; } }}
                   >
-                    {/* Titre + date */}
-                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '6px', marginBottom: '3px' }}>
+                    {/* Titre + date + badge + trois points */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                       <span style={{
-                        fontSize: '12px',
+                        fontSize: '11px',
                         fontWeight: isSelected ? '700' : '600',
                         color: isSelected ? '#15AD84' : 'var(--text-primary)',
                         overflow: 'hidden',
@@ -288,41 +308,109 @@ export default function ConversationList({ conversations = [], onSelect, selecte
                       }}>
                         {title}
                       </span>
-                      <span style={{ fontSize: '10px', color: 'var(--text-muted)', flexShrink: 0, marginTop: '1px' }}>
+                      <span style={{ fontSize: '8px', color: 'var(--text-muted)', flexShrink: 0 }}>
                         {dateStr}
                       </span>
+                      {conv.escalated && (
+                        <span style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '2px',
+                          background: 'rgba(255,153,0,0.1)',
+                          color: '#CC7A00',
+                          border: '1px solid rgba(255,153,0,0.2)',
+                          borderRadius: '20px',
+                          fontSize: '7px',
+                          fontWeight: '700',
+                          padding: '0px 4px',
+                          flexShrink: 0,
+                        }}>
+                          <AlertIcon />
+                          Escal.
+                        </span>
+                      )}
+                      
+                      {/* Trois points au survol */}
+                      {isHovered && (
+                        <div style={{ position: 'relative', flexShrink: 0 }}>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowDeleteMenu(showDeleteMenu === conv.id ? null : conv.id);
+                            }}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              cursor: 'pointer',
+                              padding: '2px 4px',
+                              borderRadius: '4px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: 'var(--text-muted)',
+                            }}
+                            onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
+                            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                          >
+                            <MoreIcon />
+                          </button>
+                          
+                          {/* Menu déroulant avec la poubelle */}
+                          {showDeleteMenu === conv.id && (
+                            <div style={{
+                              position: 'absolute',
+                              right: 0,
+                              top: '100%',
+                              marginTop: '4px',
+                              background: 'var(--bg-card)',
+                              border: '1px solid var(--border)',
+                              borderRadius: '6px',
+                              boxShadow: 'var(--shadow-md)',
+                              zIndex: 100,
+                              minWidth: '120px',
+                              padding: '4px',
+                            }}>
+                              <button
+                                onClick={(e) => handleDelete(conv.id, e)}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '6px',
+                                  width: '100%',
+                                  padding: '6px 10px',
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  cursor: 'pointer',
+                                  background: 'transparent',
+                                  color: '#EF4444',
+                                  fontSize: '12px',
+                                  fontWeight: '500',
+                                  fontFamily: 'Poppins, sans-serif',
+                                  transition: 'background 0.15s',
+                                }}
+                                onMouseEnter={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}
+                                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                              >
+                                <TrashIcon />
+                                Supprimer
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     {/* Aperçu */}
                     <div style={{
-                      fontSize: '11px',
+                      fontSize: '10px',
                       color: 'var(--text-muted)',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
-                      marginBottom: conv.escalated ? '5px' : '0',
+                      marginTop: '1px',
                     }}>
                       {preview}
                     </div>
-
-                    {/* Badge escaladé — compact */}
-                    {conv.escalated && (
-                      <span style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '3px',
-                        background: 'rgba(255,153,0,0.1)',
-                        color: '#CC7A00',
-                        border: '1px solid rgba(255,153,0,0.25)',
-                        borderRadius: '20px',
-                        fontSize: '9px',
-                        fontWeight: '700',
-                        padding: '1px 6px',
-                      }}>
-                        <AlertIcon />
-                        Escaladée
-                      </span>
-                    )}
                   </div>
                 );
               })}

@@ -1,16 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { getConversation, replyToConversation } from '../api';
 import axios from 'axios';
 
 const LARAVEL_BASE = 'https://api-easyevent.bakeli.tech';
 
 // ── Avatar de l'agent ──
-// L'image doit se trouver dans le dossier "public" de votre projet Vite :
-// support_platform/public/images.jpg
-// Elle sera alors automatiquement accessible via le chemin "/images.jpg".
 const AGENT_AVATAR = "/images.jpg";
 
-// ── Avatar de l'agent : cadre + image réelle (remplace l'ancien logo "EE") ──
 const BotAvatar = () => (
   <div style={{
     width: '34px',
@@ -30,7 +26,7 @@ const BotAvatar = () => (
   </div>
 );
 
-// ── Icône utilisateur réelle (remplace l'emoji 👤) ──────────
+// ── Icône utilisateur ──────────────────────────────────────
 const UserIcon = ({ size = 14 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -47,25 +43,7 @@ const SendIcon = () => (
   </svg>
 );
 
-const RefreshIcon = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="23 4 23 10 17 10"/>
-    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
-  </svg>
-);
-
-const ArrowLeftIcon = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="19" y1="12" x2="5" y2="12"/>
-    <polyline points="12 19 5 12 12 5"/>
-  </svg>
-);
-
 // ── Parseur léger du contenu d'un message ────────────────────
-// Transforme les lignes commençant par "- " en vraies listes à puces
-// et le reste en paragraphes, sans toucher au contenu métier envoyé par le bot.
 const renderMessageContent = (content) => {
   if (!content) return null;
 
@@ -95,7 +73,6 @@ const renderMessageContent = (content) => {
       return;
     }
 
-    // Ligne vide → on ferme la liste en cours et on ajoute un petit espace
     if (line === '') {
       flushList();
       return;
@@ -108,44 +85,39 @@ const renderMessageContent = (content) => {
   });
 
   flushList();
-
   return elements;
 };
+
+// ── Fonction pour obtenir les initiales ──────────────────
+function getInitials(name) {
+  if (!name || name === 'Anonyme') return null;
+  const parts = name.trim().split(' ');
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  return name.slice(0, 2).toUpperCase();
+}
 
 function ConversationDetail({ conversation, onUpdate }) {
   const [messages, setMessages] = useState(conversation.messages || []);
   const [reply, setReply] = useState('');
   const [sending, setSending] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [userName, setUserName] = useState(conversation.user_name || 'Anonyme');
   const [textareaKey, setTextareaKey] = useState(0);
+  const textareaRef = useRef(null);
 
+  // Auto-resize du textarea
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+    }
+  }, [reply]);
 
   useEffect(() => {
     setMessages(conversation.messages || []);
     setUserName(conversation.user_name || 'Anonyme');
   }, [conversation]);
-
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    try {
-      const res = await getConversation(conversation.id);
-      setMessages(res.data.messages);
-      setUserName(res.data.user_name || 'Anonyme');
-    } catch (err) {
-      console.error('Erreur rafraîchissement:', err);
-    } finally {
-      setRefreshing(false);
-    }
-  };
 
   const handleSendReply = async (e) => {
     e.preventDefault();
@@ -165,16 +137,13 @@ function ConversationDetail({ conversation, onUpdate }) {
     
     try {
       await replyToConversation(conversation.id, replyContent);
-      console.log(` Réponse envoyée pour la conversation ${conversation.id}`);
       
-      // Appel à Laravel pour marquer l'escalade comme résolue
       try {
         await axios.post(`${LARAVEL_BASE}/api/chatbot/escalations/mark-resolved`, {
           conversation_id: conversation.id
         });
-        console.log(` Escalade marquée comme résolue pour la conversation ${conversation.id}`);
       } catch (laravelErr) {
-        console.warn(' Erreur Laravel (non bloquante):', laravelErr.message);
+        console.warn('Erreur Laravel (non bloquante):', laravelErr.message);
       }
       
       const res = await getConversation(conversation.id);
@@ -188,7 +157,7 @@ function ConversationDetail({ conversation, onUpdate }) {
       });
       
     } catch (err) {
-      console.error('❌ Erreur lors de l\'envoi de la réponse:', err);
+      console.error('Erreur lors de l\'envoi de la réponse:', err);
       setMessages(prev => prev.filter(msg => msg.id !== tempReplyMessage.id));
       setReply(replyContent);
     } finally {
@@ -196,32 +165,56 @@ function ConversationDetail({ conversation, onUpdate }) {
     }
   };
 
-  const getAvatar = (role) => {
-    return role === 'user' ? <UserIcon size={15} /> : <BotAvatar />;
+  const getAvatar = (role, msgUserName) => {
+    if (role === 'user') {
+      const initials = getInitials(msgUserName || userName);
+      if (initials) {
+        return (
+          <div style={{
+            width: '34px',
+            height: '34px',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'linear-gradient(135deg, #15AD84 0%, #FF9900 100%)',
+            color: 'white',
+            fontSize: '14px',
+            fontWeight: '700',
+            flexShrink: 0,
+            cursor: 'default',
+          }}
+          title={`Utilisateur : ${msgUserName || userName}`}
+          >
+            {initials}
+          </div>
+        );
+      }
+      return (
+        <div style={{
+          width: '34px',
+          height: '34px',
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'rgba(21,173,132,0.1)',
+          color: '#15AD84',
+          flexShrink: 0,
+          cursor: 'default',
+        }}
+        title={`Utilisateur : ${msgUserName || userName}`}
+        >
+          <UserIcon size={18} />
+        </div>
+      );
+    }
+    return <BotAvatar />;
   };
 
   return (
     <div className="conversation-detail">
-      <div className="detail-header">
-        {/* Retour + Rafraîchir + Utilisateur, tous alignés à gauche/droite (titre centré retiré) */}
-        <div className="detail-header-sub-row">
-          <div className="detail-header-actions">
-            <button onClick={() => window.location.href = '/'} className="back-btn">
-              <ArrowLeftIcon />
-              <span>Retour</span>
-            </button>
-            <button onClick={handleRefresh} disabled={refreshing} className="refresh-btn">
-              <RefreshIcon />
-              {!isMobile && <span>Rafraîchir</span>}
-            </button>
-          </div>
-
-          <div className="detail-header-user">
-            <UserIcon size={20} />
-            <span>Utilisateur : <strong>{userName}</strong></span>
-          </div>
-        </div>
-      </div>
+      {/* ✅ Header SUPPRIMÉ - plus de "Utilisateur : X" */}
 
       <div className="messages-container">
         {messages.length === 0 && (
@@ -229,25 +222,39 @@ function ConversationDetail({ conversation, onUpdate }) {
             Aucun message dans cette conversation
           </div>
         )}
-        {messages.map((msg) => (
-          <div key={msg.id} className={`message ${msg.role}`}>
-            <div className="message-avatar">{getAvatar(msg.role)}</div>
-            <div className="message-content">
-              <div className="message-text">{renderMessageContent(msg.content)}</div>
-              <div className="message-time">{new Date(msg.created_at).toLocaleString()}</div>
+        {messages.map((msg) => {
+          const msgUserName = msg.user_name || userName;
+          return (
+            <div key={msg.id} className={`message ${msg.role}`}>
+              <div className="message-avatar">
+                {getAvatar(msg.role, msgUserName)}
+              </div>
+              <div className="message-content">
+                <div className="message-text">{renderMessageContent(msg.content)}</div>
+                <div className="message-time-left">
+                  {new Date(msg.created_at).toLocaleString()}
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      {/* Zone de réponse — réduite, bouton sur la même ligne, aucune limite de caractères */}
+      {/* Zone de réponse avec auto-resize */}
       <form onSubmit={handleSendReply} className="reply-form">
         <textarea
           key={textareaKey}
+          ref={textareaRef}
           value={reply}
           onChange={(e) => setReply(e.target.value)}
           placeholder="Écrivez votre réponse ici..."
           rows={1}
+          style={{
+            overflow: 'hidden',
+            resize: 'none',
+            minHeight: '40px',
+            maxHeight: '200px',
+          }}
         />
         <button type="submit" disabled={sending || !reply.trim()}>
           <SendIcon />

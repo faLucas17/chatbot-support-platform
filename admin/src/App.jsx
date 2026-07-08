@@ -273,8 +273,8 @@ const LogoutIcon = () => (
   </svg>
 );
 
-const UserIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+const UserIcon = ({ size = 14 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
     <circle cx="12" cy="7" r="4"/>
@@ -350,7 +350,7 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  // Menu déroulant de la carte Administrateur (révèle le bouton Se déconnecter)
+  // Menu déroulant du bloc Administration (révèle le bouton Se déconnecter)
   const [adminMenuOpen, setAdminMenuOpen] = useState(false);
 
   const [searchParams] = useSearchParams();
@@ -444,77 +444,32 @@ function App() {
       <div className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
 
-          {/* Ligne 1 : logo + toggle clair/sombre (même ligne, comme demandé) */}
+          {/* Ligne unique : logo à gauche, Rafraîchir + Retour en icônes seules à droite
+              (gain de place : la barre de recherche et la liste remontent) */}
           <div className="sidebar-header-top">
             <div className="sidebar-logo">
               <span className="logo-easy">Easy</span>
               <span className="logo-event">Event</span>
               <span className="logo-support">· Support</span>
             </div>
-            <button
-              className="theme-toggle-btn"
-              onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-              title={theme === 'light' ? 'Passer en mode sombre' : 'Passer en mode clair'}
-            >
-              {theme === 'light' ? <MoonIcon /> : <SunIcon />}
-            </button>
-          </div>
-
-          {/* Ligne 2 : actions claires avec libellé visible (plus besoin de survoler) */}
-          <div className="sidebar-actions-row">
-            <button
-              className="action-pill"
-              onClick={loadConversations}
-              title="Rafraîchir la liste des conversations"
-            >
-              <RefreshIcon />
-              <span>Rafraîchir</span>
-            </button>
-
-            {selectedConversation && (
+            <div className="sidebar-header-icons">
               <button
-                className="action-pill"
-                onClick={() => setSelectedConversation(null)}
-                title="Retour à la liste des conversations"
+                className="header-icon-btn"
+                onClick={loadConversations}
+                title="Rafraîchir la liste des conversations"
               >
-                <ArrowLeftIcon />
-                <span>Retour</span>
+                <RefreshIcon />
               </button>
-            )}
-          </div>
-
-          {/* Carte Administrateur — cliquable pour révéler "Se déconnecter" */}
-          <div
-            className={`admin-card ${adminMenuOpen ? 'open' : ''}`}
-            onClick={() => setAdminMenuOpen(!adminMenuOpen)}
-            role="button"
-            tabIndex={0}
-          >
-            <div className="admin-card-row">
-              <div className="admin-avatar">
-                <UserIcon />
-              </div>
-              <div className="admin-info">
-                <div className="admin-name">Administrateur</div>
-                <div className="admin-email">
-                  {localStorage.getItem('support_remember_email') || 'admin'}
-                </div>
-              </div>
-              <span className="admin-status-dot" />
-              <span className={`admin-chevron ${adminMenuOpen ? 'rotated' : ''}`}>
-                <ChevronDownIcon />
-              </span>
+              {selectedConversation && (
+                <button
+                  className="header-icon-btn"
+                  onClick={() => setSelectedConversation(null)}
+                  title="Retour à la liste des conversations"
+                >
+                  <ArrowLeftIcon />
+                </button>
+              )}
             </div>
-
-            {adminMenuOpen && (
-              <button
-                className="logout-btn-inline"
-                onClick={(e) => { e.stopPropagation(); handleLogout(); }}
-              >
-                <LogoutIcon />
-                <span>Se déconnecter</span>
-              </button>
-            )}
           </div>
 
         </div>
@@ -528,6 +483,46 @@ function App() {
           }}
           selectedId={selectedConversation?.id}
         />
+
+        {/* ── BARRE ADMINISTRATION — fixée en bas, toujours visible ── */}
+        <div className="sidebar-footer">
+          <button
+            className="theme-toggle-mini"
+            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+            title={theme === 'light' ? 'Passer en mode sombre' : 'Passer en mode clair'}
+          >
+            {theme === 'light' ? <MoonIcon /> : <SunIcon />}
+          </button>
+
+          <div
+            className={`admin-mini ${adminMenuOpen ? 'open' : ''}`}
+            onClick={() => setAdminMenuOpen(!adminMenuOpen)}
+            role="button"
+            tabIndex={0}
+          >
+            {adminMenuOpen && (
+              <div className="admin-mini-menu">
+                <button
+                  className="logout-btn-inline"
+                  onClick={(e) => { e.stopPropagation(); handleLogout(); }}
+                >
+                  <LogoutIcon />
+                  <span>Se déconnecter</span>
+                </button>
+              </div>
+            )}
+            <div className="admin-mini-row">
+              <span className="admin-mini-avatar">
+                <UserIcon size={12} />
+              </span>
+              <span className="admin-mini-label">Administration</span>
+              <span className={`admin-mini-chevron ${adminMenuOpen ? 'rotated' : ''}`}>
+                <ChevronDownIcon />
+              </span>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       {/* ── MAIN CONTENT ── */}
