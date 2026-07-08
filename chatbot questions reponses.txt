@@ -1,225 +1,246 @@
-================================================================================
-                    LISTE DES QUESTIONS POUR LE BOT (MOCK)
-================================================================================
-
-QUESTIONS QUE LE BOT PEUT RÉPONDRE (MARKETING)
-================================================================================
-
-MARKETING DIGITAL
------------------
-- Qu'est-ce que le marketing digital ?
-- Définition du marketing digital
-- C'est quoi le marketing en ligne ?
-- Qu'est-ce que l'e-marketing ?
-
-SEO (RÉFÉRENCEMENT NATUREL)
-----------------------------
-- C'est quoi le SEO ?
-- Qu'est-ce que le référencement naturel ?
-- Définition du SEO
-- Comment fonctionne le SEO ?
-
-SEA (PUBLICITÉ PAYANTE)
-------------------------
-- C'est quoi le SEA ?
-- Qu'est-ce que Google Ads ?
-- Définition du SEA
-- Comment fonctionne le SEA ?
-
-RÉSEAUX SOCIAUX
-----------------
-- Quels sont les réseaux sociaux ?
-- À quoi sert Facebook ?
-- C'est quoi Instagram ?
-- À quoi sert LinkedIn ?
-- C'est quoi TikTok ?
-- Quel réseau social utiliser pour mon entreprise ?
-
-EMAIL MARKETING
-----------------
-- Qu'est-ce que l'email marketing ?
-- Comment fonctionne l'email marketing ?
-- Définition de l'email marketing
-
-CONTENT MARKETING (MARKETING DE CONTENU)
-------------------------------------------
-- Qu'est-ce que le content marketing ?
-- C'est quoi le marketing de contenu ?
-- Définition du content marketing
-
-INBOUND MARKETING
-------------------
-- Qu'est-ce que l'inbound marketing ?
-- Définition de l'inbound marketing
-
-OUTBOUND MARKETING
--------------------
-- C'est quoi l'outbound marketing ?
-- Définition de l'outbound marketing
-
-CONVERSION
-------------
-- Qu'est-ce que la conversion ?
-- Définition de la conversion en marketing
-
-TAUX DE CONVERSION
---------------------
-- Comment calculer le taux de conversion ?
-- Formule du taux de conversion
-- Qu'est-ce que le taux de conversion ?
-
-ROI (RETOUR SUR INVESTISSEMENT)
---------------------------------
-- Qu'est-ce que le ROI ?
-- Comment calculer le retour sur investissement ?
-- Définition du ROI
-
-CRM (GESTION DE LA RELATION CLIENT)
--------------------------------------
-- À quoi sert un CRM ?
-- Qu'est-ce qu'un CRM ?
-- Définition du CRM
-
-PERSONA
----------
-- C'est quoi un persona ?
-- Qu'est-ce qu'un persona en marketing ?
-- Définition du persona
-
-FUNNEL DE CONVERSION (ENTONNOIR)
-----------------------------------
-- Qu'est-ce que le funnel de conversion ?
-- Définition de l'entonnoir de conversion
-
-LEAD
-------
-- C'est quoi un lead ?
-- Qu'est-ce qu'un lead ?
-- Définition d'un lead
-
-PROSPECT
----------
-- Quelle est la différence entre lead et prospect ?
-- C'est quoi un prospect ?
-
-FIDÉLISATION CLIENT
----------------------
-- Qu'est-ce que la fidélisation client ?
-- Définition de la fidélisation
-
-ACQUISITION CLIENT
---------------------
-- C'est quoi l'acquisition client ?
-- Définition de l'acquisition
-
-NOTORIÉTÉ DE MARQUE
----------------------
-- Qu'est-ce que la notoriété de marque ?
-- Définition de la notoriété
-
-POSITIONNEMENT MARKETING
---------------------------
-- C'est quoi le positionnement marketing ?
-- Définition du positionnement
-
-SEGMENTATION MARKETING
-------------------------
-- Qu'est-ce que la segmentation marketing ?
-- Définition de la segmentation
-
-CIBLAGE MARKETING
--------------------
-- C'est quoi le ciblage marketing ?
-- Définition du ciblage
-
-GOOGLE ANALYTICS
------------------
-- À quoi sert Google Analytics ?
-- Qu'est-ce que Google Analytics ?
-- Définition de Google Analytics
-
-GROWTH HACKING
-----------------
-- C'est quoi le growth hacking ?
-- Qu'est-ce que le growth hacking ?
-
-STORYTELLING MARKETING
-------------------------
-- Qu'est-ce que le storytelling en marketing ?
-- Définition du storytelling
-
-================================================================================
-QUESTIONS QUI DÉCLENCHENT UNE ESCALADE DISCORD
-================================================================================
-
-CONTACT
---------
-- Quel est votre numéro de téléphone ?
-- Comment vous contacter ?
-- Quelle est votre adresse email ?
-- Avez-vous un service client ?
-
-HORAIRES
----------
-- Quels sont vos horaires d'ouverture ?
-- Vous êtes ouverts le dimanche ?
-- Êtes-vous disponible le week-end ?
-
-TARIFS
--------
-- Combien coûtent vos services ?
-- Quels sont vos prix ?
-- C'est gratuit ?
-- Quel est le prix de votre solution ?
-
-LOCALISATION
--------------
-- Où se trouve votre agence ?
-- Vous êtes basés où ?
-- Quelle est votre adresse ?
-
-SUPPORT CLIENT
----------------
-- Comment annuler ma commande ?
-- Comment modifier ma commande ?
-- Quel est le délai de livraison ?
-- Puis-je retourner un produit ?
-- Comment suivre ma commande ?
-
-PAIEMENT
----------
-- Acceptez-vous PayPal ?
-- Paiement en plusieurs fois ?
-- Quels moyens de paiement acceptez-vous ?
-- Puis-je payer par carte bancaire ?
-
-PROBLÈMES TECHNIQUES
----------------------
-- Comment réinitialiser mon mot de passe ?
-- L'application ne fonctionne pas
-- Je n'arrive pas à me connecter
-- Le site est lent
-
-GÉNÉRAL
---------
-- Qui êtes-vous ?
-- Parle-moi de ton entreprise
-- Depuis combien de temps existez-vous ?
-- Avez-vous des témoignages clients ?
-- Quels sont vos engagements ?
-
-================================================================================
-                    FIN DE LA LISTE
-================================================================================
+============================================================
+CHATBOT EASY EVENTS — QUESTIONS & RÉPONSES
+============================================================
+Version : Production
+Date : 07/07/2026
+IA : Grok (xAI) + Mock FAQ
+============================================================
 
 
-Pour Easy Events, voici où l'intégrer :
+🔹 1. MESSAGES D'ACCUEIL
+============================================================
+Question : bonjour / salut / hello / coucou / hey
+Réponse : Message d'accueil personnalisé avec présentation des services Easy Events.
 
-Frontend web (React/Vite) → widget JS flottant pour les participants
-App mobile (React Native) → chatbot intégré pour les organisateurs
+Question : 👋 Bonjour ! Comment puis-je vous aider ?
+Réponse : Message d'accueil par défaut du chatbot.
 
-avec les diffs users:
 
-- Participant 
-- Organisateur 
-- Agent PDV 
+🔹 2. PRÉSENTATION DE LA PLATEFORME
+============================================================
+Question : c'est quoi Easy Events ?
+Question : qu'est-ce que Easy Events ?
+Question : présentez-vous
+Question : plateforme
+Question : Easy Events c'est quoi ?
+
+Réponse : 
+Easy Events est une plateforme tout-en-un de gestion d'événements.
+- Créer et gérer des événements (dates, lieux, tarifs)
+- Gérer les inscriptions des participants
+- Générer et scanner des QR codes pour le contrôle d'accès
+- Créer et envoyer des sondages après événement
+- Gérer des agents PDV (points de vente) avec calcul des commissions
+- Suivre vos statistiques et performances
+
+
+🔹 3. INSCRIPTION À LA PLATEFORME
+============================================================
+Question : comment s'inscrire ?
+Question : créer un compte
+Question : inscription
+Question : comment créer un compte ?
+Question : nouveau compte
+Question : créer compte participant
+
+Réponse :
+Pour créer un compte sur Easy Events :
+1. Rendez-vous sur la page d'inscription : /register
+2. Remplissez le formulaire avec :
+   - Votre nom complet
+   - Votre email
+   - Votre numéro de téléphone
+   - Un mot de passe sécurisé
+3. Cliquez sur "S'inscrire"
+
+
+🔹 4. CONNEXION À LA PLATEFORME
+============================================================
+Question : comment se connecter ?
+Question : connexion
+Question : login
+Question : se connecter
+Question : comment se login ?
+
+Réponse :
+Pour vous connecter à Easy Events :
+1. Rendez-vous sur la page de connexion : /login
+2. Entrez votre email et mot de passe
+3. Cliquez sur "Se connecter"
+
+
+🔹 5. INSCRIPTION À UN ÉVÉNEMENT
+============================================================
+Question : comment s'inscrire à un événement ?
+Question : participer à un événement ?
+Question : rejoindre un événement ?
+Question : s'inscrire événement
+Question : comment participer ?
+
+Réponse :
+Pour vous inscrire à un événement sur Easy Events :
+1. Rendez-vous sur la page des événements : /events
+2. Choisissez l'événement qui vous intéresse
+3. Cliquez sur "S'inscrire maintenant"
+4. Confirmez votre inscription
+
+
+🔹 6. QR CODE / BILLET
+============================================================
+Question : QR code
+Question : c'est quoi un QR code ?
+Question : code QR
+Question : qr-code
+Question : billet
+Question : ticket
+
+Réponse :
+Le QR code sur Easy Events est votre billet d'entrée numérique !
+Vous recevez un QR code unique par email lors de l'inscription à un événement.
+📌 Où trouver mon QR code ?
+- Dans l'email de confirmation d'inscription
+- Dans votre tableau de bord participant → /participant/dashboard
+
+
+🔹 7. CRÉER UN ÉVÉNEMENT (Organisateur)
+============================================================
+Question : comment créer un événement ?
+Question : créer événement
+Question : organiser un événement ?
+Question : créer un événement ?
+Question : nouvel événement
+
+Réponse :
+Pour créer un événement sur Easy Events (réservé aux organisateurs) :
+Depuis l'application mobile :
+1. Connectez-vous avec votre compte organisateur
+2. Allez dans l'onglet "Nouveau"
+3. Remplissez le formulaire (titre, description, date, lieu, tarif, catégorie)
+4. Soumettez votre événement
+
+
+🔹 8. MES ÉVÉNEMENTS (Participant connecté)
+============================================================
+Question : mes événements
+Question : mes evenements
+Question : mes inscriptions
+Question : événements inscrits
+
+Réponse (si connecté) :
+- Affiche le nombre total d'événements inscrits
+- Liste des prochains événements
+- Lien vers le tableau de bord
+
+
+🔹 9. MES SONDAGES (Participant connecté)
+============================================================
+Question : mes sondages
+Question : sondage
+Question : sondages en attente
+
+Réponse (si connecté) :
+- Affiche le nombre de sondages en attente
+- Liste des sondages à répondre
+- Lien vers la page des sondages
+
+
+🔹 10. MON PROFIL / COMPTE (Participant connecté)
+============================================================
+Question : mon profil
+Question : mon compte
+Question : mes informations
+
+Réponse (si connecté) :
+Lien vers la page de modification du profil : /participant/profile
+
+
+🔹 11. CONTACTER LE SUPPORT
+============================================================
+Question : contacter support
+Question : aide
+Question : assistance
+Question : problème
+Question : bug
+Question : support
+Question : help
+
+Réponse :
+Pour contacter le support Easy Events :
+📧 Email : support@easyevents.com
+
+
+🔹 12. MOT DE PASSE OUBLIÉ
+============================================================
+Question : mot de passe oublié
+Question : réinitialiser mot de passe
+Question : password oublié
+Question : oublié mot de passe
+
+Réponse :
+1. Rendez-vous sur /login
+2. Cliquez sur "Mot de passe oublié"
+3. Entrez votre email
+4. Vous recevrez un lien de réinitialisation
+
+
+🔹 13. TARIFS / PRIX
+============================================================
+Question : tarif
+Question : prix
+Question : gratuit
+Question : payant
+Question : combien coûte ?
+
+Réponse :
+- L'inscription à la plateforme est gratuite.
+- Les événements peuvent être gratuits ou payants.
+- Le tarif est affiché sur la page de chaque événement sur /events
+
+
+🔹 14. PLACES DISPONIBLES
+============================================================
+Question : places restantes
+Question : places disponibles
+Question : complet
+
+Réponse :
+- Le nombre de places disponibles est affiché sur la page de chaque événement.
+- Si l'événement est complet, le bouton d'inscription affichera "Complet".
+
+
+🔹 15. QUESTIONS PERSONNELLES (NON CONNECTÉ)
+============================================================
+Situation : L'utilisateur n'est pas connecté et pose une question personnelle
+Réponse : 
+"Pour accéder à vos informations personnelles, veuillez vous connecter sur /login. Une fois connecté(e), je pourrai vous répondre de façon personnalisée ! 😊"
+
+
+🔹 16. ESCALADE (QUAND LE BOT NE SAIT PAS RÉPONDRE)
+============================================================
+Situation : Aucune réponse trouvée dans la FAQ, la base de connaissance ou les documents
+Action :
+1. Message d'attente envoyé à l'utilisateur
+2. Notification Discord envoyée à l'équipe
+3. Email envoyé à l'administrateur
+4. Enregistrement dans Laravel (Filament)
+
+Message affiché à l'utilisateur :
+"⏳ Un agent va prendre en charge votre demande dans quelques instants. Merci de votre patience !"
+
+
+============================================================
+RÉSUMÉ DES ACTIONS DU BOT
+============================================================
+. Répond aux questions générales sur Easy Events
+. Répond aux questions personnelles (si utilisateur connecté)
+. Redirige vers /login pour les utilisateurs non connectés
+. Escalade automatique vers un agent humain (Discord / Email / Laravel)
+. Utilise l'IA Grok pour les questions complexes
+. Utilise le Mock FAQ en cas d'indisponibilité de l'IA
+
+============================================================
+ POUR TESTER EN PRODUCTION
+============================================================
+URL de production : https://easy-event.bakeli.tech/
+URL Admin : https://support-platform-admin.onrender.com
+============================================================
