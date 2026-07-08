@@ -181,9 +181,13 @@ function ConversationDetail({ conversation, onUpdate }) {
   return (
     <div className="conversation-detail">
       <div className="detail-header">
-        {/* Ligne principale : titre à gauche, actions à droite */}
-        <div className="detail-header-main">
+        {/* Ligne 1 : titre seul, pleine largeur */}
+        <div className="detail-header-title-row">
           <h2>{getConversationTitle(messages, conversation.id)}</h2>
+        </div>
+
+        {/* Ligne 2 : Retour + Rafraîchir + Utilisateur, tous alignés à gauche */}
+        <div className="detail-header-sub-row">
           <div className="detail-header-actions">
             <button onClick={() => window.location.href = '/'} className="back-btn">
               <ArrowLeftIcon />
@@ -194,12 +198,11 @@ function ConversationDetail({ conversation, onUpdate }) {
               {!isMobile && <span>Rafraîchir</span>}
             </button>
           </div>
-        </div>
 
-        {/* Ligne secondaire : info utilisateur alignée à droite */}
-        <div className="detail-header-user">
-          <UserIcon size={13} />
-          <span>Utilisateur : <strong>{userName}</strong></span>
+          <div className="detail-header-user">
+            <UserIcon size={13} />
+            <span>Utilisateur : <strong>{userName}</strong></span>
+          </div>
         </div>
       </div>
 
