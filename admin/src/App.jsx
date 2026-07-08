@@ -227,7 +227,7 @@ function LoginPage({ onLogin, theme }) {
 // ICÔNES SVG pour le header post-login
 // ============================================================
 const RefreshIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="23 4 23 10 17 10"/>
     <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
@@ -235,7 +235,7 @@ const RefreshIcon = () => (
 );
 
 const ArrowLeftIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <line x1="19" y1="12" x2="5" y2="12"/>
     <polyline points="12 19 5 12 12 5"/>
@@ -265,7 +265,7 @@ const MoonIcon = () => (
 );
 
 const LogoutIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
     <polyline points="16 17 21 12 16 7"/>
@@ -278,6 +278,13 @@ const UserIcon = () => (
     stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
     <circle cx="12" cy="7" r="4"/>
+  </svg>
+);
+
+const ChevronDownIcon = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="6 9 12 15 18 9"/>
   </svg>
 );
 
@@ -343,6 +350,8 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  // Menu déroulant de la carte Administrateur (révèle le bouton Se déconnecter)
+  const [adminMenuOpen, setAdminMenuOpen] = useState(false);
 
   const [searchParams] = useSearchParams();
 
@@ -435,94 +444,77 @@ function App() {
       <div className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
 
-          {/* Ligne logo + actions */}
+          {/* Ligne 1 : logo + toggle clair/sombre (même ligne, comme demandé) */}
           <div className="sidebar-header-top">
             <div className="sidebar-logo">
               <span className="logo-easy">Easy</span>
               <span className="logo-event">Event</span>
               <span className="logo-support">· Support</span>
             </div>
-            <div className="sidebar-actions">
-              {/* Bouton Rafraîchir */}
-              <button
-                className="icon-btn"
-                onClick={loadConversations}
-                title="Rafraîchir"
-              >
-                <RefreshIcon />
-              </button>
-
-              {/* Bouton Retour (si conversation ouverte) */}
-              {selectedConversation && (
-                <button
-                  className="icon-btn"
-                  onClick={() => setSelectedConversation(null)}
-                  title="Retour à la liste"
-                >
-                  <ArrowLeftIcon />
-                </button>
-              )}
-
-              {/* Bouton Dark/Light */}
-              <button
-                className="icon-btn"
-                onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-                title={theme === 'light' ? 'Mode sombre' : 'Mode clair'}
-              >
-                {theme === 'light' ? <MoonIcon /> : <SunIcon />}
-              </button>
-
-              {/* Bouton Déconnexion */}
-              <button
-                className="icon-btn"
-                onClick={handleLogout}
-                title="Se déconnecter"
-              >
-                <LogoutIcon />
-              </button>
-            </div>
+            <button
+              className="theme-toggle-btn"
+              onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+              title={theme === 'light' ? 'Passer en mode sombre' : 'Passer en mode clair'}
+            >
+              {theme === 'light' ? <MoonIcon /> : <SunIcon />}
+            </button>
           </div>
 
-          {/* Identité utilisateur admin */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            marginTop: '8px',
-            padding: '6px 8px',
-            borderRadius: '8px',
-            background: 'var(--bg-input)',
-            border: '1px solid var(--border)',
-          }}>
-            <div style={{
-              width: '24px',
-              height: '24px',
-              borderRadius: '50%',
-              background: 'rgba(255,153,0,0.15)',
-              color: '#FF9900',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-            }}>
-              <UserIcon />
-            </div>
-            <div>
-              <div style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-primary)' }}>
-                Administrateur
+          {/* Ligne 2 : actions claires avec libellé visible (plus besoin de survoler) */}
+          <div className="sidebar-actions-row">
+            <button
+              className="action-pill"
+              onClick={loadConversations}
+              title="Rafraîchir la liste des conversations"
+            >
+              <RefreshIcon />
+              <span>Rafraîchir</span>
+            </button>
+
+            {selectedConversation && (
+              <button
+                className="action-pill"
+                onClick={() => setSelectedConversation(null)}
+                title="Retour à la liste des conversations"
+              >
+                <ArrowLeftIcon />
+                <span>Retour</span>
+              </button>
+            )}
+          </div>
+
+          {/* Carte Administrateur — cliquable pour révéler "Se déconnecter" */}
+          <div
+            className={`admin-card ${adminMenuOpen ? 'open' : ''}`}
+            onClick={() => setAdminMenuOpen(!adminMenuOpen)}
+            role="button"
+            tabIndex={0}
+          >
+            <div className="admin-card-row">
+              <div className="admin-avatar">
+                <UserIcon />
               </div>
-              <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
-                {localStorage.getItem('support_remember_email') || 'admin'}
+              <div className="admin-info">
+                <div className="admin-name">Administrateur</div>
+                <div className="admin-email">
+                  {localStorage.getItem('support_remember_email') || 'admin'}
+                </div>
               </div>
+              <span className="admin-status-dot" />
+              <span className={`admin-chevron ${adminMenuOpen ? 'rotated' : ''}`}>
+                <ChevronDownIcon />
+              </span>
             </div>
-            <span style={{
-              marginLeft: 'auto',
-              width: '7px',
-              height: '7px',
-              borderRadius: '50%',
-              background: '#15AD84',
-              flexShrink: 0,
-            }} />
+
+            {adminMenuOpen && (
+              <button
+                className="logout-btn-inline"
+                onClick={(e) => { e.stopPropagation(); handleLogout(); }}
+              >
+                <LogoutIcon />
+                <span>Se déconnecter</span>
+              </button>
+            )}
           </div>
 
         </div>

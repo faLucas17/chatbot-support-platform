@@ -256,22 +256,24 @@ export default function ConversationList({ conversations = [], onSelect, selecte
                     onClick={() => onSelect(conv)}
                     style={{
                       padding: '8px 10px 8px 14px',
-                      marginBottom: '2px',
+                      marginBottom: '5px',
                       marginLeft: '8px',
-                      borderRadius: '8px',
+                      borderRadius: '9px',
                       cursor: 'pointer',
-                      transition: 'background 0.15s',
-                      background: isSelected ? 'var(--bg-active)' : 'transparent',
+                      transition: 'background 0.15s, border-color 0.15s, box-shadow 0.15s',
+                      /* Cadre neutre — visible en permanence, cohérent light/dark */
+                      background: isSelected ? 'var(--bg-active)' : 'var(--bg-card)',
                       border: isSelected
-                        ? '1px solid rgba(21,173,132,0.25)'
-                        : '1px solid transparent',
+                        ? '1px solid rgba(21,173,132,0.35)'
+                        : '1px solid var(--border)',
                       borderLeft: isSelected
-                        ? '2px solid #15AD84'
-                        : '2px solid transparent',
+                        ? '3px solid #15AD84'
+                        : '3px solid transparent',
+                      boxShadow: isSelected ? 'none' : 'var(--shadow-sm)',
                       position: 'relative',
                     }}
-                    onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = 'var(--bg-hover)'; }}
-                    onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = 'transparent'; }}
+                    onMouseEnter={e => { if (!isSelected) { e.currentTarget.style.background = 'var(--bg-hover)'; e.currentTarget.style.borderColor = 'var(--accent)'; } }}
+                    onMouseLeave={e => { if (!isSelected) { e.currentTarget.style.background = 'var(--bg-card)'; e.currentTarget.style.borderColor = 'var(--border)'; } }}
                   >
                     {/* Titre + date */}
                     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '6px', marginBottom: '3px' }}>
