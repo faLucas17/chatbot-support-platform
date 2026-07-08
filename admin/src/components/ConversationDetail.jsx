@@ -4,9 +4,11 @@ import axios from 'axios';
 
 const LARAVEL_BASE = 'https://api-easyevent.bakeli.tech';
 
-// ── Avatar de l'agent (photo Bakeli School of Technology intégrée en base64) ──
-// Aucun fichier supplémentaire à ajouter : l'image est directement encodée ici.
-const AGENT_AVATAR = "data:image/jpeg;base64,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";
+// ── Avatar de l'agent ──
+// L'image doit se trouver dans le dossier "public" de votre projet Vite :
+// support_platform/public/images.jpg
+// Elle sera alors automatiquement accessible via le chemin "/images.jpg".
+const AGENT_AVATAR = "/images.jpg";
 
 // ── Avatar de l'agent : cadre + image réelle (remplace l'ancien logo "EE") ──
 const BotAvatar = () => (
@@ -61,6 +63,55 @@ const ArrowLeftIcon = () => (
   </svg>
 );
 
+// ── Parseur léger du contenu d'un message ────────────────────
+// Transforme les lignes commençant par "- " en vraies listes à puces
+// et le reste en paragraphes, sans toucher au contenu métier envoyé par le bot.
+const renderMessageContent = (content) => {
+  if (!content) return null;
+
+  const lines = String(content).split('\n');
+  const elements = [];
+  let currentList = [];
+  let listKeyIndex = 0;
+
+  const flushList = () => {
+    if (currentList.length > 0) {
+      elements.push(
+        <ul className="message-list" key={`list-${listKeyIndex++}`}>
+          {currentList.map((item, i) => (
+            <li key={i}>{item}</li>
+          ))}
+        </ul>
+      );
+      currentList = [];
+    }
+  };
+
+  lines.forEach((rawLine, idx) => {
+    const line = rawLine.trim();
+
+    if (line.startsWith('- ')) {
+      currentList.push(line.slice(2).trim());
+      return;
+    }
+
+    // Ligne vide → on ferme la liste en cours et on ajoute un petit espace
+    if (line === '') {
+      flushList();
+      return;
+    }
+
+    flushList();
+    elements.push(
+      <p className="message-paragraph" key={`p-${idx}`}>{line}</p>
+    );
+  });
+
+  flushList();
+
+  return elements;
+};
+
 function ConversationDetail({ conversation, onUpdate }) {
   const [messages, setMessages] = useState(conversation.messages || []);
   const [reply, setReply] = useState('');
@@ -69,35 +120,6 @@ function ConversationDetail({ conversation, onUpdate }) {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [userName, setUserName] = useState(conversation.user_name || 'Anonyme');
   const [textareaKey, setTextareaKey] = useState(0);
-
-  // Nouvelle fonction pour obtenir le titre de la conversation
-  const getConversationTitle = (messages, conversationId) => {
-    if (!messages || messages.length === 0) {
-      return `Conversation #${conversationId}`;
-    }
-    
-    // Chercher le premier message de l'utilisateur
-    const firstUserMessage = messages.find(msg => msg.role === 'user');
-    if (firstUserMessage) {
-      const content = firstUserMessage.content.trim();
-      if (content.length > 50) {
-        return content.substring(0, 50) + '...';
-      }
-      return content;
-    }
-    
-    // Fallback: premier message
-    const firstMessage = messages[0];
-    if (firstMessage) {
-      const content = firstMessage.content.trim();
-      if (content.length > 50) {
-        return content.substring(0, 50) + '...';
-      }
-      return content;
-    }
-    
-    return `Conversation #${conversationId}`;
-  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -181,12 +203,7 @@ function ConversationDetail({ conversation, onUpdate }) {
   return (
     <div className="conversation-detail">
       <div className="detail-header">
-        {/* Ligne 1 : titre seul, pleine largeur */}
-        <div className="detail-header-title-row">
-          <h2>{getConversationTitle(messages, conversation.id)}</h2>
-        </div>
-
-        {/* Ligne 2 : Retour + Rafraîchir + Utilisateur, tous alignés à gauche */}
+        {/* Retour + Rafraîchir + Utilisateur, tous alignés à gauche/droite (titre centré retiré) */}
         <div className="detail-header-sub-row">
           <div className="detail-header-actions">
             <button onClick={() => window.location.href = '/'} className="back-btn">
@@ -200,7 +217,7 @@ function ConversationDetail({ conversation, onUpdate }) {
           </div>
 
           <div className="detail-header-user">
-            <UserIcon size={13} />
+            <UserIcon size={20} />
             <span>Utilisateur : <strong>{userName}</strong></span>
           </div>
         </div>
@@ -216,7 +233,7 @@ function ConversationDetail({ conversation, onUpdate }) {
           <div key={msg.id} className={`message ${msg.role}`}>
             <div className="message-avatar">{getAvatar(msg.role)}</div>
             <div className="message-content">
-              <div className="message-text">{msg.content}</div>
+              <div className="message-text">{renderMessageContent(msg.content)}</div>
               <div className="message-time">{new Date(msg.created_at).toLocaleString()}</div>
             </div>
           </div>

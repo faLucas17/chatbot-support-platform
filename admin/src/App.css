@@ -1,8 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
-/* ============================================================
-   RESET & BASE
-   ============================================================ */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -28,15 +25,11 @@ body {
   transition: background 0.2s, color 0.2s;
 }
 
-/* Scrollbar fine */
 ::-webkit-scrollbar { width: 3px; height: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(128,128,128,0.2); border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(128,128,128,0.4); }
 
-/* ============================================================
-   VARIABLES — LIGHT
-   ============================================================ */
 body.light {
   --bg-app: #F5F5F5;
   --bg-sidebar: #FFFFFF;
@@ -57,9 +50,6 @@ body.light {
   background: #F5F5F5;
 }
 
-/* ============================================================
-   VARIABLES — DARK
-   ============================================================ */
 body.dark {
   --bg-app: #111111;
   --bg-sidebar: #1A1A1A;
@@ -80,9 +70,6 @@ body.dark {
   background: #111111;
 }
 
-/* ============================================================
-   LOGIN PAGE
-   ============================================================ */
 .login-container {
   display: flex;
   justify-content: center;
@@ -165,9 +152,6 @@ body.dark {
   font-weight: 500;
 }
 
-/* ============================================================
-   ADMIN LAYOUT
-   ============================================================ */
 .admin-container {
   display: flex;
   height: 100vh;
@@ -177,7 +161,6 @@ body.dark {
   color: var(--text-primary);
 }
 
-/* ── SIDEBAR ── */
 .sidebar {
   width: 300px;
   min-width: 300px;
@@ -206,7 +189,6 @@ body.dark {
   margin: -12px -14px 10px;
 }
 
-/* ── Ligne 1 du header sidebar : logo + toggle clair/sombre ── */
 .sidebar-header-top {
   display: flex;
   align-items: center;
@@ -270,7 +252,6 @@ body.dark {
   transform: scale(0.92);
 }
 
-/* ── Ligne 2 du header sidebar : actions explicites (icône + texte) ── */
 .sidebar-actions-row {
   display: flex;
   gap: 6px;
@@ -301,7 +282,6 @@ body.dark {
   border-color: var(--accent);
 }
 
-/* ── Carte Administrateur cliquable (révèle "Se déconnecter") ── */
 .admin-card {
   padding: 6px 8px;
   border-radius: 10px;
@@ -403,7 +383,6 @@ body.dark {
   background: rgba(239, 68, 68, 0.18);
 }
 
-/* ── MAIN CONTENT ── */
 .main-content {
   flex: 1;
   min-width: 0;
@@ -413,7 +392,6 @@ body.dark {
   overflow: hidden;
 }
 
-/* ── EMPTY STATE ── */
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -431,9 +409,6 @@ body.dark {
   margin: 0;
 }
 
-/* ============================================================
-   CONVERSATION LIST
-   ============================================================ */
 .conversation-list {
   flex: 1;
   overflow: hidden;
@@ -442,7 +417,6 @@ body.dark {
   padding: 8px;
 }
 
-/* Sections par utilisateur */
 .user-section {
   margin-bottom: 6px;
 }
@@ -477,7 +451,6 @@ body.dark {
   border-radius: 20px;
 }
 
-/* Conversation items (cadre neutre appliqué en inline dans ConversationList.jsx) */
 .conversation-item {
   padding: 8px 10px 8px 14px;
   margin-bottom: 5px;
@@ -538,7 +511,6 @@ body.dark {
   margin-top: 2px;
 }
 
-/* Badge */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -553,9 +525,6 @@ body.dark {
   letter-spacing: 0.2px;
 }
 
-/* ============================================================
-   CONVERSATION DETAIL
-   ============================================================ */
 .conversation-detail {
   display: flex;
   flex-direction: column;
@@ -575,7 +544,6 @@ body.dark {
   border-left: 3px solid #15AD84;
 }
 
-/* Ligne principale : titre à gauche, boutons à droite */
 .detail-header-main {
   display: flex;
   align-items: center;
@@ -595,20 +563,30 @@ body.dark {
   font-family: 'Poppins', sans-serif;
 }
 
+/* Ligne unique : Retour / Rafraîchir à gauche, Utilisateur à droite
+   (remplace l'ancienne ligne de titre centré, retirée du JSX) */
+.detail-header-sub-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .detail-header-actions {
   display: flex;
   gap: 8px;
   flex-shrink: 0;
 }
 
-/* Ligne secondaire : "Utilisateur : X" alignée à droite de l'interface */
+/* "Utilisateur : X" — texte réduit, icône agrandie (demande utilisateur) */
 .detail-header-user {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
   gap: 6px;
-  font-size: 11px;
+  font-size: 10px;
   color: var(--text-secondary);
+  flex-shrink: 0;
 }
 
 .detail-header-user strong {
@@ -659,7 +637,6 @@ body.dark {
   color: white;
 }
 
-/* ── MESSAGES ── */
 .messages-container {
   flex: 1;
   overflow-y: auto;
@@ -722,10 +699,38 @@ body.dark {
   font-weight: 400;
   color: var(--text-primary);
   word-break: break-word;
+  text-align: left;
 }
 
 .message.user .message-text {
   color: #ffffff;
+}
+
+/* Paragraphes et listes générés depuis le contenu du message
+   (remplace l'ancien effet "centré" / texte en une seule ligne) */
+.message-paragraph {
+  margin: 0 0 6px 0;
+  text-align: left;
+}
+
+.message-paragraph:last-child {
+  margin-bottom: 0;
+}
+
+.message-list {
+  margin: 2px 0 6px 0;
+  padding-left: 18px;
+  text-align: left;
+  list-style: disc;
+}
+
+.message-list:last-child {
+  margin-bottom: 0;
+}
+
+.message-list li {
+  margin-bottom: 3px;
+  text-align: left;
 }
 
 .message-time {
@@ -745,7 +750,6 @@ body.dark {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ── REPLY FORM — compact, textarea + bouton sur la même ligne ── */
 .reply-form {
   border-top: 1px solid var(--border);
   padding: 10px 16px 14px;
@@ -773,7 +777,6 @@ body.dark {
   outline: none;
   line-height: 1.5;
   transition: border-color 0.15s;
-  /* aucune limite de caractères n'est appliquée */
 }
 
 .reply-form textarea:focus {
@@ -809,9 +812,6 @@ body.dark {
   cursor: not-allowed;
 }
 
-/* ============================================================
-   THEME TOGGLE & MENU TOGGLE (mobile)
-   ============================================================ */
 .menu-toggle {
   display: none;
   position: fixed;
@@ -837,9 +837,6 @@ body.dark {
   color: var(--text-muted);
 }
 
-/* ============================================================
-   RESPONSIVE MOBILE
-   ============================================================ */
 @media (max-width: 768px) {
   .menu-toggle {
     display: flex;
