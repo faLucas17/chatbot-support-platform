@@ -948,3 +948,103 @@ body.dark {
   color: rgba(255,255,255,0.7);
   text-align: right;
 }
+
+
+/* ============================================================
+   NAVBAR FIXÉE EN HAUT — visible TOUT LE TEMPS
+   ============================================================ */
+.admin-navbar-fixed {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 16px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  height: 44px;
+  min-height: 44px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.admin-navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.theme-toggle-nav {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s;
+  background: var(--bg-input);
+  color: var(--text-primary);
+  flex-shrink: 0;
+}
+
+.theme-toggle-nav:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent);
+}
+
+.admin-nav-user {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s;
+  background: var(--bg-input);
+  border: 1px solid transparent;
+  font-size: 12px;
+}
+
+.admin-nav-user:hover {
+  background: var(--bg-hover);
+  border-color: var(--border);
+}
+
+.admin-nav-label {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 12px;
+}
+
+.admin-nav-email {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.logout-nav-btn {
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(239, 68, 68, 0.05);
+  color: #EF4444;
+  transition: background 0.15s;
+}
+
+.logout-nav-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+}

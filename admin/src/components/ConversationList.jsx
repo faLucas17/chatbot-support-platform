@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-// ── Icônes SVG réelles ─────────────────────────────────────
+// ── Icônes SVG ─────────────────────────────────────────────
 const UserIcon = ({ size = 13 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -25,7 +25,7 @@ const MessageSquareIcon = () => (
 );
 
 const AlertIcon = () => (
-  <svg width="8" height="8" viewBox="0 0 24 24" fill="none"
+  <svg width="6" height="6" viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
     <line x1="12" y1="9" x2="12" y2="13"/>
@@ -34,15 +34,15 @@ const AlertIcon = () => (
 );
 
 const MoreIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-    <circle cx="12" cy="5" r="2" />
-    <circle cx="12" cy="12" r="2" />
-    <circle cx="12" cy="19" r="2" />
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+    <circle cx="12" cy="5" r="1.5" />
+    <circle cx="12" cy="12" r="1.5" />
+    <circle cx="12" cy="19" r="1.5" />
   </svg>
 );
 
 const TrashIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="3 6 5 6 21 6"/>
     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
@@ -295,8 +295,11 @@ export default function ConversationList({ conversations = [], onSelect, selecte
                       position: 'relative',
                     }}
                   >
-                    {/* Titre + date + badge + trois points */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    {/* Date à GAUCHE + Titre + Badge Escal. */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span style={{ fontSize: '8px', color: 'var(--text-muted)', flexShrink: 0 }}>
+                        {dateStr}
+                      </span>
                       <span style={{
                         fontSize: '11px',
                         fontWeight: isSelected ? '700' : '600',
@@ -308,22 +311,20 @@ export default function ConversationList({ conversations = [], onSelect, selecte
                       }}>
                         {title}
                       </span>
-                      <span style={{ fontSize: '8px', color: 'var(--text-muted)', flexShrink: 0 }}>
-                        {dateStr}
-                      </span>
                       {conv.escalated && (
                         <span style={{
                           display: 'inline-flex',
                           alignItems: 'center',
-                          gap: '2px',
-                          background: 'rgba(255,153,0,0.1)',
+                          gap: '1px',
+                          background: 'rgba(255,153,0,0.08)',
                           color: '#CC7A00',
-                          border: '1px solid rgba(255,153,0,0.2)',
+                          border: '1px solid rgba(255,153,0,0.15)',
                           borderRadius: '20px',
-                          fontSize: '7px',
+                          fontSize: '6px',
                           fontWeight: '700',
-                          padding: '0px 4px',
+                          padding: '0px 3px',
                           flexShrink: 0,
+                          letterSpacing: '0.2px',
                         }}>
                           <AlertIcon />
                           Escal.
@@ -367,7 +368,7 @@ export default function ConversationList({ conversations = [], onSelect, selecte
                               borderRadius: '6px',
                               boxShadow: 'var(--shadow-md)',
                               zIndex: 100,
-                              minWidth: '120px',
+                              minWidth: '100px',
                               padding: '4px',
                             }}>
                               <button
@@ -375,15 +376,15 @@ export default function ConversationList({ conversations = [], onSelect, selecte
                                 style={{
                                   display: 'flex',
                                   alignItems: 'center',
-                                  gap: '6px',
+                                  gap: '4px',
                                   width: '100%',
-                                  padding: '6px 10px',
+                                  padding: '4px 8px',
                                   border: 'none',
                                   borderRadius: '4px',
                                   cursor: 'pointer',
                                   background: 'transparent',
                                   color: '#EF4444',
-                                  fontSize: '12px',
+                                  fontSize: '11px',
                                   fontWeight: '500',
                                   fontFamily: 'Poppins, sans-serif',
                                   transition: 'background 0.15s',
