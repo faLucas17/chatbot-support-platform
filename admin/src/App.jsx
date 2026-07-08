@@ -52,7 +52,6 @@ function LoginPage({ onLogin, theme }) {
     }, 600);
   };
 
-  // Charger l'email mémorisé au chargement
   useEffect(() => {
     const savedEmail = localStorage.getItem('support_remember_email');
     if (savedEmail) {
@@ -61,7 +60,6 @@ function LoginPage({ onLogin, theme }) {
     }
   }, []);
 
-  // Icônes SVG
   const EmailIcon = () => (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#AAAAAA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
@@ -121,23 +119,13 @@ function LoginPage({ onLogin, theme }) {
       overflow: isMobile ? 'auto' : 'hidden',
       boxSizing: 'border-box',
     }}>
-      {/* Décoration bulles fond */}
       {!isMobile && (
         <>
-          <div style={{
-            position: 'absolute', top: '60px', right: '460px',
-            width: '12px', height: '12px', borderRadius: '50%',
-            background: '#15AD84', opacity: 0.5,
-          }} />
-          <div style={{
-            position: 'absolute', top: '30px', right: '60px',
-            width: '10px', height: '10px', borderRadius: '50%',
-            background: '#FF9900', opacity: 0.5,
-          }} />
+          <div style={{ position: 'absolute', top: '60px', right: '460px', width: '12px', height: '12px', borderRadius: '50%', background: '#15AD84', opacity: 0.5 }} />
+          <div style={{ position: 'absolute', top: '30px', right: '60px', width: '10px', height: '10px', borderRadius: '50%', background: '#FF9900', opacity: 0.5 }} />
         </>
       )}
 
-      {/* ========== COLONNE GAUCHE — TEXTE ========== */}
       <div style={{
         flex: isMobile ? 'none' : '1 1 0%',
         minWidth: 0,
@@ -150,66 +138,24 @@ function LoginPage({ onLogin, theme }) {
         boxSizing: 'border-box',
         textAlign: isMobile ? 'center' : 'left',
       }}>
-        <h1 style={{
-          fontSize: isMobile ? 'clamp(24px, 6.5vw, 32px)' : 'clamp(30px, 3.2vw, 44px)',
-          fontWeight: '900',
-          color: isDark ? '#F5F0E8' : '#1A1A1A',
-          margin: '0 0 18px 0',
-          lineHeight: '1.25',
-          maxWidth: '100%',
-        }}>
+        <h1 style={{ fontSize: isMobile ? 'clamp(24px, 6.5vw, 32px)' : 'clamp(30px, 3.2vw, 44px)', fontWeight: '900', color: isDark ? '#F5F0E8' : '#1A1A1A', margin: '0 0 18px 0', lineHeight: '1.25', maxWidth: '100%' }}>
           Espace Support Admin AI {' '}
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', verticalAlign: 'middle' }}>
-            <span style={{
-              background: '#FF9900',
-              color: 'white',
-              padding: '2px 10px',
-              borderRadius: '6px',
-              fontWeight: '800',
-            }}>Easy</span>
+            <span style={{ background: '#FF9900', color: 'white', padding: '2px 10px', borderRadius: '6px', fontWeight: '800' }}>Easy</span>
             <span style={{ color: '#15AD84', fontWeight: '800' }}>Event</span>
           </span>
           !
         </h1>
-
-        <p style={{
-          fontSize: isMobile ? '15px' : '19px',
-          fontWeight: '700',
-          color: isDark ? '#F5F0E8' : '#1A1A1A',
-          margin: '0 0 16px 0',
-          lineHeight: '1.5',
-          maxWidth: isMobile ? '100%' : '620px',
-        }}>
+        <p style={{ fontSize: isMobile ? '15px' : '19px', fontWeight: '700', color: isDark ? '#F5F0E8' : '#1A1A1A', margin: '0 0 16px 0', lineHeight: '1.5', maxWidth: isMobile ? '100%' : '620px' }}>
           Votre espace d'administration intelligent, propulsé par l'IA.
         </p>
-
-        <p style={{
-          fontSize: isMobile ? '14px' : '18px',
-          color: isDark ? '#9AB3A5' : '#555',
-          margin: '0 0 28px 0',
-          lineHeight: '1.7',
-          maxWidth: isMobile ? '100%' : '620px',
-        }}>
-          Suivez les conversations, répondez à vos utilisateurs et pilotez
-          tout votre support client depuis une seule interface pensée pour
-          les administrateurs.
+        <p style={{ fontSize: isMobile ? '14px' : '18px', color: isDark ? '#9AB3A5' : '#555', margin: '0 0 28px 0', lineHeight: '1.7', maxWidth: isMobile ? '100%' : '620px' }}>
+          Suivez les conversations, répondez à vos utilisateurs et pilotez tout votre support client depuis une seule interface pensée pour les administrateurs.
         </p>
-
-        {/* Courbe décorative */}
         <div style={{ position: 'relative', width: isMobile ? '100%' : '340px', maxWidth: '100%', textAlign: 'center', paddingTop: '14px', paddingBottom: '14px' }}>
-          <div style={{
-            position: 'absolute', top: '0px', left: '50%', transform: 'translateX(-50%)',
-            width: '14px', height: '14px', borderRadius: '50%',
-            background: '#15AD84',
-          }} />
+          <div style={{ position: 'absolute', top: '0px', left: '50%', transform: 'translateX(-50%)', width: '14px', height: '14px', borderRadius: '50%', background: '#15AD84' }} />
           <svg width="260" height="34" viewBox="0 0 300 40" style={{ display: 'inline-block' }}>
-            <path
-              d="M 0 30 Q 75 5 150 20 Q 225 35 300 15"
-              fill="none"
-              stroke="url(#curveGrad)"
-              strokeWidth="6"
-              strokeLinecap="round"
-            />
+            <path d="M 0 30 Q 75 5 150 20 Q 225 35 300 15" fill="none" stroke="url(#curveGrad)" strokeWidth="6" strokeLinecap="round" />
             <defs>
               <linearGradient id="curveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" stopColor="#15AD84" />
@@ -217,231 +163,123 @@ function LoginPage({ onLogin, theme }) {
               </linearGradient>
             </defs>
           </svg>
-          <div style={{
-            position: 'absolute', bottom: '0px', left: isMobile ? '20%' : '10px',
-            width: '12px', height: '12px', borderRadius: '50%',
-            background: '#FF9900',
-          }} />
+          <div style={{ position: 'absolute', bottom: '0px', left: isMobile ? '20%' : '10px', width: '12px', height: '12px', borderRadius: '50%', background: '#FF9900' }} />
         </div>
       </div>
 
-      {/* ========== COLONNE DROITE — FORMULAIRE ========== */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: isMobile ? '10px 20px 32px' : '24px 40px',
-        width: '100%',
-        maxWidth: isMobile ? '100%' : '520px',
-        minWidth: 0,
-        flexShrink: 1,
-        marginRight: isMobile ? 0 : '10px',
-        boxSizing: 'border-box',
-      }}>
-        <div style={{
-          width: '100%',
-          background: isDark ? '#243028' : 'white',
-          borderRadius: '20px',
-          padding: isMobile ? '24px 22px' : '32px 36px',
-          boxShadow: isDark ? '0 4px 32px rgba(0,0,0,0.4)' : '0 4px 32px rgba(0,0,0,0.08)',
-        }}>
-
-          {/* Logo */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: isMobile ? '10px 20px 32px' : '24px 40px', width: '100%', maxWidth: isMobile ? '100%' : '520px', minWidth: 0, flexShrink: 1, marginRight: isMobile ? 0 : '10px', boxSizing: 'border-box' }}>
+        <div style={{ width: '100%', background: isDark ? '#243028' : 'white', borderRadius: '20px', padding: isMobile ? '24px 22px' : '32px 36px', boxShadow: isDark ? '0 4px 32px rgba(0,0,0,0.4)' : '0 4px 32px rgba(0,0,0,0.08)' }}>
           <div style={{ textAlign: 'center', marginBottom: '4px' }}>
-            <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '2px',
-              marginBottom: '8px',
-            }}>
-              <span style={{
-                background: '#FF9900',
-                color: 'white',
-                padding: '3px 10px',
-                borderRadius: '6px',
-                fontSize: '18px',
-                fontWeight: '800',
-              }}>Easy</span>
-              <span style={{
-                color: '#15AD84',
-                fontSize: '18px',
-                fontWeight: '800',
-              }}>Event</span>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', marginBottom: '8px' }}>
+              <span style={{ background: '#FF9900', color: 'white', padding: '3px 10px', borderRadius: '6px', fontSize: '18px', fontWeight: '800' }}>Easy</span>
+              <span style={{ color: '#15AD84', fontSize: '18px', fontWeight: '800' }}>Event</span>
             </div>
           </div>
-
-          {/* Titre */}
-          <h2 style={{
-            fontSize: '22px',
-            fontWeight: '700',
-            color: isDark ? '#F5F0E8' : '#1A1A1A',
-            margin: '0 0 4px 0',
-            textAlign: 'center',
-          }}>Support Admin AI</h2>
-          <h2 style={{
-            fontSize: '22px',
-            fontWeight: '700',
-            color: isDark ? '#F5F0E8' : '#1A1A1A',
-            margin: '0 0 4px 0',
-            textAlign: 'center',
-          }}>Connexion</h2>
-          <p style={{
-            fontSize: '13px',
-            color: isDark ? '#9AB3A5' : '#888',
-            textAlign: 'center',
-            margin: '0 0 20px 0',
-          }}>Connectez-vous pour accéder à votre espace</p>
-
-          {/* Formulaire */}
+          <h2 style={{ fontSize: '22px', fontWeight: '700', color: isDark ? '#F5F0E8' : '#1A1A1A', margin: '0 0 4px 0', textAlign: 'center' }}>Support Admin AI</h2>
+          <h2 style={{ fontSize: '22px', fontWeight: '700', color: isDark ? '#F5F0E8' : '#1A1A1A', margin: '0 0 4px 0', textAlign: 'center' }}>Connexion</h2>
+          <p style={{ fontSize: '13px', color: isDark ? '#9AB3A5' : '#888', textAlign: 'center', margin: '0 0 20px 0' }}>Connectez-vous pour accéder à votre espace</p>
           <form onSubmit={handleSubmit}>
-
-            {/* Email */}
             <div style={{ marginBottom: '10px', position: 'relative' }}>
-              <div style={{
-                position: 'absolute', left: '14px', top: '50%',
-                transform: 'translateY(-50%)', pointerEvents: 'none',
-              }}>
-                <EmailIcon />
-              </div>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Entrez votre email..."
-                required
-                style={inputStyle}
-                onFocus={(e) => {
-                  e.target.style.borderColor = '#15AD84';
-                  e.target.style.boxShadow = '0 0 0 3px rgba(21,173,132,0.1)';
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = isDark ? '#3A4A42' : '#E0E0E0';
-                  e.target.style.boxShadow = 'none';
-                }}
+              <div style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}><EmailIcon /></div>
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Entrez votre email..." required style={inputStyle}
+                onFocus={(e) => { e.target.style.borderColor = '#15AD84'; e.target.style.boxShadow = '0 0 0 3px rgba(21,173,132,0.1)'; }}
+                onBlur={(e) => { e.target.style.borderColor = isDark ? '#3A4A42' : '#E0E0E0'; e.target.style.boxShadow = 'none'; }}
               />
             </div>
-
-            {/* Password */}
             <div style={{ marginBottom: '10px', position: 'relative' }}>
-              <div style={{
-                position: 'absolute', left: '14px', top: '50%',
-                transform: 'translateY(-50%)', pointerEvents: 'none',
-              }}>
-                <LockIcon />
-              </div>
-              <input
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Entrez votre mot de passe..."
-                required
-                style={{ ...inputStyle, paddingRight: '44px' }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = '#15AD84';
-                  e.target.style.boxShadow = '0 0 0 3px rgba(21,173,132,0.1)';
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = isDark ? '#3A4A42' : '#E0E0E0';
-                  e.target.style.boxShadow = 'none';
-                }}
+              <div style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}><LockIcon /></div>
+              <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Entrez votre mot de passe..." required style={{ ...inputStyle, paddingRight: '44px' }}
+                onFocus={(e) => { e.target.style.borderColor = '#15AD84'; e.target.style.boxShadow = '0 0 0 3px rgba(21,173,132,0.1)'; }}
+                onBlur={(e) => { e.target.style.borderColor = isDark ? '#3A4A42' : '#E0E0E0'; e.target.style.boxShadow = 'none'; }}
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                style={{
-                  position: 'absolute', right: '12px', top: '50%',
-                  transform: 'translateY(-50%)',
-                  background: 'none', border: 'none', cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', padding: '4px',
-                }}
-              >
+              <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '4px' }}>
                 <EyeIcon open={showPassword} />
               </button>
             </div>
-
-            {/* Se souvenir de moi - CHECKBOX */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginBottom: '16px',
-            }}>
-              <label style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-                cursor: 'pointer',
-                fontSize: '13px',
-                fontWeight: '500',
-                color: isDark ? '#C5C9C6' : '#555',
-              }}>
-                <div
-                  onClick={() => setRememberMe(!rememberMe)}
-                  style={{
-                    width: '18px',
-                    height: '18px',
-                    borderRadius: '4px',
-                    border: `2px solid ${rememberMe ? '#15AD84' : isDark ? '#4A5A52' : '#CCC'}`,
-                    background: rememberMe ? '#15AD84' : 'transparent',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.2s',
-                    cursor: 'pointer',
-                    flexShrink: 0,
-                  }}
-                >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '13px', fontWeight: '500', color: isDark ? '#C5C9C6' : '#555' }}>
+                <div onClick={() => setRememberMe(!rememberMe)} style={{ width: '18px', height: '18px', borderRadius: '4px', border: `2px solid ${rememberMe ? '#15AD84' : isDark ? '#4A5A52' : '#CCC'}`, background: rememberMe ? '#15AD84' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', cursor: 'pointer', flexShrink: 0 }}>
                   {rememberMe && <CheckIcon />}
                 </div>
                 Se souvenir de moi
               </label>
             </div>
-
-            {/* Erreur */}
             {error && (
-              <div style={{
-                background: isDark ? '#3A1A1A' : '#FFF0F0',
-                border: `1px solid ${isDark ? '#5A2A2A' : '#FFCDD2'}`,
-                borderRadius: '8px',
-                padding: '10px 14px',
-                marginBottom: '16px',
-                fontSize: '13px',
-                color: '#FF6B6B',
-                textAlign: 'center',
-              }}>
+              <div style={{ background: isDark ? '#3A1A1A' : '#FFF0F0', border: `1px solid ${isDark ? '#5A2A2A' : '#FFCDD2'}`, borderRadius: '8px', padding: '10px 14px', marginBottom: '16px', fontSize: '13px', color: '#FF6B6B', textAlign: 'center' }}>
                 {error}
               </div>
             )}
-
-            {/* Bouton Se connecter */}
-            <button
-              type="submit"
-              disabled={loading}
-              style={{
-                width: '100%',
-                padding: '13px',
-                background: loading ? '#ccc' : '#15AD84',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                fontSize: '15px',
-                fontWeight: '700',
-                cursor: loading ? 'not-allowed' : 'pointer',
-                transition: 'opacity 0.2s, transform 0.1s',
-                letterSpacing: '0.3px',
-              }}
+            <button type="submit" disabled={loading}
+              style={{ width: '100%', padding: '13px', background: loading ? '#ccc' : '#15AD84', color: 'white', border: 'none', borderRadius: '8px', fontSize: '15px', fontWeight: '700', cursor: loading ? 'not-allowed' : 'pointer', transition: 'opacity 0.2s, transform 0.1s', letterSpacing: '0.3px' }}
               onMouseEnter={(e) => { if (!loading) e.target.style.opacity = '0.92'; }}
               onMouseLeave={(e) => { if (!loading) e.target.style.opacity = '1'; }}
             >
               {loading ? 'Connexion...' : 'Se connecter'}
             </button>
-
           </form>
         </div>
       </div>
     </div>
   );
 }
+
+// ============================================================
+// ICÔNES SVG pour le header post-login
+// ============================================================
+const RefreshIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="23 4 23 10 17 10"/>
+    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+  </svg>
+);
+
+const ArrowLeftIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="19" y1="12" x2="5" y2="12"/>
+    <polyline points="12 19 5 12 12 5"/>
+  </svg>
+);
+
+const SunIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="5"/>
+    <line x1="12" y1="1" x2="12" y2="3"/>
+    <line x1="12" y1="21" x2="12" y2="23"/>
+    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+    <line x1="1" y1="12" x2="3" y2="12"/>
+    <line x1="21" y1="12" x2="23" y2="12"/>
+    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+  </svg>
+);
+
+const MoonIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+  </svg>
+);
+
+const LogoutIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+    <polyline points="16 17 21 12 16 7"/>
+    <line x1="21" y1="12" x2="9" y2="12"/>
+  </svg>
+);
+
+const UserIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+    <circle cx="12" cy="7" r="4"/>
+  </svg>
+);
 
 // ============================================================
 // COMPOSANT ConversationPage
@@ -508,7 +346,6 @@ function App() {
 
   const [searchParams] = useSearchParams();
 
-  // Lire username depuis l'URL (Discord/Filament)
   useEffect(() => {
     const username = searchParams.get('username');
     const token = searchParams.get('token');
@@ -536,12 +373,12 @@ function App() {
   }, []);
 
   useEffect(() => {
-  if (!isLoggedIn) return;
-  if (selectedConversation) return; // pas de polling pendant qu'une conversation est ouverte
-  const timer = setTimeout(() => { loadConversations(); }, 150);
-  const interval = setInterval(loadConversations, 30000); // 30s au lieu de 5s
-  return () => { clearTimeout(timer); clearInterval(interval); };
-}, [isLoggedIn, selectedConversation]);
+    if (!isLoggedIn) return;
+    if (selectedConversation) return;
+    const timer = setTimeout(() => { loadConversations(); }, 150);
+    const interval = setInterval(loadConversations, 30000);
+    return () => { clearTimeout(timer); clearInterval(interval); };
+  }, [isLoggedIn, selectedConversation]);
 
   const loadConversations = async () => {
     try {
@@ -563,7 +400,6 @@ function App() {
     setConversations([]);
   };
 
-  // ✅ Si pas connecté → page de login
   if (!isLoggedIn) {
     return <LoginPage onLogin={handleLogin} theme={theme} />;
   }
@@ -572,8 +408,11 @@ function App() {
     return (
       <div className={`login-container ${theme}`}>
         <div className="login-card">
-          <h1>Support AI</h1>
-          <p>Chargement des conversations...</p>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', marginBottom: '12px' }}>
+            <span style={{ background: '#FF9900', color: 'white', padding: '2px 8px', borderRadius: '5px', fontSize: '15px', fontWeight: '800' }}>Easy</span>
+            <span style={{ color: '#15AD84', fontSize: '15px', fontWeight: '800' }}>Event</span>
+          </div>
+          <p style={{ color: 'var(--text-secondary, #555)', fontSize: '14px' }}>Chargement des conversations...</p>
         </div>
       </div>
     );
@@ -581,60 +420,157 @@ function App() {
 
   return (
     <div className={`admin-container ${theme}`}>
+
+      {/* Bouton menu mobile */}
       {isMobile && (
         <button className="menu-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>
-          {sidebarOpen ? '✕' : '☰'}
+          {sidebarOpen
+            ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          }
         </button>
       )}
+
+      {/* ── SIDEBAR ── */}
       <div className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
-          <h2>Support AI</h2>
-          <p>Agent</p>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <button className="theme-toggle" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
-              {theme === 'light' ? '🌙' : '☀️'}
-            </button>
-            <button
-              onClick={handleLogout}
-              title="Se déconnecter"
-              style={{
-                background: 'rgba(255,255,255,0.15)',
-                border: 'none',
-                color: 'white',
-                borderRadius: '8px',
-                padding: '4px 8px',
-                cursor: 'pointer',
-                fontSize: '12px',
-              }}
-            >
-              Déconnexion
-            </button>
+
+          {/* Ligne logo + actions */}
+          <div className="sidebar-header-top">
+            <div className="sidebar-logo">
+              <span className="logo-easy">Easy</span>
+              <span className="logo-event">Event</span>
+              <span className="logo-support">· Support</span>
+            </div>
+            <div className="sidebar-actions">
+              {/* Bouton Rafraîchir */}
+              <button
+                className="icon-btn"
+                onClick={loadConversations}
+                title="Rafraîchir"
+              >
+                <RefreshIcon />
+              </button>
+
+              {/* Bouton Retour (si conversation ouverte) */}
+              {selectedConversation && (
+                <button
+                  className="icon-btn"
+                  onClick={() => setSelectedConversation(null)}
+                  title="Retour à la liste"
+                >
+                  <ArrowLeftIcon />
+                </button>
+              )}
+
+              {/* Bouton Dark/Light */}
+              <button
+                className="icon-btn"
+                onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+                title={theme === 'light' ? 'Mode sombre' : 'Mode clair'}
+              >
+                {theme === 'light' ? <MoonIcon /> : <SunIcon />}
+              </button>
+
+              {/* Bouton Déconnexion */}
+              <button
+                className="icon-btn"
+                onClick={handleLogout}
+                title="Se déconnecter"
+              >
+                <LogoutIcon />
+              </button>
+            </div>
           </div>
+
+          {/* Identité utilisateur admin */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            marginTop: '8px',
+            padding: '6px 8px',
+            borderRadius: '8px',
+            background: 'var(--bg-input)',
+            border: '1px solid var(--border)',
+          }}>
+            <div style={{
+              width: '24px',
+              height: '24px',
+              borderRadius: '50%',
+              background: 'rgba(255,153,0,0.15)',
+              color: '#FF9900',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}>
+              <UserIcon />
+            </div>
+            <div>
+              <div style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-primary)' }}>
+                Administrateur
+              </div>
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
+                {localStorage.getItem('support_remember_email') || 'admin'}
+              </div>
+            </div>
+            <span style={{
+              marginLeft: 'auto',
+              width: '7px',
+              height: '7px',
+              borderRadius: '50%',
+              background: '#15AD84',
+              flexShrink: 0,
+            }} />
+          </div>
+
         </div>
+
+        {/* Liste des conversations */}
         <ConversationList
           conversations={conversations}
-          onSelect={(conv) => { setSelectedConversation(conv); if (isMobile) setSidebarOpen(false); }}
+          onSelect={(conv) => {
+            setSelectedConversation(conv);
+            if (isMobile) setSidebarOpen(false);
+          }}
           selectedId={selectedConversation?.id}
         />
       </div>
+
+      {/* ── MAIN CONTENT ── */}
       <div className="main-content">
         <Routes>
           <Route path="/" element={
             selectedConversation ? (
               <ConversationDetail
                 conversation={selectedConversation}
-                onUpdate={(updatedConv) => { setSelectedConversation(updatedConv); loadConversations(); }}
+                onUpdate={(updatedConv) => {
+                  setSelectedConversation(updatedConv);
+                  loadConversations();
+                }}
               />
             ) : (
+              // Aucun texte centré parasite — état vide propre
               <div className="empty-state">
-                <p>Sélectionnez une conversation pour répondre</p>
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+                  style={{ color: 'var(--border)' }}>
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+                <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+                  Sélectionnez une conversation
+                </p>
               </div>
             )
           } />
           <Route path="/conversations/:id" element={
             <ConversationPage
               conversations={conversations}
-              onUpdateConversation={(updatedConv) => { setSelectedConversation(updatedConv); loadConversations(); }}
+              onUpdateConversation={(updatedConv) => {
+                setSelectedConversation(updatedConv);
+                loadConversations();
+              }}
             />
           } />
         </Routes>
