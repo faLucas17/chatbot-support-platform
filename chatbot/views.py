@@ -1,4 +1,5 @@
 import os, re
+import threading
 import requests
 from django.conf import settings
 from django.core.files.storage import default_storage
@@ -86,8 +87,8 @@ def send_fancy_email(subject, user_name, user_email, conversation_id, conversati
           <p style="margin: 0 0 6px 0; font-size: 11px; font-weight: 600; color: #999999; text-transform: uppercase;">Message de l'utilisateur</p>
           <p style="margin: 0; font-size: 16px; color: #333333; line-height: 1.6; font-style: italic;">"{message_content}"</p>
         </div>
-       </td>
-    </table>
+      </td>
+    </tr>
   </table>
 
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff;">
@@ -115,7 +116,7 @@ def send_fancy_email(subject, user_name, user_email, conversation_id, conversati
             </td>
           </tr>
         </table>
-       </td>
+      </td>
     </tr>
   </table>
 
@@ -132,18 +133,19 @@ def send_fancy_email(subject, user_name, user_email, conversation_id, conversati
           </tr>
         </table>
         <p style="margin: 16px 0 0 0; font-size: 12px; color: #AAAAAA;">Ou copiez ce lien : <a href="{support_link}" style="color: #15AD84;">{support_link}</a></p>
-       </td>
+      </td>
     </tr>
   </table>
 
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #F8F8F8; border-top: 1px solid #EEEEEE;">
     <tr><td style="padding: 24px 48px;">
         <table width="100%">
-          <tr><td align="left"><p style="margin: 0; font-size: 12px; color: #AAAAAA;">EasyEvent Support — Assistance client automatisée</p></td>
-          <td align="right"><a href="{SUPPORT_URL}" style="font-size: 12px; color: #15AD84; text-decoration: none;">Tableau de bord support</a></td>
+          <tr>
+            <td align="left"><p style="margin: 0; font-size: 12px; color: #AAAAAA;">EasyEvent Support — Assistance client automatisée</p></td>
+            <td align="right"><a href="{SUPPORT_URL}" style="font-size: 12px; color: #15AD84; text-decoration: none;">Tableau de bord support</a></td>
           </tr>
         </table>
-       </td>
+      </td>
     </tr>
   </table>
 
@@ -189,9 +191,6 @@ EasyEvent Support
 # FONCTION POUR RÉCUPÉRER L'UTILISATEUR DJANGO DEPUIS LE TOKEN SANCTUM
 # ============================================================
 def get_django_user_from_token(sanctum_token):
-    """
-    Récupère ou crée un utilisateur Django à partir du token Sanctum Laravel.
-    """
     if not sanctum_token:
         return None
     try:
@@ -205,7 +204,7 @@ def get_django_user_from_token(sanctum_token):
             user_data = data.get('user', {})
             user_email = user_data.get('email')
             user_name = user_data.get('name', '')
-            
+
             if user_email:
                 username = user_email.split('@')[0]
                 user, created = User.objects.get_or_create(
@@ -229,23 +228,29 @@ def get_django_user_from_token(sanctum_token):
     return None
 
 
-# Appliquer csrf_exempt à TOUTES les méthodes de la classe
 def csrf_exempt_view(cls):
-    """Décorateur pour rendre une classe entière exempte de CSRF"""
     cls.dispatch = method_decorator(csrf_exempt)(cls.dispatch)
     return cls
 
 
-# Extraction de texte pour PDF
 try:
     import PyPDF2
 except ImportError:
     PyPDF2 = None
 
-
-# Configurer le chemin de Tesseract pour Windows
 if os.name == 'nt':
     pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+
+
+def generate_conversation_title(conversation):
+    msgs = conversation.messages.all().order_by('created_at')
+    if not msgs.exists():
+        return f"Conversation du {conversation.created_at.strftime('%d/%m/%Y')}"
+    first_user_message = msgs.filter(role='user').first() or msgs.first()
+    if first_user_message:
+        content = first_user_message.content.strip()
+        return content[:40] + "..." if len(content) > 40 else content
+    return f"Conversation du {conversation.created_at.strftime('%d/%m/%Y')}"
 
 
 # ==================== API VIEWS ====================
@@ -256,23 +261,22 @@ class SendMessageView(APIView):
         serializer = SendMessageSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
+
         data = serializer.validated_data
         api_key = data['api_key']
         content = data['content']
         conversation_id = data.get('conversation_id')
-        
+
         sanctum_token = data.get('sanctum_token') or request.headers.get('Authorization', '').replace('Bearer ', '')
-        
         print(f"🔑 Token reçu par Django : {sanctum_token[:30] if sanctum_token else 'None'}...")
-        
+
         try:
             tenant = Tenant.objects.get(api_key=api_key)
         except Tenant.DoesNotExist:
             return Response({"error": "Clé API invalide"}, status=status.HTTP_401_UNAUTHORIZED)
-        
+
         django_user = get_django_user_from_token(sanctum_token)
-        
+
         if conversation_id:
             try:
                 conversation = Conversation.objects.get(id=conversation_id, tenant=tenant)
@@ -285,81 +289,85 @@ class SendMessageView(APIView):
         else:
             conversation = Conversation.objects.create(tenant=tenant, user=django_user)
             print(f"✅ Nouvelle conversation créée avec l'utilisateur {django_user.email if django_user else 'Anonyme'}")
-        
+
         user_message = Message.objects.create(conversation=conversation, role='user', content=content)
         bot_response_text, bot_success = get_bot_response(content, tenant, sanctum_token)
-        
+
         if bot_success and bot_response_text:
             bot_message = Message.objects.create(conversation=conversation, role='bot', content=bot_response_text)
-            response_data = {
+            return Response({
                 'conversation_id': conversation.id,
                 'user_message': MessageSerializer(user_message).data,
                 'bot_message': MessageSerializer(bot_message).data
-            }
-            return Response(response_data, status=status.HTTP_200_OK)
-        
+            }, status=status.HTTP_200_OK)
+
+        # ── Escalade ──────────────────────────────────────────
         waiting_message = Message.objects.create(
             conversation=conversation,
             role='bot',
             content="⏳ Un agent va prendre en charge votre demande dans quelques instants. Merci de votre patience !"
         )
-        
         conversation.escalated = True
         conversation.save()
-        
+
         user_name = django_user.username if django_user else "Anonyme"
         user_email = django_user.email if django_user else "Non renseigné"
-        
-        # Construire le lien direct vers la conversation dans l'interface support
         direct_conversation_link = f"{SUPPORT_URL}/conversations/{conversation.id}?username={user_name}"
-        
+
         # ========== 1. NOTIFICATION DISCORD ==========
         webhook_url = getattr(settings, 'DISCORD_WEBHOOK_URL', '')
         if webhook_url:
             discord_message = {
-                "embeds": [
-                    {
-                        "title": "Nouvelle conversation escaladée",
-                        "color": 1420420,
-                        "fields": [
-                            {"name": "Utilisateur", "value": user_name, "inline": True},
-                            {"name": "Email", "value": user_email, "inline": True},
-                            {"name": "Conversation", "value": f"#{conversation.id}", "inline": True},
-                            {"name": "Date", "value": conversation.created_at.strftime('%d/%m/%Y à %H:%M'), "inline": True},
-                            {"name": "Message", "value": f'"{content}"', "inline": False},
-                            {"name": "Lien direct", "value": direct_conversation_link, "inline": False}
-                        ],
-                        "footer": {"text": "EasyEvent Support"},
-                        "timestamp": conversation.created_at.isoformat()
-                    }
-                ]
+                "embeds": [{
+                    "title": "Nouvelle conversation escaladée",
+                    "color": 1420420,
+                    "fields": [
+                        {"name": "Utilisateur", "value": user_name, "inline": True},
+                        {"name": "Email", "value": user_email, "inline": True},
+                        {"name": "Conversation", "value": f"#{conversation.id}", "inline": True},
+                        {"name": "Date", "value": conversation.created_at.strftime('%d/%m/%Y à %H:%M'), "inline": True},
+                        {"name": "Message", "value": f'"{content}"', "inline": False},
+                        {"name": "Lien direct", "value": direct_conversation_link, "inline": False}
+                    ],
+                    "footer": {"text": "EasyEvent Support"},
+                    "timestamp": conversation.created_at.isoformat()
+                }]
             }
             try:
-                response = requests.post(webhook_url, json=discord_message)
-                if response.status_code == 204:
+                resp = requests.post(webhook_url, json=discord_message)
+                if resp.status_code == 204:
                     print(f"✅ Discord notification envoyée pour conversation {conversation.id}")
             except Exception as e:
                 print(f"❌ Erreur envoi Discord: {e}")
-        
-        # ========== 2. NOTIFICATION EMAIL PROFESSIONNELLE ==========
-        try:
-            # Récupérer le titre de la conversation (premier message)
-            conversation_title = generate_conversation_title(conversation)
-            
-            subject = f"[EasyEvent Support] Assistance requise - {user_name}"
-            send_fancy_email(
-                subject=subject,
-                user_name=user_name,
-                user_email=user_email,
-                conversation_id=conversation.id,
-                conversation_title=conversation_title,
-                message_content=content,
-                created_at=conversation.created_at.strftime('%d/%m/%Y à %H:%M:%S')
-            )
-            print(f"✅ Email professionnel envoyé à l'admin")
-        except Exception as e:
-            print(f"❌ Erreur envoi email: {e}")
-        
+
+        # ========== 2. NOTIFICATION EMAIL — thread async ==========
+        # Capture des variables locales pour le thread
+        _conv_id       = conversation.id
+        _conv_obj      = conversation
+        _user_name     = user_name
+        _user_email    = user_email
+        _content       = content
+
+        def envoyer_email_async():
+            try:
+                title = generate_conversation_title(_conv_obj)
+                send_fancy_email(
+                    subject=f"[EasyEvent Support] Assistance requise - {_user_name}",
+                    user_name=_user_name,
+                    user_email=_user_email,
+                    conversation_id=_conv_id,
+                    conversation_title=title,
+                    message_content=_content,
+                    created_at=_conv_obj.created_at.strftime('%d/%m/%Y à %H:%M:%S')
+                )
+                print(f"✅ Email professionnel envoyé à l'admin")
+            except Exception as e:
+                print(f"❌ Erreur envoi email: {e}")
+
+        email_thread = threading.Thread(target=envoyer_email_async)
+        email_thread.daemon = True
+        email_thread.start()
+
         # ========== 3. NOTIFICATION À LARAVEL (FILAMENT) ==========
         try:
             laravel_notification_url = f"{LARAVEL_URL}/api/chatbot/escalations"
@@ -372,22 +380,21 @@ class SendMessageView(APIView):
                 'created_at': conversation.created_at.isoformat(),
                 'status': 'pending'
             }
-            response = requests.post(
+            resp = requests.post(
                 laravel_notification_url,
                 json=escalation_data,
                 headers={'Content-Type': 'application/json'},
                 timeout=30
             )
-            print(f"✅ Notification envoyée à Laravel Filament (status {response.status_code})")
+            print(f"✅ Notification envoyée à Laravel Filament (status {resp.status_code})")
         except Exception as e:
             print(f"❌ Erreur envoi à Laravel: {e}")
-        
-        response_data = {
+
+        return Response({
             'conversation_id': conversation.id,
             'user_message': MessageSerializer(user_message).data,
             'bot_message': MessageSerializer(waiting_message).data
-        }
-        return Response(response_data, status=status.HTTP_200_OK)
+        }, status=status.HTTP_200_OK)
 
 
 @csrf_exempt_view
@@ -396,19 +403,15 @@ class ConversationDetailView(APIView):
         api_key = request.query_params.get('api_key')
         if not api_key:
             return Response({"error": "API key requise"}, status=status.HTTP_400_BAD_REQUEST)
-        
         try:
             tenant = Tenant.objects.get(api_key=api_key)
         except Tenant.DoesNotExist:
             return Response({"error": "Clé API invalide"}, status=status.HTTP_401_UNAUTHORIZED)
-        
         try:
             conversation = Conversation.objects.get(id=conversation_id, tenant=tenant)
         except Conversation.DoesNotExist:
             return Response({"error": "Conversation non trouvée"}, status=status.HTTP_404_NOT_FOUND)
-        
-        serializer = ConversationSerializer(conversation)
-        return Response(serializer.data)
+        return Response(ConversationSerializer(conversation).data)
 
 
 @csrf_exempt_view
@@ -417,61 +420,28 @@ class AgentReplyView(APIView):
         api_key = request.data.get('api_key')
         conversation_id = request.data.get('conversation_id')
         content = request.data.get('content')
-        
         if not all([api_key, conversation_id, content]):
             return Response({"error": "api_key, conversation_id et content sont requis"}, status=status.HTTP_400_BAD_REQUEST)
-        
         try:
             tenant = Tenant.objects.get(api_key=api_key)
         except Tenant.DoesNotExist:
             return Response({"error": "Clé API invalide"}, status=status.HTTP_401_UNAUTHORIZED)
-        
         try:
             conversation = Conversation.objects.get(id=conversation_id, tenant=tenant)
         except Conversation.DoesNotExist:
             return Response({"error": "Conversation non trouvée"}, status=status.HTTP_404_NOT_FOUND)
-        
         agent_message = Message.objects.create(conversation=conversation, role='bot', content=content)
         conversation.escalated = False
         conversation.save()
-        
         return Response({"success": True, "message": MessageSerializer(agent_message).data})
 
 
-def generate_conversation_title(conversation):
-    """
-    Génère un titre lisible pour une conversation basé sur son contenu.
-    """
-    messages = conversation.messages.all().order_by('created_at')
-    
-    if not messages.exists():
-        return f"Conversation du {conversation.created_at.strftime('%d/%m/%Y')}"
-    
-    first_user_message = messages.filter(role='user').first()
-    if not first_user_message:
-        first_user_message = messages.first()
-    
-    if first_user_message:
-        content = first_user_message.content
-        content = content.strip()
-        if len(content) > 40:
-            content = content[:40] + "..."
-        return content
-    
-    return f"Conversation du {conversation.created_at.strftime('%d/%m/%Y')}"
-
-
-# ============================================================
-# AdminConversationsListView
-# ============================================================
 @csrf_exempt_view
 class AdminConversationsListView(APIView):
     def get(self, request):
         support_username = request.headers.get('X-Support-Username')
-        
         print(f"🔍 AdminConversationsListView - Header X-Support-Username: '{support_username}'")
-        
-        # Si pas de username ou username invalide → toutes les conversations escaladées
+
         if not support_username or support_username in ['anonymous', 'null', '', 'Anonyme', 'None']:
             conversations = Conversation.objects.all().order_by('-updated_at')
             print(f"📋 User anonyme → {conversations.count()} conversations escaladées retournées")
@@ -481,16 +451,14 @@ class AdminConversationsListView(APIView):
                 conversations = Conversation.objects.filter(user=user).order_by('-updated_at')
                 print(f"📋 {conversations.count()} conversations trouvées pour '{support_username}'")
             except User.DoesNotExist:
-                # Username pas trouvé → toutes les escalades
                 conversations = Conversation.objects.all().order_by('-updated_at')
                 print(f"⚠️ '{support_username}' non trouvé → conversations escaladées retournées")
-        
+
         data = []
         for conv in conversations:
             user_name = conv.user.username if conv.user else "Anonyme"
             messages_data = MessageSerializer(conv.messages.all()[:50], many=True).data
             title = generate_conversation_title(conv)
-            
             data.append({
                 'id': conv.id,
                 'title': title,
@@ -501,7 +469,6 @@ class AdminConversationsListView(APIView):
                 'escalated': conv.escalated,
                 'messages': messages_data
             })
-        
         return Response(data)
 
 
@@ -510,14 +477,11 @@ class UserConversationsView(APIView):
     def get(self, request):
         auth_header = request.headers.get('Authorization', '')
         sanctum_token = auth_header.replace('Bearer ', '')
-        
         if sanctum_token:
             django_user = get_django_user_from_token(sanctum_token)
             if django_user:
                 conversations = Conversation.objects.filter(user=django_user).order_by('-updated_at')
-                serializer = ConversationSerializer(conversations, many=True)
-                return Response(serializer.data)
-        
+                return Response(ConversationSerializer(conversations, many=True).data)
         return Response({"error": "Authentification requise"}, status=status.HTTP_401_UNAUTHORIZED)
 
 
@@ -528,38 +492,33 @@ class AdminConversationDetailView(APIView):
             conversation = Conversation.objects.get(id=conversation_id)
         except Conversation.DoesNotExist:
             return Response({'error': 'Conversation non trouvée'}, status=status.HTTP_404_NOT_FOUND)
-        
         data = ConversationSerializer(conversation).data
         data['user_name'] = conversation.user.username if conversation.user else "Anonyme"
         return Response(data)
-    
+
     def post(self, request, conversation_id):
         try:
             conversation = Conversation.objects.get(id=conversation_id)
         except Conversation.DoesNotExist:
             return Response({'error': 'Conversation non trouvée'}, status=status.HTTP_404_NOT_FOUND)
-        
         content = request.data.get('content')
         if not content:
             return Response({'error': 'Message requis'}, status=status.HTTP_400_BAD_REQUEST)
-        
         agent_message = Message.objects.create(conversation=conversation, role='bot', content=content)
         conversation.escalated = False
         conversation.save()
-        
         try:
             laravel_url = f"{LARAVEL_URL}/api/chatbot/escalations/mark-resolved-by-conversation"
-            response = requests.post(
+            resp = requests.post(
                 laravel_url,
                 json={'conversation_id': conversation.id},
                 headers={'Content-Type': 'application/json'},
                 timeout=10
             )
-            if response.status_code == 200:
+            if resp.status_code == 200:
                 print(f"✅ Escalade #{conversation.id} marquée resolved dans Laravel")
         except Exception as e:
             print(f"❌ Erreur appel Laravel pour resolved: {e}")
-        
         return Response({'success': True, 'message': MessageSerializer(agent_message).data})
 
 
@@ -569,19 +528,15 @@ class UploadDocumentView(APIView):
         api_key = request.data.get('api_key')
         title = request.data.get('title')
         file = request.FILES.get('file')
-        
         if not all([api_key, title, file]):
             return Response({"error": "api_key, title et file sont requis"}, status=status.HTTP_400_BAD_REQUEST)
-        
         try:
             tenant = Tenant.objects.get(api_key=api_key)
         except Tenant.DoesNotExist:
             return Response({"error": "Clé API invalide"}, status=status.HTTP_401_UNAUTHORIZED)
-        
         file_extension = os.path.splitext(file.name)[1].lower()
         content = ""
         doc_type = "pdf"
-        
         if file_extension == '.pdf':
             doc_type = "pdf"
             if PyPDF2 is None:
@@ -594,11 +549,9 @@ class UploadDocumentView(APIView):
                     full_text.append(f"\n{'='*60}\n📄 PAGE {page_num + 1}/{len(pdf_reader.pages)}\n{'='*60}\n")
                     full_text.append(page_text)
             content = "\n".join(full_text)
-        
         elif file_extension == '.txt':
             doc_type = "txt"
             content = file.read().decode('utf-8')
-        
         elif file_extension in ['.png', '.jpg', '.jpeg']:
             doc_type = "image"
             try:
@@ -608,20 +561,15 @@ class UploadDocumentView(APIView):
                     content = pytesseract.image_to_string(image, lang='eng')
             except Exception as e:
                 return Response({"error": f"Erreur lecture image: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
         else:
             return Response({"error": "Formats acceptés: PDF, TXT, PNG, JPG, JPEG"}, status=status.HTTP_400_BAD_REQUEST)
-        
         content = re.sub(r'[^\x20-\x7E\x0A\x0D\xC0-\xFF\u00C0-\u00FF]', ' ', content)
         content = re.sub(r'\s+', ' ', content).strip()
-        
         document = Document.objects.create(tenant=tenant, title=title, document_type=doc_type, content=content)
         file_path = default_storage.save(f'documents/{tenant.id}/{file.name}', file)
         document.file = file_path
         document.save()
-        
         KnowledgeItem.objects.create(tenant=tenant, question=None, answer=content[:10000], category='document')
-        
         return Response({
             'success': True,
             'document_id': document.id,
@@ -639,12 +587,10 @@ class ListDocumentsView(APIView):
         api_key = request.query_params.get('api_key')
         if not api_key:
             return Response({"error": "API key requise"}, status=status.HTTP_400_BAD_REQUEST)
-        
         try:
             tenant = Tenant.objects.get(api_key=api_key)
         except Tenant.DoesNotExist:
             return Response({"error": "Clé API invalide"}, status=status.HTTP_401_UNAUTHORIZED)
-        
         documents = Document.objects.filter(tenant=tenant)
         data = [{'id': doc.id, 'title': doc.title, 'uploaded_at': doc.uploaded_at, 'content_preview': doc.content[:200]} for doc in documents]
         return Response(data)
@@ -656,12 +602,10 @@ class DeleteDocumentView(APIView):
         api_key = request.data.get('api_key')
         if not api_key:
             return Response({"error": "API key requise"}, status=status.HTTP_400_BAD_REQUEST)
-        
         try:
             tenant = Tenant.objects.get(api_key=api_key)
         except Tenant.DoesNotExist:
             return Response({"error": "Clé API invalide"}, status=status.HTTP_401_UNAUTHORIZED)
-        
         try:
             document = Document.objects.get(id=document_id, tenant=tenant)
             KnowledgeItem.objects.filter(tenant=tenant, answer=document.content, category='document').delete()
@@ -681,35 +625,28 @@ def register_view(request):
         email = request.POST.get('email')
         password1 = request.POST.get('password1')
         password2 = request.POST.get('password2')
-        
         if password1 != password2:
             messages.error(request, 'Les mots de passe ne correspondent pas.')
             return render(request, 'chatbot/register.html')
-        
         if User.objects.filter(username=username).exists():
-            messages.error(request, 'Ce nom d\'utilisateur est déjà pris.')
+            messages.error(request, "Ce nom d'utilisateur est déjà pris.")
             return render(request, 'chatbot/register.html')
-        
         if User.objects.filter(email=email).exists():
             messages.error(request, 'Cet email est déjà utilisé.')
             return render(request, 'chatbot/register.html')
-        
         user = User.objects.create_user(username=username, email=email, password=password1)
         login(request, user)
         messages.success(request, 'Compte créé avec succès !')
         return redirect('dashboard')
-    
     return render(request, 'chatbot/register.html')
 
 
 def dashboard_view(request):
     if not request.user.is_authenticated:
         return redirect('login')
-    
     if request.user.is_staff:
         return redirect('http://localhost:5173')
-    else:
-        return render(request, 'chatbot/home.html', {'user': request.user})
+    return render(request, 'chatbot/home.html', {'user': request.user})
 
 
 def custom_password_reset(request):
@@ -725,7 +662,6 @@ def custom_password_reset(request):
             return redirect('password_reset_done')
     else:
         form = PasswordResetForm()
-    
     return render(request, 'registration/password_reset_custom.html', {'form': form})
 
 
@@ -736,7 +672,6 @@ def custom_password_reset_done(request):
 def full_dashboard_view(request):
     if not request.user.is_authenticated:
         return redirect('login')
-    
     return render(request, 'chatbot/user_dashboard.html', {'user': request.user})
 
 
