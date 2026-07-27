@@ -196,7 +196,7 @@ def get_bot_response(message_content, tenant, sanctum_token=None):
 # CONSTRUCTION DU PROMPT SYSTÈME POUR GROK / CLAUDE
 # ============================================================
 def build_system_prompt(user_data=None, participant_data=None, organizer_data=None, organizer_kpis=None):
-    base_prompt = """Tu es un assistant de support client pour Easy Events,
+    base_prompt = """Tu es WAGAN AI, un assistant de support client pour Easy Events,
 une plateforme de gestion d'événements. Tu réponds en français, de façon
 concise et utile, en utilisant un langage simple et accessible à tous.
 
@@ -212,6 +212,7 @@ RÈGLES :
 - Pour les questions personnelles d'un utilisateur non connecté → invite-le à se connecter
 - Adapte ta réponse au rôle de l'utilisateur (participant ou organisateur)
 - N'utilise JAMAIS de termes techniques comme "endpoint", "API", "token"
+- Présente-toi toujours comme "WAGAN AI" dans tes messages
 """
 
     if user_data:
@@ -316,7 +317,7 @@ def mock_response(message_content, tenant, user_data=None, participant_data=None
         if prenom and is_organizer:
             return f"""Bonjour {prenom} ! 👋
 
-Je suis Easy, votre assistant pour les organisateurs.
+Je suis WAGAN AI, votre assistant pour les organisateurs.
 
 Je peux vous aider avec :
 - Voir la liste de vos événements
@@ -327,12 +328,12 @@ Je peux vous aider avec :
 
 Tout est disponible dans l'application mobile.
 
-Posez-moi une question sur la gestion de vos événements ! 😊""", True
+Posez-moi une question sur la gestion de vos événements ! """, True
         
         elif prenom and not is_organizer:
             return f"""Bonjour {prenom} ! 👋
 
-Je suis Easy, votre assistant pour les participants.
+Je suis WAGAN AI, votre assistant pour les participants.
 
 Je peux vous aider avec :
 - Inscription aux événements
@@ -342,12 +343,12 @@ Je peux vous aider avec :
 
 Tout est disponible sur le site web.
 
-Posez-moi une question, je vous répondrai avec plaisir ! 😊""", True
+Posez-moi une question, je vous répondrai avec plaisir ! """, True
         
         else:
             return f"""Bonjour ! 👋
 
-Je suis Easy, l'assistant Easy Events.
+Je suis WAGAN AI, l'assistant Easy Events.
 
 Que vous soyez participant ou organisateur, je suis là pour vous aider :
 
@@ -363,7 +364,7 @@ Pour les ORGANISATEURS (application mobile) :
 
 Pour accéder à vos informations, connectez-vous.
 
-Posez-moi une question ! 😊""", True
+Posez-moi une question ! """, True
 
     # ============================================================
     # 1. BLOCAGE : QUESTIONS PERSONNELLES SANS CONNEXION
@@ -387,7 +388,7 @@ Posez-moi une question ! 😊""", True
             return "Pour voir vos événements, connectez-vous à votre compte organisateur.", True
         
         if not is_organizer:
-            return f"Bonjour {prenom} ! 👋\n\nCette fonctionnalité est réservée aux organisateurs. Si vous êtes participant, consultez vos inscriptions sur le site web dans la rubrique 'Mes événements'.", True
+            return f"Bonjour {prenom} ! \n\nCette fonctionnalité est réservée aux organisateurs. Si vous êtes participant, consultez vos inscriptions sur le site web dans la rubrique 'Mes événements'.", True
         
         if organizer_data:
             events = organizer_data
@@ -395,7 +396,7 @@ Posez-moi une question ! 😊""", True
                 events = organizer_data['events']
             
             if not events:
-                return f"Bonjour {prenom} ! 👋\n\nVous n'avez pas encore créé d'événement.\n\n👉 Pour créer votre premier événement, ouvrez l'application mobile et cliquez sur le bouton 'Nouvel événement' ou '+'.", True
+                return f"Bonjour {prenom} ! \n\nVous n'avez pas encore créé d'événement.\n\n Pour créer votre premier événement, ouvrez l'application mobile et cliquez sur le bouton 'Nouvel événement' ou '+'.", True
             
             event_list = "\n".join([f"• {e.get('nom', 'Sans nom')}" for e in events[:5]])
             total = len(events)
@@ -404,9 +405,9 @@ Posez-moi une question ! 😊""", True
             if organizer_kpis:
                 kpi_text = f"\n\n Vos statistiques : {organizer_kpis}"
             
-            return f"Bonjour {prenom} ! 👋\n\nVous avez {total} événement(s) créé(s) :\n\n{event_list}\n\n Consultez tous vos événements dans l'application mobile, onglet 'Mes événements'.{kpi_text}", True
+            return f"Bonjour {prenom} ! \n\nVous avez {total} événement(s) créé(s) :\n\n{event_list}\n\n Consultez tous vos événements dans l'application mobile, onglet 'Mes événements'.{kpi_text}", True
         
-        return f"Bonjour {prenom} ! 👋\n\nConsultez vos événements dans l'application mobile, onglet 'Mes événements'.", True
+        return f"Bonjour {prenom} ! \n\nConsultez vos événements dans l'application mobile, onglet 'Mes événements'.", True
 
     # ============================================================
     # 3. DÉTAILS D'UN ÉVÉNEMENT (Organisateur)
@@ -418,7 +419,7 @@ Posez-moi une question ! 😊""", True
         if not is_organizer:
             return "Cette fonctionnalité est réservée aux organisateurs. Les participants peuvent voir les événements sur le site web.", True
         
-        return f"""Bonjour {prenom} ! 👋
+        return f"""Bonjour {prenom} !
 
 Pour voir les détails d'un événement :
 
@@ -441,10 +442,10 @@ Ces informations sont disponibles en temps réel dans l'application.""", True
             return "Pour voir vos statistiques, connectez-vous à votre compte organisateur.", True
         
         if not is_organizer:
-            return f"Bonjour {prenom} ! 👋\n\nCette fonctionnalité est réservée aux organisateurs. En tant que participant, votre tableau de bord est sur le site web.", True
+            return f"Bonjour {prenom} ! \n\nCette fonctionnalité est réservée aux organisateurs. En tant que participant, votre tableau de bord est sur le site web.", True
         
         if organizer_kpis:
-            return f"""Bonjour {prenom} ! 👋
+            return f"""Bonjour {prenom} ! 
 
 Vos statistiques :
 
@@ -452,7 +453,7 @@ Vos statistiques :
 
 Pour plus de détails, consultez votre tableau de bord dans l'application mobile.""", True
         
-        return f"""Bonjour {prenom} ! 👋
+        return f"""Bonjour {prenom} !
 
 Pour voir vos statistiques :
 
@@ -474,7 +475,7 @@ Vous y verrez :
             return "Pour voir la liste des participants, connectez-vous à votre compte organisateur.", True
         
         if not is_organizer:
-            return f"Bonjour {prenom} ! 👋\n\nCette fonctionnalité est réservée aux organisateurs pour gérer leurs événements.", True
+            return f"Bonjour {prenom} ! \n\nCette fonctionnalité est réservée aux organisateurs pour gérer leurs événements.", True
         
         if organizer_data:
             events = organizer_data
@@ -482,14 +483,14 @@ Vous y verrez :
                 events = organizer_data['events']
             
             if not events:
-                return f"Bonjour {prenom} ! 👋\n\nVous n'avez pas encore créé d'événement. Créez-en un pour voir les participants s'inscrire !", True
+                return f"Bonjour {prenom} ! \n\nVous n'avez pas encore créé d'événement. Créez-en un pour voir les participants s'inscrire !", True
             
             total_participants = 0
             for e in events:
                 if isinstance(e, dict):
                     total_participants += e.get('participants_count', 0)
             
-            return f"""Bonjour {prenom} ! 👋
+            return f"""Bonjour {prenom} !
 
 Vue d'ensemble :
 - Total participants : {total_participants} personnes
@@ -502,7 +503,7 @@ Pour voir la liste détaillée des participants :
 
 Une liste à jour en temps réel est disponible dans l'application.""", True
         
-        return f"""Bonjour {prenom} ! 👋
+        return f"""Bonjour {prenom} !
 
 Pour voir la liste des participants à vos événements :
 
@@ -521,9 +522,9 @@ Vous verrez aussi le nombre total en temps réel.""", True
             return "Pour scanner des QR codes, connectez-vous à votre compte organisateur sur l'application mobile.", True
         
         if not is_organizer:
-            return f"Bonjour {prenom} ! 👋\n\nLe scan de QR code est réservé aux organisateurs. Si vous êtes participant, votre QR code vous a été envoyé par email.", True
+            return f"Bonjour {prenom} ! \n\nLe scan de QR code est réservé aux organisateurs. Si vous êtes participant, votre QR code vous a été envoyé par email.", True
         
-        return f"""Bonjour {prenom} ! 👋
+        return f"""Bonjour {prenom} !
 
 Pour scanner un QR code :
 
@@ -545,9 +546,9 @@ Le participant doit avoir son QR code prêt avant le scan.""", True
             return "Pour créer un événement, connectez-vous à votre compte organisateur.", True
         
         if not is_organizer:
-            return f"Bonjour {prenom} ! 👋\n\nLa création d'événements est réservée aux organisateurs. Vous pouvez vous inscrire à des événements sur le site web.", True
+            return f"Bonjour {prenom} ! \n\nLa création d'événements est réservée aux organisateurs. Vous pouvez vous inscrire à des événements sur le site web.", True
         
-        return f"""Bonjour {prenom} ! 👋
+        return f"""Bonjour {prenom} !
 
 Pour créer un événement :
 
@@ -575,7 +576,7 @@ L'événement sera créé immédiatement dans votre espace.""", True
         if not is_organizer:
             return "Cette fonctionnalité est réservée aux organisateurs.", True
         
-        return f"""Bonjour {prenom} ! 👋
+        return f"""Bonjour {prenom} !
 
 Pour modifier un événement :
 
@@ -598,7 +599,7 @@ Les participants seront notifiés des changements importants.""", True
         if not is_organizer:
             return "Cette fonctionnalité est réservée aux organisateurs.", True
         
-        return f"""Bonjour {prenom} ! 👋
+        return f"""Bonjour {prenom} !
 
 Attention - Suppression d'événement :
 
@@ -630,7 +631,7 @@ Avantages :
 
 En cas d'erreur : un message vous indiquera quoi corriger
 
-👉 Mot de passe oublié ? Utilisez la fonction 'Mot de passe oublié'.""", True
+Mot de passe oublié ? Utilisez la fonction 'Mot de passe oublié'.""", True
 
     # ============================================================
     # 11. INSCRIPTION ORGANISATEUR
@@ -662,7 +663,7 @@ L'application mobile est disponible pour les organisateurs !""", True
     # ============================================================
     if any(mot in message_lower for mot in ['comment s\'inscrire à un événement', 'participer à un événement', 'rejoindre un événement', "s'inscrire événement", 'comment participer', 'inscription événement']):
         if is_organizer:
-            return f"Bonjour {prenom} ! 👋\n\nEn tant qu'organisateur, vous ne vous inscrivez pas aux événements, vous les créez ! Ouvrez l'application mobile et cliquez sur 'Nouvel événement'.", True
+            return f"Bonjour {prenom} ! \n\nEn tant qu'organisateur, vous ne vous inscrivez pas aux événements, vous les créez ! Ouvrez l'application mobile et cliquez sur 'Nouvel événement'.", True
         
         return """ Pour vous inscrire à un événement :
 
@@ -673,16 +674,16 @@ L'application mobile est disponible pour les organisateurs !""", True
 
 Vous recevrez un QR code par email qui vous servira de billet d'entrée !
 
-👉 Consultez vos inscriptions dans votre tableau de bord.""", True
+Consultez vos inscriptions dans votre tableau de bord.""", True
 
     # ============================================================
     # 13. MON QR CODE (Participant)
     # ============================================================
     if any(mot in message_lower for mot in ['mon qr', 'mon qr code', 'mon billet', 'mon ticket', 'qr code participant']):
         if is_organizer:
-            return f"Bonjour {prenom} ! 👋\n\nEn tant qu'organisateur, vous scannez les QR codes des participants, vous n'en recevez pas. Utilisez l'application mobile pour scanner.", True
+            return f"Bonjour {prenom} ! \n\nEn tant qu'organisateur, vous scannez les QR codes des participants, vous n'en recevez pas. Utilisez l'application mobile pour scanner.", True
         
-        return f"""Bonjour {prenom} ! 👋
+        return f"""Bonjour {prenom} !
 
 Votre QR code est votre billet d'entrée !
 
@@ -701,7 +702,7 @@ Gardez votre QR code accessible (capture d'écran ou imprimé) pour l'entrée.""
     # ============================================================
     if any(mot in message_lower for mot in ['mes sondages', 'sondage', 'sondages en attente', 'avis', 'sondages participant']):
         if is_organizer:
-            return f"Bonjour {prenom} ! 👋\n\nLes sondages sont destinés aux participants après les événements. En tant qu'organisateur, vous pouvez créer des sondages depuis votre tableau de bord.", True
+            return f"Bonjour {prenom} ! \n\nLes sondages sont destinés aux participants après les événements. En tant qu'organisateur, vous pouvez créer des sondages depuis votre tableau de bord.", True
         
         if participant_data:
             stats = participant_data.get('statistics', {})
@@ -709,10 +710,10 @@ Gardez votre QR code accessible (capture d'écran ou imprimé) pour l'entrée.""
             nb = stats.get('pending_surveys', 0)
             
             if nb == 0:
-                return f"Bonjour {prenom} ! 👋\n\nVous n'avez aucun sondage en attente. 🎉\n\nLes sondages apparaissent après votre participation à un événement.", True
+                return f"Bonjour {prenom} ! \n\nVous n'avez aucun sondage en attente. 🎉\n\nLes sondages apparaissent après votre participation à un événement.", True
             
             noms = ", ".join([s.get('evenement', {}).get('nom', '') for s in pending[:3]])
-            return f"Bonjour {prenom} ! 👋\n\n Vous avez {nb} sondage(s) en attente pour : {noms}\n\n👉 Accédez-y dans votre tableau de bord.", True
+            return f"Bonjour {prenom} ! \n\n Vous avez {nb} sondage(s) en attente pour : {noms}\n\n Accédez-y dans votre tableau de bord.", True
         
         return """ Pour voir vos sondages :
 
@@ -727,11 +728,11 @@ Les sondages apparaissent après votre participation à un événement.""", True
     # ============================================================
     if any(mot in message_lower for mot in ['mon profil', 'mon compte', 'mes informations', 'profil participant']):
         if is_organizer:
-            return f"Bonjour {prenom} ! 👋\n\nVotre profil organisateur est accessible dans l'application mobile, rubrique 'Mon compte'.", True
+            return f"Bonjour {prenom} ! \n\nVotre profil organisateur est accessible dans l'application mobile, rubrique 'Mon compte'.", True
         
-        return f"""Bonjour {prenom} ! 👋
+        return f"""Bonjour {prenom} !
 
-👤 Pour gérer votre profil :
+Pour gérer votre profil :
 
 1. Connectez-vous sur le site web
 2. Allez dans la rubrique 'Mon profil'
@@ -747,7 +748,7 @@ Vous pouvez modifier :
     # ============================================================
     if any(mot in message_lower for mot in ['liste événements', 'événements disponibles', 'tous les événements', 'events disponibles', 'voir événements']):
         if is_organizer:
-            return f"Bonjour {prenom} ! 👋\n\nEn tant qu'organisateur, vos événements sont dans l'application mobile. Pour voir tous les événements publics, rendez-vous sur le site web.", True
+            return f"Bonjour {prenom} ! \n\nEn tant qu'organisateur, vos événements sont dans l'application mobile. Pour voir tous les événements publics, rendez-vous sur le site web.", True
         
         return """ Pour voir tous les événements disponibles :
 
@@ -777,7 +778,7 @@ Pour les ORGANISATEURS (application mobile) :
 Application mobile pour les organisateurs
 Site web pour les participants
 
-👉 Pour commencer : créez votre compte !""", True
+Pour commencer : créez votre compte !""", True
 
     # ============================================================
     # 18. COMMENT CRÉER UN COMPTE
@@ -844,7 +845,7 @@ Participants (site web) : inscriptions, QR codes, sondages
 Organisateurs (mobile) : création d'événements, scan QR, gestion des participants
 Agents PDV : vente de tickets, commissions
 
-👉 Découvrez tout sur la plateforme !"""
+Découvrez tout sur la plateforme !"""
         },
         {
             'keywords': ['tarif', 'prix', 'gratuit', 'payant', 'combien coûte', 'free'],
@@ -862,7 +863,7 @@ Agents PDV : vente de tickets, commissions
 - Le nombre de places est affiché sur la page de chaque événement
 - Si l'événement est complet, le bouton "S'inscrire" sera désactivé
 
-👉 Consultez les événements sur le site web !"""
+Consultez les événements sur le site web !"""
         },
         {
             'keywords': ['agent pdv', 'pdv', 'point de vente', 'commissions', 'ticket'],
