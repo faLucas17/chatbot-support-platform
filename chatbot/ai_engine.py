@@ -454,7 +454,7 @@ def mock_response(message_content, tenant, user_data=None, participant_data=None
     # ============================================================
     message_norm = normalize_text(message_content)
     message_words = message_norm.split()
-    greetings = ['bonjour', 'salut', 'hello', 'coucou', 'hey', 'bjr', 'slt', 'cc', 'yo']
+    greetings = ['bonjour', 'salut', 'hello', 'coucou', 'hey', 'bjr', 'bnjr', 'slt', 'cc', 'yo', 'hi', 'salutations', 'bonsoir', 'bon matin', 'bon aprem', 'bon aprèm']
     # Un "bonjour" reste un simple message d'accueil même mal orthographié
     # ("bonjr", "salu"...), mais seulement si le message est court : on ne
     # veut pas déclencher l'accueil si "bonjour" apparaît dans une vraie question.
