@@ -515,6 +515,39 @@ Pour accéder à vos informations, connectez-vous.
 Posez-moi une question ! """, True
 
     # ============================================================
+    # 0.5. INSCRIPTION À UN ÉVÉNEMENT - PARTICIPANT (PUBLIC)
+    # ============================================================
+    if any_keyword_match(message_content, [
+        'comment s inscrire', 
+        'comment sinscrire', 
+        'inscription evenement',
+        's inscrire evenement',
+        'comment participer',
+        'participer evenement',
+        'rejoindre evenement',
+        'inscription',
+        'sinscrire',
+        'je veux participer',
+        'je veux m inscrire',
+        'comment participer a un evenement'
+    ]):
+        if is_organizer:
+            return f"Bonjour {prenom} ! En tant qu'organisateur, vous ne vous inscrivez pas aux événements, vous les créez. Ouvrez l'application mobile et cliquez sur 'Nouvel événement'.", True
+        
+        return """Pour vous inscrire à un événement :
+
+1. Rendez-vous sur le site web Easy Events
+2. Choisissez l'événement qui vous intéresse
+3. Cliquez sur 'S'inscrire maintenant'
+4. Confirmez votre inscription
+
+Vous recevrez un QR code par email qui vous servira de billet d'entrée !
+
+Pas encore de compte ? Créez-en un sur le site web en 2 minutes.
+
+Posez-moi une autre question si vous avez besoin d'aide !""", True
+
+    # ============================================================
     # 1. BLOCAGE : QUESTIONS PERSONNELLES SANS CONNEXION
     # ============================================================
     questions_perso = ['mes événements', 'mes evenements', 'mon qr', 'mes sondages',
@@ -1030,7 +1063,7 @@ Pour commencer : créez votre compte !""", True
     # ============================================================
     # 18. COMMENT CRÉER UN COMPTE
     # ============================================================
-    if any_keyword_match(message_content, ['comment s\'inscrire', 'créer un compte', 'inscription', 'comment créer un compte', 'nouveau compte', 'create account']):
+    if any_keyword_match(message_content, ['comment s\'inscrire', 'créer un compte', 'comment créer un compte', 'nouveau compte', 'create account']):
         return """ Pour créer un compte sur Easy Events :
 
 Pour un compte PARTICIPANT :
