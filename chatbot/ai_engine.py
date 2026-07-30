@@ -175,13 +175,13 @@ def verify_sanctum_token(sanctum_token):
 
         if response.status_code == 200:
             data = response.json()
-            
+
             user_data = data.get('user', {})
             role = user_data.get('role', 'participant')
-            
+
             data['role'] = role
             data['is_organizer'] = (role == 'organisateur' or role == 'organizer')
-            
+
             print(f" Token valide pour {user_data.get('name')} (rôle: {role})")
             return data
         else:
@@ -292,11 +292,11 @@ def get_bot_response(message_content, tenant, sanctum_token=None):
 
     user_data = verify_sanctum_token(sanctum_token)
     print(f" user_data après vérification : {user_data}")
-    
+
     participant_data = None
     organizer_data = None
     organizer_kpis = None
-    
+
     if user_data:
         if user_data.get('is_organizer', False):
             organizer_data = get_organizer_data(sanctum_token)
@@ -368,7 +368,7 @@ UTILISATEUR CONNECTÉ :
 - Rôle : {role}
 - Tu peux l'appeler par son prénom : {prenom.split()[0] if prenom else 'Utilisateur'}
 """
-        
+
         if is_organizer:
             context_connecte += """
 FONCTIONNALITÉS ORGANISATEUR (application mobile) :
@@ -381,7 +381,7 @@ FONCTIONNALITÉS ORGANISATEUR (application mobile) :
 
 Toutes ces fonctionnalités sont disponibles dans l'application mobile Easy Events.
 """
-            
+
             if organizer_data:
                 events = organizer_data.get('events', [])
                 if isinstance(organizer_data, dict) and 'events' in organizer_data:
@@ -393,13 +393,13 @@ DONNÉES ORGANISATEUR :
 - Nombre total d'événements créés : {total_events}
 - Événements : {', '.join(event_names) if event_names else 'Aucun événement créé'}
 """
-            
+
             if organizer_kpis:
                 context_connecte += f"""
 STATISTIQUES :
 {organizer_kpis}
 """
-        
+
         else:
             context_connecte += """
 FONCTIONNALITÉS PARTICIPANT (site web) :
@@ -412,7 +412,7 @@ FONCTIONNALITÉS PARTICIPANT (site web) :
 
 Toutes ces fonctionnalités sont disponibles sur le site web Easy Events.
 """
-            
+
             if participant_data:
                 stats = participant_data.get('statistics', {})
                 upcoming = participant_data.get('upcoming_events', [])
@@ -428,7 +428,7 @@ DONNÉES PARTICIPANT :
 - Sondages en attente : {stats.get('pending_surveys', 0)} ({surveys_list})
 - Événements passés : {stats.get('past_events', 0)}
 """
-        
+
         return base_prompt + context_connecte
 
     return base_prompt + """
@@ -444,7 +444,7 @@ UTILISATEUR NON CONNECTÉ :
 # ============================================================
 def mock_response(message_content, tenant, user_data=None, participant_data=None, organizer_data=None, organizer_kpis=None):
     message_lower = message_content.lower().strip()
-    
+
     is_organizer = user_data.get('is_organizer', False) if user_data else False
     user_info = user_data.get('user', {}) if user_data else {}
     prenom = user_info.get('name', '').split()[0] if user_info else None
@@ -477,7 +477,7 @@ Je peux vous aider avec :
 Tout est disponible dans l'application mobile.
 
 Posez-moi une question sur la gestion de vos événements ! """, True
-        
+
         elif prenom and not is_organizer:
             return f"""Bonjour {prenom} ! 👋
 
@@ -492,7 +492,7 @@ Je peux vous aider avec :
 Tout est disponible sur le site web.
 
 Posez-moi une question, je vous répondrai avec plaisir ! """, True
-        
+
         else:
             return f"""Bonjour ! 👋
 
@@ -529,18 +529,16 @@ Posez-moi une question ! """, True
     # ============================================================
 
     # ============================================================
-    # 3. DÉTAILS D'UN ÉVÉNEMENT (Organisateur)
+    # 3. DÉTAILS D'UN ÉVÉNEMENT (Organisateur / Participant)
     # ============================================================
-    if any_keyword_match(message_content, ['détails événement', 'details evenement', 'infos événement', 'information événement', 'détail événement']):
+    if any_keyword_match(message_content, ['détails événement', 'details evenement', 'infos événement', 'information événement', 'détail événement', 'détails event', 'infos event', 'information event', 'infos', 'information', 'détails', 'detail', 'informations', 'détails de mon événement', 'infos organisateur événement']):
         if not user_data:
-            return "Pour voir les détails de vos événements, connectez-vous à votre compte organisateur.", True
-        
-        if not is_organizer:
-            return "Cette fonctionnalité est réservée aux organisateurs. Les participants peuvent voir les événements sur le site web.", True
-        
-        return f"""Bonjour {prenom} !
+            return "Pour voir les détails d'un événement, connectez-vous : en tant qu'organisateur pour gérer vos événements, ou en tant que participant pour consulter un événement sur le site web.", True
 
-Pour voir les détails d'un événement :
+        if is_organizer:
+            return f"""Bonjour {prenom} !
+
+Pour voir les détails d'un de vos événements :
 
 1. Ouvrez l'application mobile
 2. Allez dans 'Mes événements'
@@ -553,28 +551,40 @@ Vous verrez alors :
 
 Ces informations sont disponibles en temps réel dans l'application.""", True
 
-    # ============================================================
-    # 4. STATISTIQUES / KPIS (Organisateur)
-    # ============================================================
-    if any_keyword_match(message_content, ['kpi', 'statistiques', 'statistiques organisateur', 'dashboard organisateur', 'tableau de bord organisateur']):
-        if not user_data:
-            return "Pour voir vos statistiques, connectez-vous à votre compte organisateur.", True
-        
-        if not is_organizer:
-            return f"Bonjour {prenom} ! \n\nCette fonctionnalité est réservée aux organisateurs. En tant que participant, votre tableau de bord est sur le site web.", True
-        
-        if organizer_kpis:
-            return f"""Bonjour {prenom} ! 
+        return f"""Bonjour {prenom} !
 
-Vos statistiques :
+Pour voir les détails d'un événement :
+
+1. Rendez-vous sur le site web Easy Events
+2. Cliquez sur l'événement qui vous intéresse
+
+Vous verrez alors :
+- La description, la date, l'heure et le lieu
+- Le nombre de places restantes
+- Le bouton pour vous inscrire
+
+Ces informations sont disponibles en temps réel sur le site web.""", True
+
+    # ============================================================
+    # 4. STATISTIQUES / KPIS (Organisateur) — TABLEAU DE BORD (Participant)
+    # ============================================================
+    if any_keyword_match(message_content, ['kpi', 'statistiques', 'statistiques organisateur', 'dashboard organisateur', 'tableau de bord organisateur', 'mon tableau de bord', 'tableau de bord participant', 'mes stats']):
+        if not user_data:
+            return "Pour voir vos statistiques (organisateur) ou votre tableau de bord (participant), connectez-vous à votre compte.", True
+
+        if is_organizer:
+            if organizer_kpis:
+                return f"""Bonjour {prenom} !
+
+Vos statistiques d'organisateur :
 
 {organizer_kpis}
 
 Pour plus de détails, consultez votre tableau de bord dans l'application mobile.""", True
-        
-        return f"""Bonjour {prenom} !
 
-Pour voir vos statistiques :
+            return f"""Bonjour {prenom} !
+
+Pour voir vos statistiques d'organisateur :
 
 1. Ouvrez l'application mobile
 2. Connectez-vous avec votre compte organisateur
@@ -586,30 +596,50 @@ Vous y verrez :
 - Le taux de participation
 - Et plus encore !""", True
 
-    # ============================================================
-    # 5. LISTE DES PARTICIPANTS (Organisateur)
-    # ============================================================
-    if any_keyword_match(message_content, ['liste participants', 'participants', 'qui est inscrit', 'nombre participants', 'liste des participants', 'participants événement']):
-        if not user_data:
-            return "Pour voir la liste des participants, connectez-vous à votre compte organisateur.", True
-        
-        if not is_organizer:
-            return f"Bonjour {prenom} ! \n\nCette fonctionnalité est réservée aux organisateurs pour gérer leurs événements.", True
-        
-        if organizer_data:
-            events = organizer_data
-            if isinstance(organizer_data, dict) and 'events' in organizer_data:
-                events = organizer_data['events']
-            
-            if not events:
-                return f"Bonjour {prenom} ! \n\nVous n'avez pas encore créé d'événement. Créez-en un pour voir les participants s'inscrire !", True
-            
-            total_participants = 0
-            for e in events:
-                if isinstance(e, dict):
-                    total_participants += e.get('participants_count', 0)
-            
+        if participant_data:
+            stats = participant_data.get('statistics', {})
             return f"""Bonjour {prenom} !
+
+Votre tableau de bord participant :
+
+- Total événements inscrits : {stats.get('total_events', 0)}
+- Événements à venir : {stats.get('upcoming_events', 0)}
+- Sondages en attente : {stats.get('pending_surveys', 0)}
+- Événements passés : {stats.get('past_events', 0)}
+
+Consultez tout ceci sur le site web, dans votre tableau de bord.""", True
+
+        return f"""Bonjour {prenom} !
+
+Pour voir votre tableau de bord participant :
+
+1. Connectez-vous sur le site web
+2. Allez dans votre tableau de bord
+
+Vous y verrez vos inscriptions, vos événements à venir et vos sondages en attente.""", True
+
+    # ============================================================
+    # 5. LISTE DES PARTICIPANTS (Organisateur) / MON INSCRIPTION (Participant)
+    # ============================================================
+    if any_keyword_match(message_content, ['liste participants', 'participants', 'qui est inscrit', 'nombre participants', 'liste des participants', 'participants événement', 'suis-je inscrit', 'mon inscription confirmée']):
+        if not user_data:
+            return "Pour voir la liste des participants (organisateur) ou vérifier votre inscription (participant), connectez-vous à votre compte.", True
+
+        if is_organizer:
+            if organizer_data:
+                events = organizer_data
+                if isinstance(organizer_data, dict) and 'events' in organizer_data:
+                    events = organizer_data['events']
+
+                if not events:
+                    return f"Bonjour {prenom} ! \n\nVous n'avez pas encore créé d'événement. Créez-en un pour voir les participants s'inscrire !", True
+
+                total_participants = 0
+                for e in events:
+                    if isinstance(e, dict):
+                        total_participants += e.get('participants_count', 0)
+
+                return f"""Bonjour {prenom} !
 
 Vue d'ensemble :
 - Total participants : {total_participants} personnes
@@ -621,8 +651,8 @@ Pour voir la liste détaillée des participants :
 3. La liste s'affiche avec les noms et emails
 
 Une liste à jour en temps réel est disponible dans l'application.""", True
-        
-        return f"""Bonjour {prenom} !
+
+            return f"""Bonjour {prenom} !
 
 Pour voir la liste des participants à vos événements :
 
@@ -633,17 +663,26 @@ Pour voir la liste des participants à vos événements :
 
 Vous verrez aussi le nombre total en temps réel.""", True
 
+        return f"""Bonjour {prenom} !
+
+Cette fonctionnalité (voir la liste des participants) est réservée aux organisateurs.
+
+En tant que participant, vous pouvez vérifier votre propre inscription :
+1. Connectez-vous sur le site web
+2. Allez dans votre tableau de bord
+3. Section 'Mes événements'
+
+Vous y verrez la confirmation de vos inscriptions.""", True
+
     # ============================================================
-    # 6. SCANNER UN QR CODE (Organisateur)
+    # 6. SCANNER UN QR CODE (Organisateur) / MON QR CODE (Participant)
     # ============================================================
     if any_keyword_match(message_content, ['scanner qr', 'scan qr', 'qr code scan', 'valider présence', 'enregistrer présence', 'scan code', 'scanner', 'scan qr code']):
         if not user_data:
-            return "Pour scanner des QR codes, connectez-vous à votre compte organisateur sur l'application mobile.", True
-        
-        if not is_organizer:
-            return f"Bonjour {prenom} ! \n\nLe scan de QR code est réservé aux organisateurs. Si vous êtes participant, votre QR code vous a été envoyé par email.", True
-        
-        return f"""Bonjour {prenom} !
+            return "Pour scanner des QR codes (organisateur) ou récupérer votre QR code (participant), connectez-vous à votre compte.", True
+
+        if is_organizer:
+            return f"""Bonjour {prenom} !
 
 Pour scanner un QR code :
 
@@ -657,17 +696,26 @@ QR invalide → message d'erreur affiché
 
 Le participant doit avoir son QR code prêt avant le scan.""", True
 
-    # ============================================================
-    # 7. CRÉER UN ÉVÉNEMENT (Organisateur)
-    # ============================================================
-    if any_keyword_match(message_content, ['créer événement', 'créer un événement', 'nouvel événement', 'ajouter événement', 'créer event', 'nouvel event']):
-        if not user_data:
-            return "Pour créer un événement, connectez-vous à votre compte organisateur.", True
-        
-        if not is_organizer:
-            return f"Bonjour {prenom} ! \n\nLa création d'événements est réservée aux organisateurs. Vous pouvez vous inscrire à des événements sur le site web.", True
-        
         return f"""Bonjour {prenom} !
+
+En tant que participant, vous n'avez pas besoin de scanner : c'est l'organisateur qui scanne votre QR code à l'entrée.
+
+Vous devez simplement présenter votre QR code :
+1. Connectez-vous sur le site web
+2. Allez dans votre tableau de bord
+3. Ouvrez votre billet ou l'email de confirmation
+
+Gardez-le prêt (capture d'écran ou imprimé) le jour de l'événement.""", True
+
+    # ============================================================
+    # 7. CRÉER UN ÉVÉNEMENT (Organisateur) / S'INSCRIRE À UN ÉVÉNEMENT (Participant)
+    # ============================================================
+    if any_keyword_match(message_content, ['créer événement', 'créer un événement', 'nouvel événement', 'ajouter événement', 'créer event', 'nouvel event', 'organiser un événement', 'publier un événement']):
+        if not user_data:
+            return "Pour créer un événement, connectez-vous à votre compte organisateur. Pour vous inscrire à un événement, connectez-vous à votre compte participant.", True
+
+        if is_organizer:
+            return f"""Bonjour {prenom} !
 
 Pour créer un événement :
 
@@ -685,17 +733,27 @@ Informations à remplir :
 
 L'événement sera créé immédiatement dans votre espace.""", True
 
-    # ============================================================
-    # 8. MODIFIER UN ÉVÉNEMENT (Organisateur)
-    # ============================================================
-    if any_keyword_match(message_content, ['modifier événement', 'modifier un événement', 'mettre à jour', 'éditer événement', 'update event']):
-        if not user_data:
-            return "Pour modifier un événement, connectez-vous à votre compte organisateur.", True
-        
-        if not is_organizer:
-            return "Cette fonctionnalité est réservée aux organisateurs.", True
-        
         return f"""Bonjour {prenom} !
+
+En tant que participant, vous ne créez pas d'événement : vous pouvez vous y inscrire !
+
+1. Rendez-vous sur le site web
+2. Choisissez l'événement qui vous intéresse
+3. Cliquez sur 'S'inscrire maintenant'
+
+Vous recevrez ensuite votre QR code par email.
+
+Si vous souhaitez organiser vos propres événements, un compte organisateur est nécessaire.""", True
+
+    # ============================================================
+    # 8. MODIFIER UN ÉVÉNEMENT (Organisateur) / MODIFIER MON INSCRIPTION (Participant)
+    # ============================================================
+    if any_keyword_match(message_content, ['modifier événement', 'modifier un événement', 'mettre à jour', 'éditer événement', 'update event', 'changer mon inscription', 'modifier mon inscription']):
+        if not user_data:
+            return "Pour modifier un événement (organisateur) ou votre inscription (participant), connectez-vous à votre compte.", True
+
+        if is_organizer:
+            return f"""Bonjour {prenom} !
 
 Pour modifier un événement :
 
@@ -708,17 +766,26 @@ Pour modifier un événement :
 
 Les participants seront notifiés des changements importants.""", True
 
-    # ============================================================
-    # 9. SUPPRIMER UN ÉVÉNEMENT (Organisateur)
-    # ============================================================
-    if any_keyword_match(message_content, ['supprimer événement', 'supprimer un événement', 'annuler événement', 'delete event']):
-        if not user_data:
-            return "Pour supprimer un événement, connectez-vous à votre compte organisateur.", True
-        
-        if not is_organizer:
-            return "Cette fonctionnalité est réservée aux organisateurs.", True
-        
         return f"""Bonjour {prenom} !
+
+Cette fonctionnalité (modifier un événement) est réservée aux organisateurs.
+
+En tant que participant, vous pouvez :
+1. Vous connecter sur le site web
+2. Aller dans votre tableau de bord
+3. Consulter ou annuler votre inscription depuis 'Mes événements'
+
+Pour toute question sur un événement, contactez son organisateur.""", True
+
+    # ============================================================
+    # 9. SUPPRIMER UN ÉVÉNEMENT (Organisateur) / ANNULER MON INSCRIPTION (Participant)
+    # ============================================================
+    if any_keyword_match(message_content, ['supprimer événement', 'supprimer un événement', 'annuler événement', 'delete event', 'annuler mon inscription', 'me désinscrire']):
+        if not user_data:
+            return "Pour supprimer un événement (organisateur) ou annuler votre inscription (participant), connectez-vous à votre compte.", True
+
+        if is_organizer:
+            return f"""Bonjour {prenom} !
 
 Attention - Suppression d'événement :
 
@@ -732,37 +799,66 @@ Une notification sera envoyée automatiquement à tous les participants inscrits
 
 Cette action est irréversible !""", True
 
+        return f"""Bonjour {prenom} !
+
+Cette fonctionnalité (supprimer un événement) est réservée aux organisateurs.
+
+En tant que participant, vous pouvez annuler votre propre inscription :
+1. Connectez-vous sur le site web
+2. Allez dans votre tableau de bord, section 'Mes événements'
+3. Sélectionnez l'événement et annulez votre inscription
+
+Votre place sera alors libérée pour d'autres participants.""", True
+
     # ============================================================
-    # 2bis. MES ÉVÉNEMENTS (Organisateur) — catch-all générique.
+    # 2bis. MES ÉVÉNEMENTS (Organisateur = créés / Participant = inscriptions)
     # Placée APRÈS les sections 3 à 9 exprès : un message comme
     # "supprimer un evenemnt" doit d'abord matcher la section 9
     # (suppression), pas ce catch-all générique sur le mot "événement".
+    # "Mes événements" veut dire quelque chose de différent selon le rôle :
+    # les événements CRÉÉS pour un organisateur, les événements où l'on
+    # s'est INSCRIT pour un participant. On ne renvoie jamais l'un vers
+    # l'autre : chacun reçoit directement SES événements à lui.
     # ============================================================
     if any_keyword_match(message_content, ['mes événements', 'mes evenements', 'liste événements', 'événements créés', 'mes events', 'mes événements organisateur']):
         if not user_data:
-            return "Pour voir vos événements, connectez-vous à votre compte organisateur.", True
-        
-        if not is_organizer:
-            return f"Bonjour {prenom} ! \n\nCette fonctionnalité est réservée aux organisateurs. Si vous êtes participant, consultez vos inscriptions sur le site web dans la rubrique 'Mes événements'.", True
-        
-        if organizer_data:
-            events = organizer_data
-            if isinstance(organizer_data, dict) and 'events' in organizer_data:
-                events = organizer_data['events']
-            
-            if not events:
-                return f"Bonjour {prenom} ! \n\nVous n'avez pas encore créé d'événement.\n\n Pour créer votre premier événement, ouvrez l'application mobile et cliquez sur le bouton 'Nouvel événement' ou '+'.", True
-            
-            event_list = "\n".join([f"• {e.get('nom', 'Sans nom')}" for e in events[:5]])
-            total = len(events)
-            
-            kpi_text = ""
-            if organizer_kpis:
-                kpi_text = f"\n\n Vos statistiques : {organizer_kpis}"
-            
-            return f"Bonjour {prenom} ! \n\nVous avez {total} événement(s) créé(s) :\n\n{event_list}\n\n Consultez tous vos événements dans l'application mobile, onglet 'Mes événements'.{kpi_text}", True
-        
-        return f"Bonjour {prenom} ! \n\nConsultez vos événements dans l'application mobile, onglet 'Mes événements'.", True
+            return "Pour voir vos événements, connectez-vous : vos événements créés si vous êtes organisateur, ou vos inscriptions si vous êtes participant.", True
+
+        if is_organizer:
+            if organizer_data:
+                events = organizer_data
+                if isinstance(organizer_data, dict) and 'events' in organizer_data:
+                    events = organizer_data['events']
+
+                if not events:
+                    return f"Bonjour {prenom} ! \n\nVous n'avez pas encore créé d'événement.\n\n Pour créer votre premier événement, ouvrez l'application mobile et cliquez sur le bouton 'Nouvel événement' ou '+'.", True
+
+                event_list = "\n".join([f"• {e.get('nom', 'Sans nom')}" for e in events[:5]])
+                total = len(events)
+
+                kpi_text = ""
+                if organizer_kpis:
+                    kpi_text = f"\n\n Vos statistiques : {organizer_kpis}"
+
+                return f"Bonjour {prenom} ! \n\nVous avez {total} événement(s) créé(s) :\n\n{event_list}\n\n Consultez tous vos événements dans l'application mobile, onglet 'Mes événements'.{kpi_text}", True
+
+            return f"Bonjour {prenom} ! \n\nConsultez vos événements dans l'application mobile, onglet 'Mes événements'.", True
+
+        # --- Participant : ses propres inscriptions, pas celles d'un organisateur ---
+        if participant_data:
+            stats = participant_data.get('statistics', {})
+            upcoming = participant_data.get('upcoming_events', [])
+            total = stats.get('total_events', 0)
+
+            if total == 0:
+                return f"Bonjour {prenom} ! \n\nVous n'êtes inscrit(e) à aucun événement pour le moment.\n\n Rendez-vous sur le site web pour découvrir les événements disponibles et vous inscrire.", True
+
+            upcoming_list = "\n".join([f"• {e.get('nom', 'Sans nom')}" for e in upcoming[:5]])
+            upcoming_text = f"\n\nÉvénements à venir :\n{upcoming_list}" if upcoming_list else ""
+
+            return f"Bonjour {prenom} ! \n\nVous êtes inscrit(e) à {total} événement(s) au total ({stats.get('upcoming_events', 0)} à venir, {stats.get('past_events', 0)} passé(s)).{upcoming_text}\n\n Consultez le détail complet sur le site web, dans votre tableau de bord.", True
+
+        return f"Bonjour {prenom} ! \n\nConsultez vos inscriptions sur le site web, dans votre tableau de bord, rubrique 'Mes événements'.", True
 
     # ============================================================
     # 10. AUTHENTIFICATION ORGANISATEUR
@@ -815,7 +911,7 @@ L'application mobile est disponible pour les organisateurs !""", True
     if any_keyword_match(message_content, ['comment s\'inscrire à un événement', 'participer à un événement', 'rejoindre un événement', "s'inscrire événement", 'comment participer', 'inscription événement']):
         if is_organizer:
             return f"Bonjour {prenom} ! \n\nEn tant qu'organisateur, vous ne vous inscrivez pas aux événements, vous les créez ! Ouvrez l'application mobile et cliquez sur 'Nouvel événement'.", True
-        
+
         return """ Pour vous inscrire à un événement :
 
 1. Rendez-vous sur la page des événements du site web
@@ -833,7 +929,7 @@ Consultez vos inscriptions dans votre tableau de bord.""", True
     if any_keyword_match(message_content, ['mon qr', 'mon qr code', 'mon billet', 'mon ticket', 'qr code participant']):
         if is_organizer:
             return f"Bonjour {prenom} ! \n\nEn tant qu'organisateur, vous scannez les QR codes des participants, vous n'en recevez pas. Utilisez l'application mobile pour scanner.", True
-        
+
         return f"""Bonjour {prenom} !
 
 Votre QR code est votre billet d'entrée !
@@ -854,18 +950,18 @@ Gardez votre QR code accessible (capture d'écran ou imprimé) pour l'entrée.""
     if any_keyword_match(message_content, ['mes sondages', 'sondage', 'sondages en attente', 'avis', 'sondages participant']):
         if is_organizer:
             return f"Bonjour {prenom} ! \n\nLes sondages sont destinés aux participants après les événements. En tant qu'organisateur, vous pouvez créer des sondages depuis votre tableau de bord.", True
-        
+
         if participant_data:
             stats = participant_data.get('statistics', {})
             pending = participant_data.get('pending_surveys', [])
             nb = stats.get('pending_surveys', 0)
-            
+
             if nb == 0:
                 return f"Bonjour {prenom} ! \n\nVous n'avez aucun sondage en attente. 🎉\n\nLes sondages apparaissent après votre participation à un événement.", True
-            
+
             noms = ", ".join([s.get('evenement', {}).get('nom', '') for s in pending[:3]])
             return f"Bonjour {prenom} ! \n\n Vous avez {nb} sondage(s) en attente pour : {noms}\n\n Accédez-y dans votre tableau de bord.", True
-        
+
         return """ Pour voir vos sondages :
 
 1. Connectez-vous sur le site web
@@ -880,7 +976,7 @@ Les sondages apparaissent après votre participation à un événement.""", True
     if any_keyword_match(message_content, ['mon profil', 'mon compte', 'mes informations', 'profil participant']):
         if is_organizer:
             return f"Bonjour {prenom} ! \n\nVotre profil organisateur est accessible dans l'application mobile, rubrique 'Mon compte'.", True
-        
+
         return f"""Bonjour {prenom} !
 
 Pour gérer votre profil :
@@ -900,7 +996,7 @@ Vous pouvez modifier :
     if any_keyword_match(message_content, ['liste événements', 'événements disponibles', 'tous les événements', 'events disponibles', 'voir événements']):
         if is_organizer:
             return f"Bonjour {prenom} ! \n\nEn tant qu'organisateur, vos événements sont dans l'application mobile. Pour voir tous les événements publics, rendez-vous sur le site web.", True
-        
+
         return """ Pour voir tous les événements disponibles :
 
 1. Rendez-vous sur le site web
