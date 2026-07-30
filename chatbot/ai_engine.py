@@ -162,27 +162,58 @@ else:
 # VÉRIFICATION DU TOKEN SANCTUM AUPRÈS DE LARAVEL
 # ============================================================
 def verify_sanctum_token(sanctum_token):
+    """
+    Vérifie le token Sanctum en interrogeant Laravel.
+
+    CORRECTIF : l'ancienne version appelait "/api/user/chatbot-data", une
+    route dont on n'a aucune preuve qu'elle existe côté Laravel (contrairement
+    à "/api/user", confirmée fonctionnelle par le frontend : elle répond 200
+    et renvoie {id, name, email, role, ...}). Si "/api/user/chatbot-data"
+    n'existe pas (404) ou timeout, cette fonction retournait toujours None,
+    même pour un utilisateur connecté — d'où les réponses non personnalisées.
+
+    On appelle donc "/api/user" (la route qui marche réellement), et on
+    normalise la réponse pour reconstruire la même structure qu'avant
+    ({'user': {...}, 'role': ..., 'is_organizer': ...}), afin de ne rien
+    changer au reste du fichier qui s'attend à cette forme.
+    """
     if not sanctum_token:
         print(" Aucun token fourni")
         return None
 
     try:
         response = requests.get(
-            f"{LARAVEL_URL}/api/user/chatbot-data",
-            headers={"Authorization": f"Bearer {sanctum_token}"},
+            f"{LARAVEL_URL}/api/user",
+            headers={
+                "Authorization": f"Bearer {sanctum_token}",
+                "Accept": "application/json",
+            },
             timeout=5
         )
 
         if response.status_code == 200:
-            data = response.json()
+            raw = response.json()
 
-            user_data = data.get('user', {})
-            role = user_data.get('role', 'participant')
+            # Certaines API renvoient les infos utilisateur "à plat"
+            # (id, name, email, role directement dans la racine), d'autres
+            # les renvoient imbriquées sous une clé "user". On gère les
+            # deux cas pour être robuste, quel que soit le format renvoyé.
+            if isinstance(raw, dict) and isinstance(raw.get('user'), dict):
+                user_info = raw['user']
+            elif isinstance(raw, dict):
+                user_info = raw
+            else:
+                user_info = {}
 
-            data['role'] = role
-            data['is_organizer'] = (role == 'organisateur' or role == 'organizer')
+            role = user_info.get('role', 'participant')
 
-            print(f" Token valide pour {user_data.get('name')} (rôle: {role})")
+            data = {
+                'user': user_info,
+                'role': role,
+                'is_organizer': (role == 'organisateur' or role == 'organizer'),
+            }
+
+            print(f" Token valide pour {user_info.get('name')} (rôle: {role})")
             return data
         else:
             print(f" Token invalide (status {response.status_code})")
