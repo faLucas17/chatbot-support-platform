@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'crispy_forms',
     'crispy_bootstrap5',
+    'rest_framework.authtoken',
 ]
 
 AUTH_USER_MODEL = 'auth.User'

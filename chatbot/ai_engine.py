@@ -548,11 +548,42 @@ Pas encore de compte ? Créez-en un sur le site web en 2 minutes.
 Posez-moi une autre question si vous avez besoin d'aide !""", True
 
     # ============================================================
+    # 0.6. MON QR CODE - PARTICIPANT (PUBLIC / AVANT BLOCAGE)
+    # ============================================================
+    if any_keyword_match(message_content, ['mon qr', 'mon qr code', 'mon billet', 'mon ticket', 'qr code participant', 'qrcode', 'qr', 'billet', 'ticket', 'code qr']):
+        if is_organizer:
+            return f"Bonjour {prenom} ! En tant qu'organisateur, vous scannez les QR codes des participants, vous n'en recevez pas. Utilisez l'application mobile pour scanner.", True
+        
+        if not user_data:
+            return """Votre QR code est votre billet d'entrée pour un événement.
+
+Si vous êtes déjà inscrit à un événement, vous le trouverez :
+- Dans l'email de confirmation d'inscription
+- Dans votre tableau de bord sur le site web
+
+Si vous ne l'avez pas encore, inscrivez-vous d'abord à un événement sur le site web !""", True
+        
+        return f"""Bonjour {prenom} !
+
+Votre QR code est votre billet d'entrée !
+
+Où le trouver ?
+- Dans l'email de confirmation d'inscription
+- Dans votre tableau de bord sur le site web
+
+Si vous ne le trouvez pas :
+- Vérifiez vos spams
+- Contactez le support
+
+Gardez votre QR code accessible (capture d'écran ou imprimé) pour l'entrée.""", True
+
+    # ============================================================
     # 1. BLOCAGE : QUESTIONS PERSONNELLES SANS CONNEXION
     # ============================================================
     questions_perso = ['mes événements', 'mes evenements', 'mon qr', 'mes sondages',
-                       'mon compte', 'mon profil', 'mes inscriptions', 'mon billet',
+                       'mon compte', 'mon profil', 'mes inscriptions',
                        'mes participants', 'scan qr', 'scanner', 'kpi', 'statistiques']
+    # 'mon billet' retiré car géré par la section 0.6
     if any_keyword_match(message_content, questions_perso) and not user_data:
         print("Blocage : question personnelle sans connexion")
         return "Pour accéder à vos informations personnelles, veuillez vous connecter. Une fois connecté(e), je pourrai vous répondre de façon personnalisée ! 😊", True
@@ -708,11 +739,11 @@ En tant que participant, vous pouvez vérifier votre propre inscription :
 Vous y verrez la confirmation de vos inscriptions.""", True
 
     # ============================================================
-    # 6. SCANNER UN QR CODE (Organisateur) / MON QR CODE (Participant)
+    # 6. SCANNER UN QR CODE (Organisateur)
     # ============================================================
     if any_keyword_match(message_content, ['scanner qr', 'scan qr', 'qr code scan', 'valider présence', 'enregistrer présence', 'scan code', 'scanner', 'scan qr code']):
         if not user_data:
-            return "Pour scanner des QR codes (organisateur) ou récupérer votre QR code (participant), connectez-vous à votre compte.", True
+            return "Pour scanner des QR codes (organisateur), connectez-vous à votre compte organisateur sur l'application mobile.", True
 
         if is_organizer:
             return f"""Bonjour {prenom} !
@@ -957,25 +988,8 @@ Vous recevrez un QR code par email qui vous servira de billet d'entrée !
 Consultez vos inscriptions dans votre tableau de bord.""", True
 
     # ============================================================
-    # 13. MON QR CODE (Participant)
+    # 13. SUPPRIMÉE (redondante avec 0.6)
     # ============================================================
-    if any_keyword_match(message_content, ['mon qr', 'mon qr code', 'mon billet', 'mon ticket', 'qr code participant']):
-        if is_organizer:
-            return f"Bonjour {prenom} ! \n\nEn tant qu'organisateur, vous scannez les QR codes des participants, vous n'en recevez pas. Utilisez l'application mobile pour scanner.", True
-
-        return f"""Bonjour {prenom} !
-
-Votre QR code est votre billet d'entrée !
-
-Où le trouver ?
-- Dans l'email de confirmation d'inscription
-- Dans votre tableau de bord sur le site web
-
-Si vous ne le trouvez pas :
-- Vérifiez vos spams
-- Contactez le support
-
-Gardez votre QR code accessible (capture d'écran ou imprimé) pour l'entrée.""", True
 
     # ============================================================
     # 14. MES SONDAGES (Participant)
