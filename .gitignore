@@ -31,4 +31,5 @@ Thumbs.db
 # Secrets
 .env
 *.key
-*.pem"documents/" 
+*.pem
+documents/
