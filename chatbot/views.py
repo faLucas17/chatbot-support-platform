@@ -185,13 +185,24 @@ def get_django_user_from_token(sanctum_token):
         return None
     try:
         response = requests.get(
-            f"{LARAVEL_URL}/api/user/chatbot-data",
-            headers={"Authorization": f"Bearer {sanctum_token}"},
+            f"{LARAVEL_URL}/api/user",   # ← /api/user (au lieu de /api/user/chatbot-data)
+            headers={
+                "Authorization": f"Bearer {sanctum_token}",
+                "Accept": "application/json",
+            },
             timeout=5
         )
         if response.status_code == 200:
-            data = response.json()
-            user_data = data.get('user', {})
+            raw = response.json()
+
+            # Certaines API renvoient {user: {...}}, d'autres {...} à plat
+            if isinstance(raw, dict) and isinstance(raw.get('user'), dict):
+                user_data = raw['user']
+            elif isinstance(raw, dict):
+                user_data = raw
+            else:
+                user_data = {}
+
             user_email = user_data.get('email')
             user_name = user_data.get('name', '')
 
@@ -213,6 +224,10 @@ def get_django_user_from_token(sanctum_token):
                         user.save()
                         print(f"✅ Nom utilisateur mis à jour: {user_name}")
                 return user
+            else:
+                print(f"⚠️ Pas d'email dans la réponse Laravel: {user_data}")
+        else:
+            print(f"⚠️ /api/user a retourné {response.status_code}")
     except Exception as e:
         print(f"❌ Erreur récupération utilisateur depuis token: {e}")
     return None
@@ -266,6 +281,7 @@ class SendMessageView(APIView):
             return Response({"error": "Clé API invalide"}, status=status.HTTP_401_UNAUTHORIZED)
 
         django_user = get_django_user_from_token(sanctum_token)
+        print(f" django_user après get_django_user_from_token: {django_user}")
 
         # ==============================
         # Gestion de la conversation
