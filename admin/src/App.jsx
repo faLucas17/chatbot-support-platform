@@ -407,54 +407,42 @@ function AdminNavbar({ theme, setTheme, adminMenuOpen, setAdminMenuOpen, onLogou
 // ============================================================
 // PAGE D'ACCUEIL /projets — grille de cartes (style Easy Suite)
 // ============================================================
-// Thème visuel de chaque carte projet
+// Style de chaque carte : cadres identiques pour tous, seul le bouton change de couleur
 function getProjectStyle(name, isDark, base) {
   const slug = slugify(name);
-  if (slug === 'easycoop') {
-    // Charte EasyCoop : fond sombre + or
-    return {
-      accent: '#E5A93C', cardBg: '#161616', border: '#2A2A2A',
-      title: '#FFFFFF', muted: '#9CA3AF', strong: '#FFFFFF', iconBg: '#232323',
-      btnBg: '#E5A93C', btnText: '#0B0B0C', topBar: null,
-    };
-  }
-  if (/^easy-?events?$/.test(slug)) {
-    // Charte Easy Events : vert + orange
-    return {
-      accent: '#15AD84', cardBg: base.cardBg, border: base.cardBorder,
-      title: base.textMain, muted: base.textMuted, strong: base.textMain, iconBg: '#15AD8422',
-      btnBg: 'linear-gradient(90deg, #15AD84 0%, #FF9900 100%)', btnText: '#FFFFFF',
-      topBar: 'linear-gradient(90deg, #15AD84, #FF9900)',
-    };
-  }
+  let btnBg = '#888888';
+  let btnText = '#FFFFFF';
+  if (slug === 'easycoop') { btnBg = '#E5A93C'; btnText = '#1A1A1A'; }          // jaune
+  else if (/^easy-?events?$/.test(slug)) { btnBg = '#15AD84'; btnText = '#FFFFFF'; } // vert
   return {
-    accent: '#888888', cardBg: base.cardBg, border: base.cardBorder,
-    title: base.cardTitle, muted: base.textMuted, strong: base.textMain, iconBg: '#88888822',
-    btnBg: '#888888', btnText: '#FFFFFF', topBar: null,
+    cardBg: base.cardBg, border: base.cardBorder,
+    title: base.cardTitle, muted: base.textMuted, strong: base.textMain,
+    iconBg: isDark ? '#2A3A32' : '#F3F4F6',
+    btnBg, btnText,
   };
 }
 
-// Logo du projet : /public/logos/<slug>.png (ou tenant.logo si l'API le fournit)
+// Logo commun aux projets : /public/logos/bakeli.png (remplit toute la case)
 // Si l'image est introuvable, on retombe sur l'initiale du projet.
-function ProjectLogo({ tenant, accent, bg }) {
+function ProjectLogo({ tenant, bg }) {
   const [failed, setFailed] = useState(false);
-  const src = tenant.logo || `${import.meta.env.BASE_URL}logos/${slugify(tenant.name)}.png`;
+  const src = `${import.meta.env.BASE_URL}logos/bakeli.png`;
   return (
     <div style={{
-      width: '64px', height: '64px', borderRadius: '14px', background: bg,
+      width: '56px', height: '56px', borderRadius: '12px', background: bg,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       overflow: 'hidden', flexShrink: 0,
     }}>
       {failed ? (
-        <span className="ps-heading" style={{ color: accent, fontSize: '26px', fontWeight: 800 }}>
+        <span className="ps-heading" style={{ fontSize: '22px', fontWeight: 800 }}>
           {(tenant.name || '?').charAt(0).toUpperCase()}
         </span>
       ) : (
         <img
           src={src}
-          alt={`Logo ${tenant.name}`}
+          alt="Logo"
           onError={() => setFailed(true)}
-          style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '8px', boxSizing: 'border-box' }}
+          style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
         />
       )}
     </div>
@@ -503,8 +491,9 @@ function ProjectsHome({ tenants, tenantsLoaded, conversations, theme, setTheme, 
   );
 
   return (
+    <div style={{ height: '100vh', overflowY: 'scroll', background: pageBg }}>
     <div className="ps-page" style={{
-      minHeight: '100vh',
+      minHeight: '100%',
       display: 'flex',
       flexDirection: 'column',
       background: pageBg,
@@ -528,7 +517,7 @@ function ProjectsHome({ tenants, tenantsLoaded, conversations, theme, setTheme, 
           text-align: center;
         }
         .ps-subtitle { color: ${textMain} !important; font-weight: 600; text-align: center; margin: 0; font-size: clamp(15px, 1.8vw, 20px); }
-        .projects-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        .projects-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
         @media (min-width: 640px)  { .projects-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (min-width: 1024px) { .projects-grid { grid-template-columns: repeat(4, 1fr); } }
         .project-card { text-align: left; transition: box-shadow 0.2s, transform 0.2s; cursor: pointer; }
@@ -602,7 +591,7 @@ function ProjectsHome({ tenants, tenantsLoaded, conversations, theme, setTheme, 
       </div>
 
       {/* Grille de cartes */}
-      <div style={{ background: bandBg, padding: '36px 32px 48px', boxSizing: 'border-box' }}>
+      <div style={{ background: bandBg, padding: '28px 32px 36px', boxSizing: 'border-box' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
           {!tenantsLoaded ? (
             <p style={{ textAlign: 'center', color: textMuted, fontSize: '14px' }}>Chargement des projets...</p>
@@ -627,25 +616,21 @@ function ProjectsHome({ tenants, tenantsLoaded, conversations, theme, setTheme, 
                       overflow: 'hidden',
                       background: st.cardBg,
                       border: `1px solid ${st.border}`,
-                      borderRadius: '16px',
-                      padding: '24px',
+                      borderRadius: '14px',
+                      padding: '16px',
                       boxShadow: '0 2px 10px rgba(0,0,0,0.06)',
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'flex-start',
-                      gap: '14px',
-                      minHeight: '270px',
+                      gap: '10px',
                       boxSizing: 'border-box',
                     }}
                   >
-                    {st.topBar && (
-                      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: st.topBar }} />
-                    )}
-                    <ProjectLogo tenant={t} accent={st.accent} bg={st.iconBg} />
-                    <div role="heading" aria-level="3" className="ps-heading" style={{ fontSize: '24px', fontWeight: 800, color: st.title, lineHeight: 1.25, textAlign: 'left' }}>
+                    <ProjectLogo tenant={t} bg={st.iconBg} />
+                    <div role="heading" aria-level="3" className="ps-heading" style={{ fontSize: '19px', fontWeight: 800, color: st.title, lineHeight: 1.25, textAlign: 'left' }}>
                       {t.name}
                     </div>
-                    <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.6, color: st.muted, flex: 1, textAlign: 'left' }}>
+                    <p style={{ margin: 0, fontSize: '13px', lineHeight: 1.5, color: st.muted, flex: 1, textAlign: 'left' }}>
                       Support et conversations escaladées de {t.name}.{' '}
                       <strong style={{ color: st.strong }}>
                         {count} conversation{count > 1 ? 's' : ''}
@@ -654,8 +639,8 @@ function ProjectsHome({ tenants, tenantsLoaded, conversations, theme, setTheme, 
                     <span style={{
                       display: 'inline-flex', alignItems: 'center', gap: '6px',
                       background: st.btnBg, color: st.btnText,
-                      padding: '10px 16px', borderRadius: '10px',
-                      fontSize: '14px', fontWeight: 700,
+                      padding: '7px 12px', borderRadius: '8px',
+                      fontSize: '13px', fontWeight: 700,
                     }}>
                       Accéder aux conversations →
                     </span>
@@ -714,6 +699,7 @@ function ProjectsHome({ tenants, tenantsLoaded, conversations, theme, setTheme, 
           © {new Date().getFullYear()} Easy Desk. Tous droits réservés. Made with ❤️ in Africa.
         </div>
       </footer>
+    </div>
     </div>
   );
 }
