@@ -14,6 +14,9 @@ const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'passer@12';
 // URL de base de l'API
 const API_BASE = import.meta.env.VITE_API_BASE || 'https://support-platform-api-0h06.onrender.com';
 
+// Email de contact affiché dans le pied de page (optionnel)
+const SUPPORT_EMAIL = import.meta.env.VITE_SUPPORT_EMAIL || '';
+
 // ============================================================
 // HELPERS PROJETS (slug + couleur d'accent)
 // "EasyCoop" → "easycoop" | "Easy Events" → "easy-events" | "Easy Suite Pro" → "easy-suite-pro"
@@ -34,7 +37,7 @@ const getAccentColor = (name = '') => {
 };
 
 // ============================================================
-// PAGE DE LOGIN — Design EasyEvent avec "Se souvenir de moi"
+// PAGE DE LOGIN — Design Easy Desk avec "Se souvenir de moi"
 // ============================================================
 function LoginPage({ onLogin, theme }) {
   const [email, setEmail] = useState('');
@@ -164,7 +167,7 @@ function LoginPage({ onLogin, theme }) {
           Espace Support Admin AI {' '}
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', verticalAlign: 'middle' }}>
             <span style={{ background: '#FF9900', color: 'white', padding: '2px 10px', borderRadius: '6px', fontWeight: '800' }}>Easy</span>
-            <span style={{ color: '#15AD84', fontWeight: '800' }}>Event</span>
+            <span style={{ color: isDark ? '#F5F0E8' : '#1A1A1A', fontWeight: '800' }}>Desk</span>
           </span>
           !
         </h1>
@@ -194,7 +197,7 @@ function LoginPage({ onLogin, theme }) {
           <div style={{ textAlign: 'center', marginBottom: '4px' }}>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', marginBottom: '8px' }}>
               <span style={{ background: '#FF9900', color: 'white', padding: '3px 10px', borderRadius: '6px', fontSize: '18px', fontWeight: '800' }}>Easy</span>
-              <span style={{ color: '#15AD84', fontSize: '18px', fontWeight: '800' }}>Event</span>
+              <span style={{ color: isDark ? '#F5F0E8' : '#1A1A1A', fontSize: '18px', fontWeight: '800' }}>Desk</span>
             </div>
           </div>
           <h2 style={{ fontSize: '22px', fontWeight: '700', color: isDark ? '#F5F0E8' : '#1A1A1A', margin: '0 0 4px 0', textAlign: 'center' }}>Support Admin AI</h2>
@@ -411,59 +414,92 @@ function ProjectsHome({ tenants, tenantsLoaded, conversations, theme, setTheme, 
   const cardBorder = isDark ? '#3A4A42' : '#E8ECF2';
   const textMain = isDark ? '#F5F0E8' : '#111111';
   const textMuted = isDark ? '#9AB3A5' : '#6B7280';
+  const cardTitle = isDark ? '#F5F0E8' : '#0B4F8A';
+  const userBoxBg = isDark ? '#243028' : '#F3F4F6';
 
   const countFor = (tenantId) =>
     conversations.filter(c => Number(c.tenant_id) === Number(tenantId)).length;
 
+
   return (
-    <div style={{
+    <div className="ps-page" style={{
       minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
       background: pageBg,
       color: textMain,
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       boxSizing: 'border-box',
     }}>
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap');
+        .ps-heading { font-family: 'Montserrat', sans-serif !important; }
+        .ps-title {
+          font-family: 'Montserrat', sans-serif !important;
+          font-weight: 900 !important;
+          color: ${textMain} !important;
+          -webkit-text-fill-color: ${textMain} !important;
+          background: none !important;
+          opacity: 1 !important;
+          text-shadow: none !important;
+          margin: 0 0 6px !important;
+          font-size: clamp(28px, 4.4vw, 52px);
+          line-height: 1.2;
+          text-align: center;
+        }
+        .ps-subtitle { color: ${textMain} !important; font-weight: 600; text-align: center; margin: 0; font-size: clamp(15px, 1.8vw, 20px); }
         .projects-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
         @media (min-width: 640px)  { .projects-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (min-width: 1024px) { .projects-grid { grid-template-columns: repeat(4, 1fr); } }
-        .project-card { transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s; cursor: pointer; }
+        .project-card { text-align: left; transition: box-shadow 0.2s, transform 0.2s; cursor: pointer; }
         .project-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(0,0,0,0.12); }
         .project-card:focus-visible { outline: 3px solid #15AD84; outline-offset: 2px; }
+        .ps-footer-grid { display: grid; grid-template-columns: 1fr; gap: 28px; }
+        @media (min-width: 768px) { .ps-footer-grid { grid-template-columns: 2fr 1fr 1fr; } }
+        .ps-footer a { color: #D1D5DB; text-decoration: none; font-size: 14px; }
+        .ps-footer a:hover { color: #FFFFFF; text-decoration: underline; }
       `}</style>
 
       {/* Barre du haut */}
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '16px 32px', borderBottom: `1px solid ${cardBorder}`, position: 'relative',
+        padding: '14px 32px', borderBottom: `1px solid ${cardBorder}`,
       }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '2px' }}>
-          <span style={{ background: '#FF9900', color: 'white', padding: '3px 10px', borderRadius: '6px', fontSize: '18px', fontWeight: '800' }}>Easy</span>
-          <span style={{ color: '#15AD84', fontSize: '18px', fontWeight: '800' }}>Event</span>
-          <span style={{ color: textMuted, fontSize: '14px', fontWeight: '600', marginLeft: '8px' }}>· Support</span>
+        <div style={{ display: 'inline-flex', alignItems: 'baseline', gap: '6px' }}>
+          <span className="ps-heading" style={{ fontSize: '24px', fontWeight: '800', letterSpacing: '-0.3px' }}>
+            <span style={{ color: '#FF9900' }}>Easy</span>{' '}
+            <span style={{ color: textMain }}>Desk</span>
+          </span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px' }}>
           <button
             onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
             title={theme === 'light' ? 'Passer en mode sombre' : 'Passer en mode clair'}
-            style={{ background: 'transparent', border: `1px solid ${cardBorder}`, color: textMain, borderRadius: '8px', width: '34px', height: '34px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+            style={{ background: userBoxBg, border: 'none', color: textMain, borderRadius: '10px', width: '38px', height: '38px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
           >
             {theme === 'light' ? <MoonIcon /> : <SunIcon />}
           </button>
           <div
             onClick={() => setMenuOpen(!menuOpen)}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 12px', borderRadius: '8px', border: `1px solid ${cardBorder}`, cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '6px 12px', borderRadius: '10px', background: userBoxBg, cursor: 'pointer', fontSize: '14px', fontWeight: '600', color: textMain }}
           >
-            <UserIcon size={16} />
+            <span style={{ width: '30px', height: '30px', borderRadius: '50%', background: '#1F2937', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <UserIcon size={16} />
+            </span>
             <span>Administrateur</span>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+              style={{ transform: menuOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
           </div>
+
           {menuOpen && (
-            <div style={{ position: 'absolute', top: '58px', right: '32px', background: cardBg, border: `1px solid ${cardBorder}`, borderRadius: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.12)', padding: '8px', minWidth: '170px', zIndex: 10 }}>
-              <div style={{ padding: '6px 10px', fontSize: '12px', color: textMuted }}>admin</div>
+            <div style={{ position: 'absolute', top: '52px', right: 0, background: cardBg, border: `1px solid ${cardBorder}`, borderRadius: '12px', boxShadow: '0 8px 24px rgba(0,0,0,0.12)', padding: '6px 0', minWidth: '190px', zIndex: 10 }}>
+              <div style={{ padding: '10px 16px', fontSize: '13px', color: textMuted, textAlign: 'center' }}>admin</div>
+              <div style={{ height: '1px', background: cardBorder, margin: '0 0 4px' }} />
               <button
                 onClick={onLogout}
-                style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', background: 'none', border: 'none', color: '#FF6B6B', fontSize: '13px', fontWeight: '600', padding: '8px 10px', borderRadius: '6px', cursor: 'pointer' }}
+                style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', background: 'none', border: 'none', color: '#EF4444', fontSize: '14px', fontWeight: '500', padding: '10px 16px', cursor: 'pointer', fontFamily: 'inherit' }}
               >
                 <LogoutIcon />
                 Se déconnecter
@@ -474,11 +510,9 @@ function ProjectsHome({ tenants, tenantsLoaded, conversations, theme, setTheme, 
       </div>
 
       {/* Titre + courbe décorative */}
-      <div style={{ textAlign: 'center', padding: '48px 24px 36px' }}>
-        <h1 style={{ fontSize: 'clamp(28px, 4.4vw, 48px)', fontWeight: '900', margin: '0 0 6px', lineHeight: 1.2 }}>
-          Tous les projets support
-        </h1>
-        <svg width="300" height="40" viewBox="0 0 300 40" style={{ display: 'block', margin: '0 auto 10px', maxWidth: '80%' }}>
+      <div style={{ padding: '52px 24px 40px' }}>
+        <div role="heading" aria-level="1" className="ps-title">Tous les projets support</div>
+        <svg width="300" height="40" viewBox="0 0 300 40" style={{ display: 'block', margin: '0 auto 12px', maxWidth: '80%' }}>
           <defs>
             <linearGradient id="projectsCurveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#15AD84" />
@@ -487,13 +521,11 @@ function ProjectsHome({ tenants, tenantsLoaded, conversations, theme, setTheme, 
           </defs>
           <path d="M 0 30 Q 75 5 150 20 Q 225 35 300 15" fill="none" stroke="url(#projectsCurveGrad)" strokeWidth="6" strokeLinecap="round" />
         </svg>
-        <p style={{ fontSize: 'clamp(15px, 1.8vw, 19px)', color: textMain, margin: 0, fontWeight: '500' }}>
-          Choisissez un projet pour suivre ses conversations escaladées.
-        </p>
+        <p className="ps-subtitle">Choisissez un projet pour suivre ses conversations escaladées.</p>
       </div>
 
       {/* Grille de cartes */}
-      <div style={{ background: bandBg, padding: '32px', minHeight: '40vh', boxSizing: 'border-box' }}>
+      <div style={{ background: bandBg, padding: '36px 32px 48px', boxSizing: 'border-box' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
           {!tenantsLoaded ? (
             <p style={{ textAlign: 'center', color: textMuted, fontSize: '14px' }}>Chargement des projets...</p>
@@ -521,12 +553,13 @@ function ProjectsHome({ tenants, tenantsLoaded, conversations, theme, setTheme, 
                       boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
                       display: 'flex',
                       flexDirection: 'column',
+                      alignItems: 'flex-start',
                       gap: '14px',
                       minHeight: '250px',
                       boxSizing: 'border-box',
                     }}
                   >
-                    <div style={{
+                    <div className="ps-heading" style={{
                       width: '56px', height: '56px', borderRadius: '12px',
                       background: `${accent}22`, color: accent,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -534,12 +567,11 @@ function ProjectsHome({ tenants, tenantsLoaded, conversations, theme, setTheme, 
                     }}>
                       {(t.name || '?').charAt(0).toUpperCase()}
                     </div>
-                    <h3 style={{ margin: 0, fontSize: '22px', fontWeight: '800', color: textMain, lineHeight: 1.25 }}>
+                    <div role="heading" aria-level="3" className="ps-heading" style={{ fontSize: '24px', fontWeight: 800, color: cardTitle, lineHeight: 1.25, textAlign: 'left' }}>
                       {t.name}
-                    </h3>
-                    <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.6, color: textMuted, flex: 1 }}>
-                      Support et conversations escaladées de {t.name}.
-                      {' '}
+                    </div>
+                    <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.6, color: textMuted, flex: 1, textAlign: 'left' }}>
+                      Support et conversations escaladées de {t.name}.{' '}
                       <strong style={{ color: textMain }}>
                         {count} conversation{count > 1 ? 's' : ''}
                       </strong>
@@ -554,6 +586,37 @@ function ProjectsHome({ tenants, tenantsLoaded, conversations, theme, setTheme, 
           )}
         </div>
       </div>
+
+      {/* Pied de page (collé en bas) */}
+      <footer className="ps-footer" style={{ marginTop: 'auto', background: '#111827', color: '#FFFFFF', padding: '40px 32px 24px' }}>
+        <div className="ps-footer-grid" style={{ maxWidth: '1280px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'left' }}>
+            <div className="ps-heading" style={{ fontSize: '22px', fontWeight: 800, marginBottom: '10px' }}>
+              <span style={{ color: '#FF9900' }}>Easy</span> <span style={{ color: '#FFFFFF' }}>Desk</span>
+            </div>
+            <p style={{ margin: 0, color: '#D1D5DB', fontSize: '14px', lineHeight: 1.7, maxWidth: '420px' }}>
+              Le centre de support intelligent de vos applications Easy : suivez les conversations, répondez et résolvez, propulsé par l'IA.
+            </p>
+          </div>
+          <div style={{ textAlign: 'left' }}>
+            <div className="ps-heading" style={{ fontSize: '15px', fontWeight: 700, marginBottom: '12px' }}>Liens rapides</div>
+            <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <li><a href="/projets">Tous les projets</a></li>
+              {SUPPORT_EMAIL && <li><a href={`mailto:${SUPPORT_EMAIL}`}>Nous écrire</a></li>}
+            </ul>
+          </div>
+          <div style={{ textAlign: 'left' }}>
+            <div className="ps-heading" style={{ fontSize: '15px', fontWeight: 700, marginBottom: '12px' }}>Contact</div>
+            <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {SUPPORT_EMAIL && <li><a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a></li>}
+              <li style={{ color: '#D1D5DB', fontSize: '14px' }}>Dakar, Sénégal</li>
+            </ul>
+          </div>
+        </div>
+        <div style={{ maxWidth: '1280px', margin: '28px auto 0', paddingTop: '18px', borderTop: '1px solid #374151', textAlign: 'center', color: '#9CA3AF', fontSize: '13px' }}>
+          © {new Date().getFullYear()} Easy Desk. Tous droits réservés. Made with ❤️ in Africa.
+        </div>
+      </footer>
     </div>
   );
 }
@@ -608,7 +671,7 @@ function ConversationsShell({
           <div className="sidebar-header-top">
             <div className="sidebar-logo">
               <span className="logo-easy">Easy</span>
-              <span className="logo-event">Event</span>
+              <span className="logo-event" style={{ color: 'var(--content)' }}>Desk</span>
               <span className="logo-support">· Support</span>
             </div>
             <div className="sidebar-header-icons">
@@ -850,7 +913,7 @@ function App() {
         <div className="login-card">
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', marginBottom: '12px' }}>
             <span style={{ background: '#FF9900', color: 'white', padding: '2px 8px', borderRadius: '5px', fontSize: '15px', fontWeight: '800' }}>Easy</span>
-            <span style={{ color: '#15AD84', fontSize: '15px', fontWeight: '800' }}>Event</span>
+            <span style={{ color: 'var(--content, #1A1A1A)', fontSize: '15px', fontWeight: '800' }}>Desk</span>
           </div>
           <p style={{ color: 'var(--text-secondary, #555)', fontSize: '14px' }}>Chargement des conversations...</p>
         </div>
