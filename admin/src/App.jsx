@@ -11,6 +11,9 @@ import './App.css';
 const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || 'admin@admin.com';
 const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'passer@12';
 
+// URL de base de l'API
+const API_BASE = import.meta.env.VITE_API_BASE || 'https://support-platform-api-0h06.onrender.com';
+
 // ============================================================
 // PAGE DE LOGIN — Design EasyEvent avec "Se souvenir de moi"
 // ============================================================
@@ -281,13 +284,6 @@ const UserIcon = ({ size = 14 }) => (
   </svg>
 );
 
-const ChevronDownIcon = () => (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
-    stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="6 9 12 15 18 9"/>
-  </svg>
-);
-
 // ============================================================
 // COMPOSANT ConversationPage
 // ============================================================
@@ -352,6 +348,12 @@ function App() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [adminMenuOpen, setAdminMenuOpen] = useState(false);
 
+  // ═══════════════════════════════════════════════════════════
+  // NOUVEAU : gestion du filtre par tenant
+  // ═══════════════════════════════════════════════════════════
+  const [tenants, setTenants] = useState([]);
+  const [selectedTenant, setSelectedTenant] = useState('all');
+
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
@@ -380,6 +382,17 @@ function App() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // ═══════════════════════════════════════════════════════════
+  // NOUVEAU : charger la liste des tenants
+  // ═══════════════════════════════════════════════════════════
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    fetch(`${API_BASE}/api/tenants/`)
+      .then(res => res.json())
+      .then(data => setTenants(data))
+      .catch(err => console.error('Erreur chargement tenants:', err));
+  }, [isLoggedIn]);
+
   useEffect(() => {
     if (!isLoggedIn) return;
     if (selectedConversation) return;
@@ -398,6 +411,14 @@ function App() {
       setLoading(false);
     }
   };
+
+  // ═══════════════════════════════════════════════════════════
+  // NOUVEAU : filtrer par tenant
+  // ═══════════════════════════════════════════════════════════
+  const filteredConversations = conversations.filter(conv => {
+    if (selectedTenant === 'all') return true;
+    return conv.tenant_id === parseInt(selectedTenant);
+  });
 
   const handleLogin = () => setIsLoggedIn(true);
 
@@ -470,20 +491,45 @@ function App() {
             </div>
           </div>
 
+          {/* ═══════════════════════════════════════════════════════ */}
+          {/* NOUVEAU : filtre par projet                            */}
+          {/* ═══════════════════════════════════════════════════════ */}
+          <div style={{ padding: '10px 14px 0 14px' }}>
+            <select
+              value={selectedTenant}
+              onChange={(e) => setSelectedTenant(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                borderRadius: '8px',
+                border: '1px solid var(--line)',
+                background: 'var(--surface)',
+                color: 'var(--content)',
+                fontSize: '13px',
+                cursor: 'pointer',
+                outline: 'none',
+              }}
+            >
+              <option value="all">🌐 Tous les projets</option>
+              {tenants.map(t => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
         </div>
 
-        {/* Liste des conversations */}
+        {/* Liste des conversations (filtrées) */}
         <ConversationList
-          conversations={conversations}
+          conversations={filteredConversations}
           onSelect={(conv) => {
             setSelectedConversation(conv);
             if (isMobile) setSidebarOpen(false);
           }}
           selectedId={selectedConversation?.id}
         />
-
-        {/* ── BARRE ADMINISTRATION — SUPPRIMÉE DE LA SIDEBAR ── */}
-        {/* La barre est maintenant dans le main-content en haut */}
 
       </div>
 
@@ -493,10 +539,8 @@ function App() {
         {/* ✅ NAVBAR FIXÉE EN HAUT - visible TOUT LE TEMPS */}
         <div className="admin-navbar-fixed">
           <div className="admin-navbar-left">
-            {/* Le bouton Light/Dark est maintenant collé à Administrateur */}
           </div>
           <div className="admin-navbar-right">
-            {/* Groupe contenant le toggle et Administrateur collés */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <button
                 className="theme-toggle-nav"
@@ -505,7 +549,7 @@ function App() {
               >
                 {theme === 'light' ? <MoonIcon /> : <SunIcon />}
               </button>
-              
+
               <div
                 className="admin-nav-user"
                 onClick={() => setAdminMenuOpen(!adminMenuOpen)}
@@ -519,7 +563,7 @@ function App() {
                 </svg>
               </div>
             </div>
-            
+
             {adminMenuOpen && (
               <div className="admin-dropdown-menu">
                 <div className="admin-dropdown-email">admin</div>

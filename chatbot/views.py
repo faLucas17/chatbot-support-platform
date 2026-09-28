@@ -487,7 +487,10 @@ class AdminConversationsListView(APIView):
                 'created_at': conv.created_at,
                 'updated_at': conv.updated_at,
                 'escalated': conv.escalated,
-                'messages': messages_data
+                'messages': messages_data,
+                'tenant_id': conv.tenant.id,          
+                'tenant_name': conv.tenant.name,      
+                'tenant_api_key': conv.tenant.api_key, 
             })
         return Response(data)
 
@@ -699,3 +702,17 @@ def home_view(request):
     if request.user.is_authenticated:
         return redirect('dashboard')
     return redirect('login')
+
+@csrf_exempt_view
+class TenantsListView(APIView):
+    def get(self, request):
+        tenants = Tenant.objects.all().order_by('name')
+        data = [
+            {
+                'id': t.id,
+                'name': t.name,
+                'api_key': t.api_key,
+            }
+            for t in tenants
+        ]
+        return Response(data)

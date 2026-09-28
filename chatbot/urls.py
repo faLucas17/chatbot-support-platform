@@ -28,4 +28,6 @@ urlpatterns = [
     # Home
     path('', views.home_view, name='home'),
     path('dashboard/full/', views.full_dashboard_view, name='full_dashboard'),
+    # Tenants
+    path('api/tenants/', views.TenantsListView.as_view(), name='tenants-list'),
 ]
