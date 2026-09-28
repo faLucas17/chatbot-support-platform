@@ -9,6 +9,7 @@ from rest_framework import status
 from .models import Tenant, Conversation, Message, KnowledgeItem, Document
 from .serializers import SendMessageSerializer, MessageSerializer, ConversationSerializer
 from .ai_engine import get_bot_response
+from .ai_engine_easycoop import get_bot_response_easycoop
 import PyPDF2
 from PIL import Image
 import pytesseract
@@ -27,6 +28,7 @@ from django.template.loader import render_to_string
 # Configuration
 LARAVEL_URL = os.getenv('LARAVEL_URL', 'https://api-easyevent.bakeli.tech')
 SUPPORT_URL = os.getenv('SUPPORT_URL', 'https://support-platform-admin.onrender.com')
+
 
 # ============================================================
 # FONCTION POUR ENVOYER UN EMAIL PROFESSIONNEL AVEC COULEURS
@@ -291,7 +293,12 @@ class SendMessageView(APIView):
             print(f"✅ Nouvelle conversation créée avec l'utilisateur {django_user.email if django_user else 'Anonyme'}")
 
         user_message = Message.objects.create(conversation=conversation, role='user', content=content)
-        bot_response_text, bot_success = get_bot_response(content, tenant, sanctum_token)
+
+        # Routage selon le tenant : EasyCoop utilise son propre moteur
+        if tenant.api_key == 'easycoop-2026':
+            bot_response_text, bot_success = get_bot_response_easycoop(content, tenant, sanctum_token)
+        else:
+            bot_response_text, bot_success = get_bot_response(content, tenant, sanctum_token)
 
         if bot_success and bot_response_text:
             bot_message = Message.objects.create(conversation=conversation, role='bot', content=bot_response_text)
@@ -341,7 +348,6 @@ class SendMessageView(APIView):
                 print(f"❌ Erreur envoi Discord: {e}")
 
         # ========== 2. NOTIFICATION EMAIL — thread async ==========
-        # Capture des variables locales pour le thread
         _conv_id       = conversation.id
         _conv_obj      = conversation
         _user_name     = user_name
