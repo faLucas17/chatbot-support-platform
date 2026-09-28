@@ -61,3 +61,14 @@ export const replyToConversation = async (id, content) => {
     throw error;
   }
 };
+
+export const deleteConversation = async (id) => {
+  try {
+    const response = await axiosInstance.delete(`/admin/conversations/${id}/delete/`);
+    console.log(`🗑️ Conversation ${id} supprimée`);
+    return response;
+  } catch (error) {
+    console.error('Erreur deleteConversation:', error);
+    throw error;
+  }
+};

@@ -36,14 +36,14 @@ body.light {
   --bg-main: #F5F5F5;
   --bg-card: #FFFFFF;
   --bg-input: #F8F8F8;
-  --bg-hover: #F0FAF6;
-  --bg-active: #E6F7F1;
+  --bg-hover: #EFF8FD;
+  --bg-active: #E0F2FE;
   --border: #E8E8E8;
   --text-primary: #111111;
   --text-secondary: #555555;
   --text-muted: #999999;
-  --accent: #15AD84;
-  --accent-hover: #129970;
+  --accent: #0284C7;
+  --accent-hover: #0369A1;
   --accent-orange: #FF9900;
   --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
   --shadow-md: 0 2px 8px rgba(0,0,0,0.08);
@@ -56,14 +56,14 @@ body.dark {
   --bg-main: #111111;
   --bg-card: #1E1E1E;
   --bg-input: #252525;
-  --bg-hover: #1A2A22;
-  --bg-active: #1A2A22;
+  --bg-hover: #0C1E2E;
+  --bg-active: #0C1E2E;
   --border: #2A2A2A;
   --text-primary: #F0F0F0;
   --text-secondary: #AAAAAA;
   --text-muted: #666666;
-  --accent: #15AD84;
-  --accent-hover: #17C496;
+  --accent: #0284C7;
+  --accent-hover: #38BDF8;
   --accent-orange: #FF9900;
   --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
   --shadow-md: 0 2px 12px rgba(0,0,0,0.35);
@@ -217,7 +217,7 @@ body.dark {
 }
 
 .logo-event {
-  color: #15AD84;
+  color: #0284C7;
   font-weight: 800;
 }
 
@@ -721,7 +721,7 @@ body.dark {
 }
 
 .message.user .message-content {
-  background: #15AD84;
+  background: #0284C7;
   border: none;
   border-bottom-right-radius: 3px;
   border-bottom-left-radius: 12px;
@@ -820,7 +820,7 @@ body.dark {
 
 .reply-form button {
   padding: 9px 16px;
-  background: #15AD84;
+  background: #0284C7;
   color: white;
   border: none;
   border-radius: 8px;
@@ -838,8 +838,9 @@ body.dark {
 }
 
 .reply-form button:hover:not(:disabled) {
-  background: #129970;
+  background: #0369A1;
 }
+
 
 .reply-form button:disabled {
   opacity: 0.5;

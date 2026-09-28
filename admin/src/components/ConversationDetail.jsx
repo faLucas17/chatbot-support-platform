@@ -4,6 +4,9 @@ import axios from 'axios';
 
 const LARAVEL_BASE = 'https://api-easyevent.bakeli.tech';
 
+// ── Couleur de marque Easy Desk (bleu) ──
+const BRAND_BLUE = '#0284C7';
+
 // ── Avatar de l'agent ──
 const AGENT_AVATAR = "/images.jpg";
 
@@ -14,19 +17,18 @@ const BotAvatar = () => (
     borderRadius: '10px',
     overflow: 'hidden',
     background: '#ffffff',
-    border: '2px solid rgba(21, 173, 132, 0.25)',
-    boxShadow: '0 2px 6px rgba(21,173,132,0.12)',
+    border: `2px solid ${BRAND_BLUE}40`,
+    boxShadow: `0 2px 6px ${BRAND_BLUE}20`,
     flexShrink: 0,
   }}>
     <img
       src={AGENT_AVATAR}
-      alt="Agent EasyEvent"
+      alt="Agent"
       style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
     />
   </div>
 );
 
-// ── Icône utilisateur ──────────────────────────────────────
 const UserIcon = ({ size = 14 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -43,7 +45,6 @@ const SendIcon = () => (
   </svg>
 );
 
-// ── Parseur léger du contenu d'un message ────────────────────
 const renderMessageContent = (content) => {
   if (!content) return null;
 
@@ -88,7 +89,6 @@ const renderMessageContent = (content) => {
   return elements;
 };
 
-// ── Fonction pour obtenir les initiales ──────────────────
 function getInitials(name) {
   if (!name || name === 'Anonyme') return null;
   const parts = name.trim().split(' ');
@@ -106,7 +106,6 @@ function ConversationDetail({ conversation, onUpdate }) {
   const [textareaKey, setTextareaKey] = useState(0);
   const textareaRef = useRef(null);
 
-  // Auto-resize du textarea
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -134,10 +133,10 @@ function ConversationDetail({ conversation, onUpdate }) {
     setMessages(prev => [...prev, tempReplyMessage]);
     setReply('');
     setTextareaKey(prev => prev + 1);
-    
+
     try {
       await replyToConversation(conversation.id, replyContent);
-      
+
       try {
         await axios.post(`${LARAVEL_BASE}/api/chatbot/escalations/mark-resolved`, {
           conversation_id: conversation.id
@@ -145,17 +144,17 @@ function ConversationDetail({ conversation, onUpdate }) {
       } catch (laravelErr) {
         console.warn('Erreur Laravel (non bloquante):', laravelErr.message);
       }
-      
+
       const res = await getConversation(conversation.id);
       setMessages(res.data.messages);
-      
-      onUpdate({ 
-        ...conversation, 
-        messages: res.data.messages, 
-        escalated: false, 
-        user_name: res.data.user_name 
+
+      onUpdate({
+        ...conversation,
+        messages: res.data.messages,
+        escalated: false,
+        user_name: res.data.user_name
       });
-      
+
     } catch (err) {
       console.error('Erreur lors de l\'envoi de la réponse:', err);
       setMessages(prev => prev.filter(msg => msg.id !== tempReplyMessage.id));
@@ -177,7 +176,7 @@ function ConversationDetail({ conversation, onUpdate }) {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: 'linear-gradient(135deg, #15AD84 0%, #FF9900 100%)',
+            background: `linear-gradient(135deg, ${BRAND_BLUE} 0%, #38BDF8 100%)`,
             color: 'white',
             fontSize: '14px',
             fontWeight: '700',
@@ -198,8 +197,8 @@ function ConversationDetail({ conversation, onUpdate }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: 'rgba(255,153,0,0.1)',
-          color: '#FF9900',
+          background: `${BRAND_BLUE}15`,
+          color: BRAND_BLUE,
           flexShrink: 0,
           cursor: 'default',
         }}
@@ -214,8 +213,6 @@ function ConversationDetail({ conversation, onUpdate }) {
 
   return (
     <div className="conversation-detail">
-      {/* Header SUPPRIMÉ - plus de "Utilisateur : X" */}
-
       <div className="messages-container">
         {messages.length === 0 && (
           <div style={{ textAlign: 'center', color: '#9AB3A5', padding: '20px' }}>
@@ -240,7 +237,6 @@ function ConversationDetail({ conversation, onUpdate }) {
         })}
       </div>
 
-      {/* Zone de réponse avec auto-resize */}
       <form onSubmit={handleSendReply} className="reply-form">
         <textarea
           key={textareaKey}

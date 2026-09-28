@@ -24,19 +24,10 @@ const MessageSquareIcon = () => (
   </svg>
 );
 
-// ✅ AlertIcon corrigé
 const AlertIcon = () => (
-  <svg
-    width="8"
-    height="8"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    style={{ flexShrink: 0 }}
-  >
+  <svg width="8" height="8" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+    style={{ flexShrink: 0 }}>
     <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
     <line x1="12" y1="9" x2="12" y2="13"/>
     <line x1="12" y1="17" x2="12.01" y2="17"/>
@@ -60,6 +51,11 @@ const TrashIcon = () => (
     <line x1="14" y1="11" x2="14" y2="17"/>
   </svg>
 );
+
+// ── Couleur de marque Easy Desk (bleu) ──
+const BRAND_BLUE = '#0284C7';
+const BRAND_BLUE_LIGHT = 'rgba(2,132,199,0.12)';
+const BRAND_BLUE_BORDER = 'rgba(2,132,199,0.3)';
 
 // ── Helpers ──────────────────────────────────────────────
 function getConversationTitle(messages) {
@@ -107,13 +103,14 @@ function getInitials(name) {
     : name.slice(0, 2).toUpperCase();
 }
 
+// Palette d'avatars (remplacée par des bleus)
 const AVATAR_COLORS = [
-  ['#15AD84', '#0D8A69'],
-  ['#FF9900', '#CC7700'],
-  ['#6366F1', '#4F46E5'],
-  ['#EF4444', '#B91C1C'],
-  ['#8B5CF6', '#6D28D9'],
-  ['#0EA5E9', '#0369A1'],
+  ['#0284C7', '#0369A1'],
+  ['#0EA5E9', '#0284C7'],
+  ['#38BDF8', '#0EA5E9'],
+  ['#0369A1', '#075985'],
+  ['#7DD3FC', '#38BDF8'],
+  ['#075985', '#0C4A6E'],
 ];
 function avatarColor(name) {
   if (!name) return AVATAR_COLORS[0];
@@ -192,7 +189,7 @@ export default function ConversationList({ conversations = [], onSelect, selecte
               boxSizing: 'border-box',
               transition: 'border-color 0.15s',
             }}
-            onFocus={e => e.target.style.borderColor = '#15AD84'}
+            onFocus={e => e.target.style.borderColor = BRAND_BLUE}
             onBlur={e => e.target.style.borderColor = 'var(--border)'}
           />
         </div>
@@ -243,8 +240,8 @@ export default function ConversationList({ conversations = [], onSelect, selecte
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  background: isAnon ? 'rgba(21,173,132,0.1)' : `linear-gradient(135deg, ${c1}, ${c2})`,
-                  color: isAnon ? '#15AD84' : 'white',
+                  background: isAnon ? BRAND_BLUE_LIGHT : `linear-gradient(135deg, ${c1}, ${c2})`,
+                  color: isAnon ? BRAND_BLUE : 'white',
                   fontSize: '8px',
                   fontWeight: '700',
                 }}>
@@ -256,9 +253,9 @@ export default function ConversationList({ conversations = [], onSelect, selecte
                 </span>
 
                 <span style={{
-                  background: 'rgba(21,173,132,0.12)',
-                  color: '#15AD84',
-                  border: '1px solid rgba(21,173,132,0.2)',
+                  background: BRAND_BLUE_LIGHT,
+                  color: BRAND_BLUE,
+                  border: `1px solid ${BRAND_BLUE_BORDER}`,
                   borderRadius: '20px',
                   fontSize: '8px',
                   fontWeight: '700',
@@ -285,9 +282,7 @@ export default function ConversationList({ conversations = [], onSelect, selecte
                 return (
                   <div
                     key={conv.id}
-                    onMouseEnter={() => {
-                      setHoveredConvId(conv.id);
-                    }}
+                    onMouseEnter={() => setHoveredConvId(conv.id)}
                     onMouseLeave={() => {
                       setHoveredConvId(null);
                       setShowDeleteMenu(null);
@@ -300,18 +295,17 @@ export default function ConversationList({ conversations = [], onSelect, selecte
                       borderRadius: '5px',
                       cursor: 'pointer',
                       transition: 'background 0.15s, border-color 0.15s, box-shadow 0.15s',
-                      background: isSelected ? 'var(--bg-active)' : 'var(--bg-card)',
-                      border: isSelected 
-                        ? '1px solid rgba(21,173,132,0.3)' 
-                        : isHovered 
-                          ? '1px solid var(--accent)' 
+                      background: isSelected ? BRAND_BLUE_LIGHT : 'var(--bg-card)',
+                      border: isSelected
+                        ? `1px solid ${BRAND_BLUE_BORDER}`
+                        : isHovered
+                          ? `1px solid ${BRAND_BLUE}`
                           : '1px solid var(--border)',
-                      borderLeft: isSelected ? '2px solid #15AD84' : '2px solid transparent',
+                      borderLeft: isSelected ? `2px solid ${BRAND_BLUE}` : '2px solid transparent',
                       boxShadow: isSelected ? 'none' : 'var(--shadow-sm)',
                       position: 'relative',
                     }}
                   >
-                    {/* Date + Titre + Badge Escaladé (compact) */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <span style={{ fontSize: '8px', color: 'var(--text-muted)', flexShrink: 0 }}>
                         {dateStr}
@@ -319,7 +313,7 @@ export default function ConversationList({ conversations = [], onSelect, selecte
                       <span style={{
                         fontSize: '11px',
                         fontWeight: isSelected ? '700' : '600',
-                        color: isSelected ? '#15AD84' : 'var(--text-primary)',
+                        color: isSelected ? BRAND_BLUE : 'var(--text-primary)',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
@@ -327,8 +321,8 @@ export default function ConversationList({ conversations = [], onSelect, selecte
                       }}>
                         {title}
                       </span>
-                      
-                      {/* ✅ Badge Escaladée avec le nouveau style */}
+
+                      {/* Badge Escaladée */}
                       {conv.escalated && (
                         <span
                           style={{
@@ -336,22 +330,16 @@ export default function ConversationList({ conversations = [], onSelect, selecte
                             alignItems: 'center',
                             justifyContent: 'center',
                             gap: '3px',
-
                             background: '#FFF9F2',
                             color: '#CC7A00',
                             border: '1px solid #F5D8A8',
-
                             borderRadius: '999px',
-
                             fontSize: '7px',
                             fontWeight: '600',
-
                             height: '16px',
                             padding: '0 7px',
-
                             lineHeight: 1,
                             whiteSpace: 'nowrap',
-
                             flexShrink: 0,
                             boxSizing: 'border-box',
                           }}
@@ -360,7 +348,7 @@ export default function ConversationList({ conversations = [], onSelect, selecte
                           Escaladée
                         </span>
                       )}
-                      
+
                       {/* Trois points au survol */}
                       {isHovered && (
                         <div style={{ position: 'relative', flexShrink: 0 }}>
@@ -385,8 +373,8 @@ export default function ConversationList({ conversations = [], onSelect, selecte
                           >
                             <MoreIcon />
                           </button>
-                          
-                          {/* Menu déroulant avec la poubelle */}
+
+                          {/* Menu déroulant */}
                           {showDeleteMenu === conv.id && (
                             <div style={{
                               position: 'absolute',
@@ -434,7 +422,6 @@ export default function ConversationList({ conversations = [], onSelect, selecte
                       )}
                     </div>
 
-                    {/* Aperçu - ESPACE RÉDUIT */}
                     <div style={{
                       fontSize: '10px',
                       color: 'var(--text-muted)',
