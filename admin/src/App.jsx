@@ -412,8 +412,8 @@ function getProjectStyle(name, isDark, base) {
   const slug = slugify(name);
   let btnBg = '#888888';
   let btnText = '#FFFFFF';
-  if (slug === 'easycoop') { btnBg = '#E5A93C'; btnText = '#1A1A1A'; }          // jaune
-  else if (/^easy-?events?$/.test(slug)) { btnBg = '#15AD84'; btnText = '#FFFFFF'; } // vert
+  if (slug === 'easycoop') { btnBg = '#E5A93C'; btnText = '#1A1A1A'; }
+  else if (/^easy-?events?$/.test(slug)) { btnBg = '#15AD84'; btnText = '#FFFFFF'; }
   return {
     cardBg: base.cardBg, border: base.cardBorder,
     title: base.cardTitle, muted: base.textMuted, strong: base.textMain,
@@ -422,8 +422,6 @@ function getProjectStyle(name, isDark, base) {
   };
 }
 
-// Logo commun aux projets : /public/logos/bakeli.png (remplit toute la case)
-// Si l'image est introuvable, on retombe sur l'initiale du projet.
 function ProjectLogo({ tenant, bg }) {
   const [failed, setFailed] = useState(false);
   const src = `${import.meta.env.BASE_URL}logos/bakeli.png`;
@@ -704,7 +702,7 @@ function ProjectsHome({ tenants, tenantsLoaded, conversations, theme, setTheme, 
 // ============================================================
 function ConversationsShell({
   theme, setTheme, title, accent, onBack,
-  conversations, selectedConversation, onSelect, onClearSelection, onRefresh,
+  conversations, selectedConversation, onSelect, onClearSelection, onRefresh, onDelete,
   isMobile, sidebarOpen, setSidebarOpen,
   adminMenuOpen, setAdminMenuOpen, onLogout,
   children,
@@ -712,7 +710,6 @@ function ConversationsShell({
   return (
     <div className={`admin-container ${theme}`}>
 
-      {/* Bouton menu mobile */}
       {isMobile && (
         <button className="menu-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>
           {sidebarOpen
@@ -722,11 +719,9 @@ function ConversationsShell({
         </button>
       )}
 
-      {/* ── SIDEBAR ── */}
       <div className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
 
-          {/* Bouton retour vers /projets, tout en haut de la sidebar */}
           {onBack && (
             <div style={{ padding: '10px 14px 0 14px' }}>
               <button
@@ -745,7 +740,6 @@ function ConversationsShell({
             </div>
           )}
 
-          {/* Ligne : logo à gauche, Rafraîchir + Retour conversation à droite */}
           <div className="sidebar-header-top">
             <div className="sidebar-logo">
               <span className="logo-easy" style={{ color: BRAND_BLUE, background: 'transparent' }}>Easy</span>
@@ -772,40 +766,20 @@ function ConversationsShell({
             </div>
           </div>
 
-          {/* Nom du projet */}
           <div style={{ padding: '10px 14px 0 14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: accent || '#888888', flexShrink: 0 }} />
             <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--content)' }}>{title}</span>
           </div>
         </div>
 
-        {/* Liste des conversations (déjà filtrées) */}
         <ConversationList
-  conversations={projectConversations}
-  onSelect={(conv) => {
-    setSelectedConversation(conv);
-    if (shellProps.isMobile) shellProps.setSidebarOpen(false);
-  }}
-  selectedId={selectedConversation?.id}
-  onDeleteConversation={async (convId) => {
-    try {
-      await fetch(`${API_BASE}/admin/conversations/${convId}/delete/`, {
-        method: 'DELETE',
-      });
-      // Recharger la liste
-      loadConversations();
-      // Si la conversation supprimée était sélectionnée, désélectionner
-      if (selectedConversation?.id === convId) {
-        setSelectedConversation(null);
-      }
-    } catch (err) {
-      console.error('Erreur suppression:', err);
-    }
-  }}
-/>
+          conversations={conversations}
+          onSelect={onSelect}
+          selectedId={selectedConversation?.id}
+          onDeleteConversation={onDelete}
+        />
       </div>
 
-      {/* ── MAIN CONTENT ── */}
       <div className="main-content">
         <AdminNavbar
           theme={theme}
@@ -831,7 +805,6 @@ function ProjectPage({
   const { slug } = useParams();
   const tenant = tenants.find(t => slugify(t.name) === slug);
 
-  // Changer de projet réinitialise la conversation sélectionnée
   useEffect(() => {
     setSelectedConversation(null);
   }, [slug]);
@@ -859,6 +832,17 @@ function ProjectPage({
     c => Number(c.tenant_id) === Number(tenant.id)
   );
 
+  // ✅ AJOUT : gestion de la suppression
+  const handleDeleteConversation = async (convId) => {
+    try {
+      await fetch(`${API_BASE}/admin/conversations/${convId}/delete/`, { method: 'DELETE' });
+      loadConversations();
+      if (selectedConversation?.id === convId) setSelectedConversation(null);
+    } catch (err) {
+      console.error('Erreur suppression:', err);
+    }
+  };
+
   return (
     <ConversationsShell
       {...shellProps}
@@ -873,6 +857,7 @@ function ProjectPage({
       }}
       onClearSelection={() => setSelectedConversation(null)}
       onRefresh={loadConversations}
+      onDelete={handleDeleteConversation}
     >
       {selectedConversation ? (
         <ConversationDetail
@@ -913,7 +898,6 @@ function App() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [adminMenuOpen, setAdminMenuOpen] = useState(false);
 
-  // Tenants (projets)
   const [tenants, setTenants] = useState([]);
   const [tenantsLoaded, setTenantsLoaded] = useState(false);
 
@@ -921,11 +905,13 @@ function App() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // ✅ CORRECTION : persist le username
   useEffect(() => {
     const username = searchParams.get('username');
     const token = searchParams.get('token');
     if (username) {
       setUsername(username);
+      localStorage.setItem('support_username', username);   // ← AJOUT
       console.log(`✅ Username stocké: ${username}`);
     }
     if (token) {
@@ -947,7 +933,6 @@ function App() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Charger la liste des tenants au démarrage
   useEffect(() => {
     if (!isLoggedIn) return;
     fetch(`${API_BASE}/api/tenants/`)
@@ -965,9 +950,14 @@ function App() {
     return () => { clearTimeout(timer); clearInterval(interval); };
   }, [isLoggedIn, selectedConversation]);
 
+  // ✅ CORRECTION : utilise le username persisté
   const loadConversations = async () => {
     try {
-      const res = await getConversations();
+      const username = localStorage.getItem('support_username') ||
+                       new URLSearchParams(window.location.search).get('username') ||
+                       'Anonyme';
+      console.log('🔍 Chargement conversations pour username:', username);
+      const res = await getConversations(username);
       setConversations(res.data);
     } catch (err) {
       console.error('Erreur chargement conversations', err);
@@ -987,7 +977,6 @@ function App() {
     setAdminMenuOpen(false);
   };
 
-  // Navigation
   const goToProjects = () => {
     setSelectedConversation(null);
     setSidebarOpen(false);
@@ -1026,10 +1015,8 @@ function App() {
 
   return (
     <Routes>
-      {/* Racine → accueil des projets (on conserve ?username=...&token=...) */}
       <Route path="/" element={<Navigate to={{ pathname: '/projets', search: location.search }} replace />} />
 
-      {/* Page d'accueil : grille des projets */}
       <Route path="/projets" element={
         <ProjectsHome
           tenants={tenants}
@@ -1042,7 +1029,6 @@ function App() {
         />
       } />
 
-      {/* Page projet : conversations filtrées par tenant */}
       <Route path="/projets/:slug" element={
         <ProjectPage
           tenants={tenants}
@@ -1056,7 +1042,6 @@ function App() {
         />
       } />
 
-      {/* Route existante conservée (lien direct vers une conversation) */}
       <Route path="/conversations/:id" element={
         <ConversationsShell
           {...shellProps}
@@ -1070,6 +1055,15 @@ function App() {
           }}
           onClearSelection={() => setSelectedConversation(null)}
           onRefresh={loadConversations}
+          onDelete={async (convId) => {
+            try {
+              await fetch(`${API_BASE}/admin/conversations/${convId}/delete/`, { method: 'DELETE' });
+              loadConversations();
+              if (selectedConversation?.id === convId) setSelectedConversation(null);
+            } catch (err) {
+              console.error('Erreur suppression:', err);
+            }
+          }}
         >
           <ConversationPage
             conversations={conversations}
@@ -1081,7 +1075,6 @@ function App() {
         </ConversationsShell>
       } />
 
-      {/* Toute autre URL → accueil des projets */}
       <Route path="*" element={<Navigate to="/projets" replace />} />
     </Routes>
   );
