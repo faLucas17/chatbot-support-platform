@@ -1,123 +1,40 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, useSearchParams, useParams, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useSearchParams, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { getConversations, getConversation, setUsername } from './api';
 import ConversationList from './components/ConversationList';
 import ConversationDetail from './components/ConversationDetail';
 import './App.css';
 
+// ============================================================
+// CREDENTIALS ADMIN - via variables d'environnement
+// ============================================================
 const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || 'admin@admin.com';
 const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'passer@12';
+
+// URL de base de l'API
 const API_BASE = import.meta.env.VITE_API_BASE || 'https://support-platform-api-0h06.onrender.com';
 
 // ============================================================
-// ICÔNES SVG
+// HELPERS PROJETS (slug + couleur d'accent)
+// "EasyCoop" → "easycoop" | "Easy Events" → "easy-events" | "Easy Suite Pro" → "easy-suite-pro"
 // ============================================================
-const RefreshIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="23 4 23 10 17 10"/>
-    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
-  </svg>
-);
+const slugify = (name = '') =>
+  String(name)
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 
-const ArrowLeftIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="19" y1="12" x2="5" y2="12"/>
-    <polyline points="12 19 5 12 12 5"/>
-  </svg>
-);
-
-const SunIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="5"/>
-    <line x1="12" y1="1" x2="12" y2="3"/>
-    <line x1="12" y1="21" x2="12" y2="23"/>
-    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-    <line x1="1" y1="12" x2="3" y2="12"/>
-    <line x1="21" y1="12" x2="23" y2="12"/>
-    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-  </svg>
-);
-
-const MoonIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-  </svg>
-);
-
-const LogoutIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-    <polyline points="16 17 21 12 16 7"/>
-    <line x1="21" y1="12" x2="9" y2="12"/>
-  </svg>
-);
-
-const UserIcon = ({ size = 14 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-    <circle cx="12" cy="7" r="4"/>
-  </svg>
-);
-
-const GridIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="3" width="7" height="7"/>
-    <rect x="14" y="3" width="7" height="7"/>
-    <rect x="14" y="14" width="7" height="7"/>
-    <rect x="3" y="14" width="7" height="7"/>
-  </svg>
-);
-
-const ChatIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-  </svg>
-);
-
-const CalendarIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-    <line x1="16" y1="2" x2="16" y2="6"/>
-    <line x1="8" y1="2" x2="8" y2="6"/>
-    <line x1="3" y1="10" x2="21" y2="10"/>
-  </svg>
-);
-
-const UsersIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-    <circle cx="9" cy="7" r="4"/>
-    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-  </svg>
-);
-
-const CoopIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M3 21h18"/>
-    <path d="M5 21V7l7-4 7 4v14"/>
-    <path d="M9 21v-6h6v6"/>
-  </svg>
-);
-
-// Icônes par projet
-const getProjectIcon = (apiKey) => {
-  if (apiKey?.includes('easycoop')) return <CoopIcon />;
-  if (apiKey?.includes('easy-event')) return <CalendarIcon />;
-  return <ChatIcon />;
-};
-
-// Couleurs par projet
-const getProjectColor = (apiKey) => {
-  if (apiKey?.includes('easycoop')) return { bg: '#E5A93C20', border: '#E5A93C', text: '#E5A93C' };
-  if (apiKey?.includes('easy-event')) return { bg: '#15AD8420', border: '#15AD84', text: '#15AD84' };
-  return { bg: '#88888820', border: '#888888', text: '#888888' };
+const getAccentColor = (name = '') => {
+  const slug = slugify(name);
+  if (slug === 'easycoop') return '#E5A93C';
+  if (/^easy-?events?$/.test(slug)) return '#15AD84';
+  return '#888888';
 };
 
 // ============================================================
-// LOGIN PAGE
+// PAGE DE LOGIN — Design EasyEvent avec "Se souvenir de moi"
 // ============================================================
 function LoginPage({ onLogin, theme }) {
   const [email, setEmail] = useState('');
@@ -140,11 +57,15 @@ function LoginPage({ onLogin, theme }) {
     e.preventDefault();
     setError('');
     setLoading(true);
+
     setTimeout(() => {
       if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
         localStorage.setItem('support_admin_logged', 'true');
-        if (rememberMe) localStorage.setItem('support_remember_email', email);
-        else localStorage.removeItem('support_remember_email');
+        if (rememberMe) {
+          localStorage.setItem('support_remember_email', email);
+        } else {
+          localStorage.removeItem('support_remember_email');
+        }
         onLogin();
       } else {
         setError('Email ou mot de passe incorrect.');
@@ -155,174 +76,666 @@ function LoginPage({ onLogin, theme }) {
 
   useEffect(() => {
     const savedEmail = localStorage.getItem('support_remember_email');
-    if (savedEmail) { setEmail(savedEmail); setRememberMe(true); }
+    if (savedEmail) {
+      setEmail(savedEmail);
+      setRememberMe(true);
+    }
   }, []);
 
+  const EmailIcon = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#AAAAAA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+      <polyline points="22,6 12,13 2,6"/>
+    </svg>
+  );
+
+  const LockIcon = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#AAAAAA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+    </svg>
+  );
+
+  const EyeIcon = ({ open }) => open ? (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#AAAAAA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+      <circle cx="12" cy="12" r="3"/>
+    </svg>
+  ) : (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#AAAAAA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+      <line x1="1" y1="1" x2="23" y2="23"/>
+    </svg>
+  );
+
+  const CheckIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#15AD84" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+  );
+
   const inputStyle = {
-    width: '100%', padding: '13px 16px 13px 44px',
+    width: '100%',
+    padding: '13px 16px 13px 44px',
     border: `1.5px solid ${isDark ? '#3A4A42' : '#E0E0E0'}`,
-    borderRadius: '8px', fontSize: '14px', outline: 'none',
+    borderRadius: '8px',
+    fontSize: '14px',
+    outline: 'none',
     boxSizing: 'border-box',
     color: isDark ? '#F5F0E8' : '#333',
     background: isDark ? '#2A3A32' : 'white',
+    transition: 'border-color 0.2s, box-shadow 0.2s',
   };
 
   return (
     <div style={{
-      width: '100vw', minHeight: '100vh',
+      width: '100vw',
+      height: isMobile ? 'auto' : '100vh',
+      minHeight: '100vh',
       background: isDark ? '#1A2420' : '#F7F3EE',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      display: 'flex',
+      flexDirection: isMobile ? 'column' : 'row',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-      padding: '20px',
+      position: 'relative',
+      overflow: isMobile ? 'auto' : 'hidden',
+      boxSizing: 'border-box',
     }}>
-      <div style={{ width: '100%', maxWidth: '440px', background: isDark ? '#243028' : 'white', borderRadius: '20px', padding: '36px', boxShadow: '0 4px 32px rgba(0,0,0,0.08)' }}>
-        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', marginBottom: '8px' }}>
-            <span style={{ background: '#FF9900', color: 'white', padding: '3px 10px', borderRadius: '6px', fontSize: '18px', fontWeight: '800' }}>Easy</span>
-            <span style={{ color: '#15AD84', fontSize: '18px', fontWeight: '800' }}>Suite</span>
-          </div>
-          <h2 style={{ fontSize: '22px', fontWeight: '700', color: isDark ? '#F5F0E8' : '#1A1A1A', margin: '0 0 4px 0' }}>Support Admin</h2>
-          <p style={{ fontSize: '13px', color: isDark ? '#9AB3A5' : '#888', margin: 0 }}>Connectez-vous à votre espace</p>
+      {!isMobile && (
+        <>
+          <div style={{ position: 'absolute', top: '60px', right: '460px', width: '12px', height: '12px', borderRadius: '50%', background: '#15AD84', opacity: 0.5 }} />
+          <div style={{ position: 'absolute', top: '30px', right: '60px', width: '10px', height: '10px', borderRadius: '50%', background: '#FF9900', opacity: 0.5 }} />
+        </>
+      )}
+
+      <div style={{
+        flex: isMobile ? 'none' : '1 1 0%',
+        minWidth: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: isMobile ? 'center' : 'flex-start',
+        padding: isMobile ? '36px 24px 20px' : '40px 30px 40px 80px',
+        overflow: 'hidden',
+        boxSizing: 'border-box',
+        textAlign: isMobile ? 'center' : 'left',
+      }}>
+        <h1 style={{ fontSize: isMobile ? 'clamp(24px, 6.5vw, 32px)' : 'clamp(30px, 3.2vw, 44px)', fontWeight: '900', color: isDark ? '#F5F0E8' : '#1A1A1A', margin: '0 0 18px 0', lineHeight: '1.25', maxWidth: '100%' }}>
+          Espace Support Admin AI {' '}
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', verticalAlign: 'middle' }}>
+            <span style={{ background: '#FF9900', color: 'white', padding: '2px 10px', borderRadius: '6px', fontWeight: '800' }}>Easy</span>
+            <span style={{ color: '#15AD84', fontWeight: '800' }}>Event</span>
+          </span>
+          !
+        </h1>
+        <p style={{ fontSize: isMobile ? '15px' : '19px', fontWeight: '700', color: isDark ? '#F5F0E8' : '#1A1A1A', margin: '0 0 16px 0', lineHeight: '1.5', maxWidth: isMobile ? '100%' : '620px' }}>
+          Votre espace d'administration intelligent, propulsé par l'IA.
+        </p>
+        <p style={{ fontSize: isMobile ? '14px' : '18px', color: isDark ? '#9AB3A5' : '#555', margin: '0 0 28px 0', lineHeight: '1.7', maxWidth: isMobile ? '100%' : '620px' }}>
+          Suivez les conversations, répondez à vos utilisateurs et pilotez tout votre support client depuis une seule interface pensée pour les administrateurs.
+        </p>
+        <div style={{ position: 'relative', width: isMobile ? '100%' : '340px', maxWidth: '100%', textAlign: 'center', paddingTop: '14px', paddingBottom: '14px' }}>
+          <div style={{ position: 'absolute', top: '0px', left: '50%', transform: 'translateX(-50%)', width: '14px', height: '14px', borderRadius: '50%', background: '#15AD84' }} />
+          <svg width="260" height="34" viewBox="0 0 300 40" style={{ display: 'inline-block' }}>
+            <path d="M 0 30 Q 75 5 150 20 Q 225 35 300 15" fill="none" stroke="url(#curveGrad)" strokeWidth="6" strokeLinecap="round" />
+            <defs>
+              <linearGradient id="curveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#15AD84" />
+                <stop offset="100%" stopColor="#FF9900" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <div style={{ position: 'absolute', bottom: '0px', left: isMobile ? '20%' : '10px', width: '12px', height: '12px', borderRadius: '50%', background: '#FF9900' }} />
         </div>
-        <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: '12px' }}>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" required style={inputStyle} />
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: isMobile ? '10px 20px 32px' : '24px 40px', width: '100%', maxWidth: isMobile ? '100%' : '520px', minWidth: 0, flexShrink: 1, marginRight: isMobile ? 0 : '10px', boxSizing: 'border-box' }}>
+        <div style={{ width: '100%', background: isDark ? '#243028' : 'white', borderRadius: '20px', padding: isMobile ? '24px 22px' : '32px 36px', boxShadow: isDark ? '0 4px 32px rgba(0,0,0,0.4)' : '0 4px 32px rgba(0,0,0,0.08)' }}>
+          <div style={{ textAlign: 'center', marginBottom: '4px' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', marginBottom: '8px' }}>
+              <span style={{ background: '#FF9900', color: 'white', padding: '3px 10px', borderRadius: '6px', fontSize: '18px', fontWeight: '800' }}>Easy</span>
+              <span style={{ color: '#15AD84', fontSize: '18px', fontWeight: '800' }}>Event</span>
+            </div>
           </div>
-          <div style={{ marginBottom: '12px', position: 'relative' }}>
-            <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Mot de passe" required style={{ ...inputStyle, paddingRight: '44px' }} />
-            <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#888' }}>
-              {showPassword ? '🙈' : '👁️'}
+          <h2 style={{ fontSize: '22px', fontWeight: '700', color: isDark ? '#F5F0E8' : '#1A1A1A', margin: '0 0 4px 0', textAlign: 'center' }}>Support Admin AI</h2>
+          <h2 style={{ fontSize: '22px', fontWeight: '700', color: isDark ? '#F5F0E8' : '#1A1A1A', margin: '0 0 4px 0', textAlign: 'center' }}>Connexion</h2>
+          <p style={{ fontSize: '13px', color: isDark ? '#9AB3A5' : '#888', textAlign: 'center', margin: '0 0 20px 0' }}>Connectez-vous pour accéder à votre espace</p>
+          <form onSubmit={handleSubmit}>
+            <div style={{ marginBottom: '10px', position: 'relative' }}>
+              <div style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}><EmailIcon /></div>
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Entrez votre email..." required style={inputStyle}
+                onFocus={(e) => { e.target.style.borderColor = '#15AD84'; e.target.style.boxShadow = '0 0 0 3px rgba(21,173,132,0.1)'; }}
+                onBlur={(e) => { e.target.style.borderColor = isDark ? '#3A4A42' : '#E0E0E0'; e.target.style.boxShadow = 'none'; }}
+              />
+            </div>
+            <div style={{ marginBottom: '10px', position: 'relative' }}>
+              <div style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}><LockIcon /></div>
+              <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Entrez votre mot de passe..." required style={{ ...inputStyle, paddingRight: '44px' }}
+                onFocus={(e) => { e.target.style.borderColor = '#15AD84'; e.target.style.boxShadow = '0 0 0 3px rgba(21,173,132,0.1)'; }}
+                onBlur={(e) => { e.target.style.borderColor = isDark ? '#3A4A42' : '#E0E0E0'; e.target.style.boxShadow = 'none'; }}
+              />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '4px' }}>
+                <EyeIcon open={showPassword} />
+              </button>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '13px', fontWeight: '500', color: isDark ? '#C5C9C6' : '#555' }}>
+                <div onClick={() => setRememberMe(!rememberMe)} style={{ width: '18px', height: '18px', borderRadius: '4px', border: `2px solid ${rememberMe ? '#15AD84' : isDark ? '#4A5A52' : '#CCC'}`, background: rememberMe ? '#15AD84' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', cursor: 'pointer', flexShrink: 0 }}>
+                  {rememberMe && <CheckIcon />}
+                </div>
+                Se souvenir de moi
+              </label>
+            </div>
+            {error && (
+              <div style={{ background: isDark ? '#3A1A1A' : '#FFF0F0', border: `1px solid ${isDark ? '#5A2A2A' : '#FFCDD2'}`, borderRadius: '8px', padding: '10px 14px', marginBottom: '16px', fontSize: '13px', color: '#FF6B6B', textAlign: 'center' }}>
+                {error}
+              </div>
+            )}
+            <button type="submit" disabled={loading}
+              style={{ width: '100%', padding: '13px', background: loading ? '#ccc' : '#15AD84', color: 'white', border: 'none', borderRadius: '8px', fontSize: '15px', fontWeight: '700', cursor: loading ? 'not-allowed' : 'pointer', transition: 'opacity 0.2s, transform 0.1s', letterSpacing: '0.3px' }}
+              onMouseEnter={(e) => { if (!loading) e.target.style.opacity = '0.92'; }}
+              onMouseLeave={(e) => { if (!loading) e.target.style.opacity = '1'; }}
+            >
+              {loading ? 'Connexion...' : 'Se connecter'}
             </button>
-          </div>
-          {error && (
-            <div style={{ background: '#FFF0F0', border: '1px solid #FFCDD2', borderRadius: '8px', padding: '10px 14px', marginBottom: '16px', fontSize: '13px', color: '#FF6B6B', textAlign: 'center' }}>{error}</div>
-          )}
-          <button type="submit" disabled={loading} style={{ width: '100%', padding: '13px', background: loading ? '#ccc' : '#15AD84', color: 'white', border: 'none', borderRadius: '8px', fontSize: '15px', fontWeight: '700', cursor: loading ? 'not-allowed' : 'pointer' }}>
-            {loading ? 'Connexion...' : 'Se connecter'}
-          </button>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );
 }
 
 // ============================================================
-// PAGE D'ACCUEIL - LISTE DES PROJETS
+// ICÔNES SVG pour le header post-login
 // ============================================================
-function HomePage({ tenants, onSelectTenant, theme }) {
+const RefreshIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="23 4 23 10 17 10"/>
+    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+  </svg>
+);
+
+const ArrowLeftIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="19" y1="12" x2="5" y2="12"/>
+    <polyline points="12 19 5 12 12 5"/>
+  </svg>
+);
+
+const SunIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="5"/>
+    <line x1="12" y1="1" x2="12" y2="3"/>
+    <line x1="12" y1="21" x2="12" y2="23"/>
+    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+    <line x1="1" y1="12" x2="3" y2="12"/>
+    <line x1="21" y1="12" x2="23" y2="12"/>
+    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+  </svg>
+);
+
+const MoonIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+  </svg>
+);
+
+const LogoutIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+    <polyline points="16 17 21 12 16 7"/>
+    <line x1="21" y1="12" x2="9" y2="12"/>
+  </svg>
+);
+
+const UserIcon = ({ size = 14 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+    <circle cx="12" cy="7" r="4"/>
+  </svg>
+);
+
+// ============================================================
+// COMPOSANT ConversationPage (route /conversations/:id)
+// ============================================================
+function ConversationPage({ conversations, onUpdateConversation }) {
+  const { id } = useParams();
+  const [conversation, setConversation] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!id) return;
+    const existing = conversations.find(c => String(c.id) === String(id));
+    if (existing) {
+      setConversation(existing);
+      setLoading(false);
+      return;
+    }
+    loadConversation();
+  }, [id, conversations]);
+
+  const loadConversation = async () => {
+    setLoading(true);
+    try {
+      const res = await getConversation(id);
+      setConversation(res.data);
+    } catch (err) {
+      console.error('Erreur chargement conversation:', err);
+      setConversation(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdate = (updatedConv) => {
+    setConversation(updatedConv);
+    if (onUpdateConversation) onUpdateConversation(updatedConv);
+  };
+
+  if (loading) return <div className="empty-state"><p>Chargement de la conversation...</p></div>;
+  if (!conversation) return (
+    <div className="empty-state">
+      <p>Conversation non trouvée</p>
+      <button onClick={() => navigate('/projets')}>Retour aux projets</button>
+    </div>
+  );
+
+  return <ConversationDetail conversation={conversation} onUpdate={handleUpdate} />;
+}
+
+// ============================================================
+// NAVBAR ADMIN (identique à l'original) — utilisée dans la vue conversations
+// ============================================================
+function AdminNavbar({ theme, setTheme, adminMenuOpen, setAdminMenuOpen, onLogout }) {
+  return (
+    <div className="admin-navbar-fixed">
+      <div className="admin-navbar-left">
+      </div>
+      <div className="admin-navbar-right">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <button
+            className="theme-toggle-nav"
+            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+            title={theme === 'light' ? 'Passer en mode sombre' : 'Passer en mode clair'}
+          >
+            {theme === 'light' ? <MoonIcon /> : <SunIcon />}
+          </button>
+
+          <div
+            className="admin-nav-user"
+            onClick={() => setAdminMenuOpen(!adminMenuOpen)}
+          >
+            <UserIcon size={16} />
+            <span className="admin-nav-label">Administrateur</span>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+              style={{ transform: adminMenuOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </div>
+        </div>
+
+        {adminMenuOpen && (
+          <div className="admin-dropdown-menu">
+            <div className="admin-dropdown-email">admin</div>
+            <button className="admin-dropdown-logout" onClick={onLogout}>
+              <LogoutIcon />
+              Se déconnecter
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// PAGE D'ACCUEIL /projets — grille de cartes (style Easy Suite)
+// ============================================================
+function ProjectsHome({ tenants, tenantsLoaded, conversations, theme, setTheme, onOpenProject, onLogout }) {
+  const [menuOpen, setMenuOpen] = useState(false);
   const isDark = theme === 'dark';
+
+  const pageBg = isDark ? '#1A2420' : '#FFFFFF';
+  const bandBg = isDark ? '#141C18' : '#F4F7FD';
+  const cardBg = isDark ? '#243028' : '#FFFFFF';
+  const cardBorder = isDark ? '#3A4A42' : '#E8ECF2';
+  const textMain = isDark ? '#F5F0E8' : '#111111';
+  const textMuted = isDark ? '#9AB3A5' : '#6B7280';
+
+  const countFor = (tenantId) =>
+    conversations.filter(c => Number(c.tenant_id) === Number(tenantId)).length;
 
   return (
     <div style={{
-      padding: '40px 60px',
-      maxWidth: '1200px',
-      margin: '0 auto',
+      minHeight: '100vh',
+      background: pageBg,
+      color: textMain,
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      boxSizing: 'border-box',
     }}>
-      <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-        <h1 style={{
-          fontSize: '36px',
-          fontWeight: '800',
-          color: isDark ? '#F5F0E8' : '#1A1A1A',
-          margin: '0 0 12px 0',
-          letterSpacing: '-0.5px',
-        }}>
-          Tous les projets <span style={{ color: '#15AD84' }}>support</span>
+      <style>{`
+        .projects-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        @media (min-width: 640px)  { .projects-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 1024px) { .projects-grid { grid-template-columns: repeat(4, 1fr); } }
+        .project-card { transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s; cursor: pointer; }
+        .project-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(0,0,0,0.12); }
+        .project-card:focus-visible { outline: 3px solid #15AD84; outline-offset: 2px; }
+      `}</style>
+
+      {/* Barre du haut */}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '16px 32px', borderBottom: `1px solid ${cardBorder}`, position: 'relative',
+      }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '2px' }}>
+          <span style={{ background: '#FF9900', color: 'white', padding: '3px 10px', borderRadius: '6px', fontSize: '18px', fontWeight: '800' }}>Easy</span>
+          <span style={{ color: '#15AD84', fontSize: '18px', fontWeight: '800' }}>Event</span>
+          <span style={{ color: textMuted, fontSize: '14px', fontWeight: '600', marginLeft: '8px' }}>· Support</span>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button
+            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+            title={theme === 'light' ? 'Passer en mode sombre' : 'Passer en mode clair'}
+            style={{ background: 'transparent', border: `1px solid ${cardBorder}`, color: textMain, borderRadius: '8px', width: '34px', height: '34px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+          >
+            {theme === 'light' ? <MoonIcon /> : <SunIcon />}
+          </button>
+          <div
+            onClick={() => setMenuOpen(!menuOpen)}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 12px', borderRadius: '8px', border: `1px solid ${cardBorder}`, cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}
+          >
+            <UserIcon size={16} />
+            <span>Administrateur</span>
+          </div>
+          {menuOpen && (
+            <div style={{ position: 'absolute', top: '58px', right: '32px', background: cardBg, border: `1px solid ${cardBorder}`, borderRadius: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.12)', padding: '8px', minWidth: '170px', zIndex: 10 }}>
+              <div style={{ padding: '6px 10px', fontSize: '12px', color: textMuted }}>admin</div>
+              <button
+                onClick={onLogout}
+                style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', background: 'none', border: 'none', color: '#FF6B6B', fontSize: '13px', fontWeight: '600', padding: '8px 10px', borderRadius: '6px', cursor: 'pointer' }}
+              >
+                <LogoutIcon />
+                Se déconnecter
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Titre + courbe décorative */}
+      <div style={{ textAlign: 'center', padding: '48px 24px 36px' }}>
+        <h1 style={{ fontSize: 'clamp(28px, 4.4vw, 48px)', fontWeight: '900', margin: '0 0 6px', lineHeight: 1.2 }}>
+          Tous les projets support
         </h1>
-        <p style={{
-          fontSize: '16px',
-          color: isDark ? '#9AB3A5' : '#666',
-          margin: 0,
-          maxWidth: '600px',
-          marginLeft: 'auto',
-          marginRight: 'auto',
-        }}>
-          Sélectionnez un projet pour consulter et répondre aux conversations escaladées.
+        <svg width="300" height="40" viewBox="0 0 300 40" style={{ display: 'block', margin: '0 auto 10px', maxWidth: '80%' }}>
+          <defs>
+            <linearGradient id="projectsCurveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#15AD84" />
+              <stop offset="100%" stopColor="#FF9900" />
+            </linearGradient>
+          </defs>
+          <path d="M 0 30 Q 75 5 150 20 Q 225 35 300 15" fill="none" stroke="url(#projectsCurveGrad)" strokeWidth="6" strokeLinecap="round" />
+        </svg>
+        <p style={{ fontSize: 'clamp(15px, 1.8vw, 19px)', color: textMain, margin: 0, fontWeight: '500' }}>
+          Choisissez un projet pour suivre ses conversations escaladées.
         </p>
       </div>
 
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-        gap: '24px',
-      }}>
-        {tenants.map(t => {
-          const colors = getProjectColor(t.api_key);
-          return (
-            <div
-              key={t.id}
-              onClick={() => onSelectTenant(t)}
-              style={{
-                background: isDark ? '#1E2A24' : 'white',
-                borderRadius: '16px',
-                padding: '28px',
-                border: `1.5px solid ${isDark ? '#2A3A32' : '#E8E0D5'}`,
-                cursor: 'pointer',
-                transition: 'all 0.25s ease',
-                boxShadow: isDark ? '0 2px 12px rgba(0,0,0,0.2)' : '0 2px 12px rgba(0,0,0,0.04)',
-                position: 'relative',
-                overflow: 'hidden',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-4px)';
-                e.currentTarget.style.boxShadow = `0 12px 32px ${colors.border}33`;
-                e.currentTarget.style.borderColor = colors.border;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = isDark ? '0 2px 12px rgba(0,0,0,0.2)' : '0 2px 12px rgba(0,0,0,0.04)';
-                e.currentTarget.style.borderColor = isDark ? '#2A3A32' : '#E8E0D5';
-              }}
-            >
-              <div style={{
-                width: '56px',
-                height: '56px',
-                borderRadius: '14px',
-                background: colors.bg,
-                border: `1.5px solid ${colors.border}`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: colors.text,
-                marginBottom: '18px',
-              }}>
-                {getProjectIcon(t.api_key)}
-              </div>
-              <h3 style={{
-                fontSize: '18px',
-                fontWeight: '700',
-                color: isDark ? '#F5F0E8' : '#1A1A1A',
-                margin: '0 0 8px 0',
-              }}>
-                {t.name}
-              </h3>
-              <p style={{
-                fontSize: '13px',
-                color: isDark ? '#9AB3A5' : '#888',
-                margin: 0,
-                lineHeight: 1.5,
-              }}>
-                Espace de support client — conversations escaladées
-              </p>
-              <div style={{
-                marginTop: '20px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                fontSize: '13px',
-                fontWeight: '600',
-                color: colors.text,
-              }}>
-                Accéder aux conversations
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="9 18 15 12 9 6"/>
-                </svg>
-              </div>
+      {/* Grille de cartes */}
+      <div style={{ background: bandBg, padding: '32px', minHeight: '40vh', boxSizing: 'border-box' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+          {!tenantsLoaded ? (
+            <p style={{ textAlign: 'center', color: textMuted, fontSize: '14px' }}>Chargement des projets...</p>
+          ) : tenants.length === 0 ? (
+            <p style={{ textAlign: 'center', color: textMuted, fontSize: '14px' }}>Aucun projet disponible pour le moment.</p>
+          ) : (
+            <div className="projects-grid">
+              {tenants.map(t => {
+                const accent = getAccentColor(t.name);
+                const count = countFor(t.id);
+                const open = () => onOpenProject(t);
+                return (
+                  <div
+                    key={t.id}
+                    className="project-card"
+                    role="link"
+                    tabIndex={0}
+                    onClick={open}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } }}
+                    style={{
+                      background: cardBg,
+                      border: `1px solid ${cardBorder}`,
+                      borderRadius: '16px',
+                      padding: '24px',
+                      boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '14px',
+                      minHeight: '250px',
+                      boxSizing: 'border-box',
+                    }}
+                  >
+                    <div style={{
+                      width: '56px', height: '56px', borderRadius: '12px',
+                      background: `${accent}22`, color: accent,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '24px', fontWeight: '800', flexShrink: 0,
+                    }}>
+                      {(t.name || '?').charAt(0).toUpperCase()}
+                    </div>
+                    <h3 style={{ margin: 0, fontSize: '22px', fontWeight: '800', color: textMain, lineHeight: 1.25 }}>
+                      {t.name}
+                    </h3>
+                    <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.6, color: textMuted, flex: 1 }}>
+                      Support et conversations escaladées de {t.name}.
+                      {' '}
+                      <strong style={{ color: textMain }}>
+                        {count} conversation{count > 1 ? 's' : ''}
+                      </strong>
+                    </p>
+                    <span style={{ fontSize: '14px', fontWeight: '700', color: accent }}>
+                      Accéder aux conversations →
+                    </span>
+                  </div>
+                );
+              })}
             </div>
-          );
-        })}
+          )}
+        </div>
       </div>
     </div>
+  );
+}
+
+// ============================================================
+// LAYOUT CONVERSATIONS (sidebar + contenu) — utilisé par /projets/:slug
+// ============================================================
+function ConversationsShell({
+  theme, setTheme, title, accent, onBack,
+  conversations, selectedConversation, onSelect, onClearSelection, onRefresh,
+  isMobile, sidebarOpen, setSidebarOpen,
+  adminMenuOpen, setAdminMenuOpen, onLogout,
+  children,
+}) {
+  return (
+    <div className={`admin-container ${theme}`}>
+
+      {/* Bouton menu mobile */}
+      {isMobile && (
+        <button className="menu-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>
+          {sidebarOpen
+            ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          }
+        </button>
+      )}
+
+      {/* ── SIDEBAR ── */}
+      <div className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
+        <div className="sidebar-header">
+
+          {/* Bouton retour vers /projets, tout en haut de la sidebar */}
+          {onBack && (
+            <div style={{ padding: '10px 14px 0 14px' }}>
+              <button
+                onClick={onBack}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '6px',
+                  background: 'transparent', border: '1px solid var(--line)',
+                  color: 'var(--content)', borderRadius: '8px',
+                  padding: '6px 10px', fontSize: '12px', fontWeight: '600', cursor: 'pointer',
+                }}
+                title="Retour à la liste des projets"
+              >
+                <ArrowLeftIcon />
+                Tous les projets
+              </button>
+            </div>
+          )}
+
+          {/* Ligne : logo à gauche, Rafraîchir + Retour conversation à droite */}
+          <div className="sidebar-header-top">
+            <div className="sidebar-logo">
+              <span className="logo-easy">Easy</span>
+              <span className="logo-event">Event</span>
+              <span className="logo-support">· Support</span>
+            </div>
+            <div className="sidebar-header-icons">
+              <button
+                className="header-icon-btn"
+                onClick={onRefresh}
+                title="Rafraîchir la liste des conversations"
+              >
+                <RefreshIcon />
+              </button>
+              {selectedConversation && (
+                <button
+                  className="header-icon-btn"
+                  onClick={onClearSelection}
+                  title="Retour à la liste des conversations"
+                >
+                  <ArrowLeftIcon />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Nom du projet */}
+          <div style={{ padding: '10px 14px 0 14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: accent || '#888888', flexShrink: 0 }} />
+            <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--content)' }}>{title}</span>
+          </div>
+        </div>
+
+        {/* Liste des conversations (déjà filtrées) */}
+        <ConversationList
+          conversations={conversations}
+          onSelect={onSelect}
+          selectedId={selectedConversation?.id}
+        />
+      </div>
+
+      {/* ── MAIN CONTENT ── */}
+      <div className="main-content">
+        <AdminNavbar
+          theme={theme}
+          setTheme={setTheme}
+          adminMenuOpen={adminMenuOpen}
+          setAdminMenuOpen={setAdminMenuOpen}
+          onLogout={onLogout}
+        />
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// PAGE PROJET /projets/:slug
+// ============================================================
+function ProjectPage({
+  tenants, tenantsLoaded, conversations,
+  selectedConversation, setSelectedConversation,
+  loadConversations, onBack, shellProps,
+}) {
+  const { slug } = useParams();
+  const tenant = tenants.find(t => slugify(t.name) === slug);
+
+  // Changer de projet réinitialise la conversation sélectionnée
+  useEffect(() => {
+    setSelectedConversation(null);
+  }, [slug]);
+
+  if (!tenantsLoaded) {
+    return (
+      <div className={`admin-container ${shellProps.theme}`}>
+        <div className="empty-state"><p>Chargement du projet...</p></div>
+      </div>
+    );
+  }
+
+  if (!tenant) {
+    return (
+      <div className={`admin-container ${shellProps.theme}`}>
+        <div className="empty-state">
+          <p>Projet introuvable</p>
+          <button onClick={onBack}>Retour aux projets</button>
+        </div>
+      </div>
+    );
+  }
+
+  const projectConversations = conversations.filter(
+    c => Number(c.tenant_id) === Number(tenant.id)
+  );
+
+  return (
+    <ConversationsShell
+      {...shellProps}
+      title={tenant.name}
+      accent={getAccentColor(tenant.name)}
+      onBack={onBack}
+      conversations={projectConversations}
+      selectedConversation={selectedConversation}
+      onSelect={(conv) => {
+        setSelectedConversation(conv);
+        if (shellProps.isMobile) shellProps.setSidebarOpen(false);
+      }}
+      onClearSelection={() => setSelectedConversation(null)}
+      onRefresh={loadConversations}
+    >
+      {selectedConversation ? (
+        <ConversationDetail
+          conversation={selectedConversation}
+          onUpdate={(updatedConv) => {
+            setSelectedConversation(updatedConv);
+            loadConversations();
+          }}
+        />
+      ) : (
+        <div className="empty-state">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+            style={{ color: 'var(--border)' }}>
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+            Sélectionnez une conversation
+          </p>
+        </div>
+      )}
+    </ConversationsShell>
   );
 }
 
@@ -330,7 +743,9 @@ function HomePage({ tenants, onSelectTenant, theme }) {
 // APP PRINCIPALE
 // ============================================================
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem('support_admin_logged') === 'true');
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    return localStorage.getItem('support_admin_logged') === 'true';
+  });
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -339,18 +754,24 @@ function App() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [adminMenuOpen, setAdminMenuOpen] = useState(false);
 
-  // Vue active : 'home' (projets) ou 'project' (conversations d'un projet)
-  const [view, setView] = useState('home');
-  const [selectedTenant, setSelectedTenant] = useState(null);
-
+  // Tenants (projets)
   const [tenants, setTenants] = useState([]);
+  const [tenantsLoaded, setTenantsLoaded] = useState(false);
+
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const username = searchParams.get('username');
     const token = searchParams.get('token');
-    if (username) { setUsername(username); }
-    if (token) { localStorage.setItem('sanctum_token', token); }
+    if (username) {
+      setUsername(username);
+      console.log(`✅ Username stocké: ${username}`);
+    }
+    if (token) {
+      localStorage.setItem('sanctum_token', token);
+    }
   }, [searchParams]);
 
   useEffect(() => {
@@ -367,33 +788,34 @@ function App() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Charger tenants + conversations
+  // Charger la liste des tenants au démarrage
   useEffect(() => {
     if (!isLoggedIn) return;
     fetch(`${API_BASE}/api/tenants/`)
       .then(res => res.json())
-      .then(data => setTenants(data))
-      .catch(err => console.error('Erreur tenants:', err));
-    loadConversations();
+      .then(data => setTenants(Array.isArray(data) ? data : []))
+      .catch(err => console.error('Erreur chargement tenants:', err))
+      .finally(() => setTenantsLoaded(true));
   }, [isLoggedIn]);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    if (selectedConversation) return;
+    const timer = setTimeout(() => { loadConversations(); }, 150);
+    const interval = setInterval(loadConversations, 30000);
+    return () => { clearTimeout(timer); clearInterval(interval); };
+  }, [isLoggedIn, selectedConversation]);
 
   const loadConversations = async () => {
     try {
       const res = await getConversations();
       setConversations(res.data);
     } catch (err) {
-      console.error('Erreur conversations:', err);
+      console.error('Erreur chargement conversations', err);
     } finally {
       setLoading(false);
     }
   };
-
-  // Polling des conversations quand on est sur un projet
-  useEffect(() => {
-    if (!isLoggedIn || view !== 'project') return;
-    const interval = setInterval(loadConversations, 30000);
-    return () => clearInterval(interval);
-  }, [isLoggedIn, view]);
 
   const handleLogin = () => setIsLoggedIn(true);
 
@@ -402,26 +824,21 @@ function App() {
     localStorage.removeItem('support_username');
     setIsLoggedIn(false);
     setConversations([]);
-    setView('home');
-    setSelectedTenant(null);
-  };
-
-  const handleSelectTenant = (tenant) => {
-    setSelectedTenant(tenant);
-    setView('project');
     setSelectedConversation(null);
-    if (isMobile) setSidebarOpen(false);
+    setAdminMenuOpen(false);
   };
 
-  const handleBackToHome = () => {
-    setView('home');
-    setSelectedTenant(null);
+  // Navigation
+  const goToProjects = () => {
     setSelectedConversation(null);
+    setSidebarOpen(false);
+    navigate('/projets');
   };
 
-  const filteredConversations = selectedTenant
-    ? conversations.filter(c => c.tenant_id === selectedTenant.id)
-    : [];
+  const openProject = (tenant) => {
+    setSelectedConversation(null);
+    navigate(`/projets/${slugify(tenant.name)}`);
+  };
 
   if (!isLoggedIn) {
     return <LoginPage onLogin={handleLogin} theme={theme} />;
@@ -429,128 +846,85 @@ function App() {
 
   if (loading) {
     return (
-      <div className={`login-container ${theme}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+      <div className={`login-container ${theme}`}>
         <div className="login-card">
-          <p style={{ color: 'var(--text-secondary, #555)', fontSize: '14px' }}>Chargement...</p>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', marginBottom: '12px' }}>
+            <span style={{ background: '#FF9900', color: 'white', padding: '2px 8px', borderRadius: '5px', fontSize: '15px', fontWeight: '800' }}>Easy</span>
+            <span style={{ color: '#15AD84', fontSize: '15px', fontWeight: '800' }}>Event</span>
+          </div>
+          <p style={{ color: 'var(--text-secondary, #555)', fontSize: '14px' }}>Chargement des conversations...</p>
         </div>
       </div>
     );
   }
 
+  const shellProps = {
+    theme, setTheme,
+    isMobile, sidebarOpen, setSidebarOpen,
+    adminMenuOpen, setAdminMenuOpen,
+    onLogout: handleLogout,
+  };
+
   return (
-    <div className={`admin-container ${theme}`}>
-      {isMobile && (
-        <button className="menu-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>
-          {sidebarOpen ? '✕' : '☰'}
-        </button>
-      )}
+    <Routes>
+      {/* Racine → accueil des projets (on conserve ?username=...&token=...) */}
+      <Route path="/" element={<Navigate to={{ pathname: '/projets', search: location.search }} replace />} />
 
-      {/* ── SIDEBAR (visible uniquement quand on est dans un projet) ── */}
-      {view === 'project' && (
-        <div className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
-          <div className="sidebar-header">
-            <div className="sidebar-header-top">
-              <div className="sidebar-logo" onClick={handleBackToHome} style={{ cursor: 'pointer' }}>
-                <span className="logo-easy">Easy</span>
-                <span className="logo-event">Suite</span>
-                <span className="logo-support">· Support</span>
-              </div>
-              <div className="sidebar-header-icons">
-                <button className="header-icon-btn" onClick={loadConversations} title="Rafraîchir">
-                  <RefreshIcon />
-                </button>
-                <button className="header-icon-btn" onClick={handleBackToHome} title="Retour aux projets">
-                  <ArrowLeftIcon />
-                </button>
-              </div>
-            </div>
+      {/* Page d'accueil : grille des projets */}
+      <Route path="/projets" element={
+        <ProjectsHome
+          tenants={tenants}
+          tenantsLoaded={tenantsLoaded}
+          conversations={conversations}
+          theme={theme}
+          setTheme={setTheme}
+          onOpenProject={openProject}
+          onLogout={handleLogout}
+        />
+      } />
 
-            <div style={{
-              padding: '12px 16px',
-              fontSize: '13px',
-              fontWeight: '600',
-              color: 'var(--content)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              borderBottom: '1px solid var(--line)',
-            }}>
-              {selectedTenant && getProjectIcon(selectedTenant.api_key)}
-              <span>{selectedTenant?.name}</span>
-            </div>
-          </div>
+      {/* Page projet : conversations filtrées par tenant */}
+      <Route path="/projets/:slug" element={
+        <ProjectPage
+          tenants={tenants}
+          tenantsLoaded={tenantsLoaded}
+          conversations={conversations}
+          selectedConversation={selectedConversation}
+          setSelectedConversation={setSelectedConversation}
+          loadConversations={loadConversations}
+          onBack={goToProjects}
+          shellProps={shellProps}
+        />
+      } />
 
-          <ConversationList
-            conversations={filteredConversations}
-            onSelect={(conv) => {
-              setSelectedConversation(conv);
-              if (isMobile) setSidebarOpen(false);
+      {/* Route existante conservée (lien direct vers une conversation) */}
+      <Route path="/conversations/:id" element={
+        <ConversationsShell
+          {...shellProps}
+          title="Toutes les conversations"
+          onBack={goToProjects}
+          conversations={conversations}
+          selectedConversation={selectedConversation}
+          onSelect={(conv) => {
+            setSelectedConversation(conv);
+            if (isMobile) setSidebarOpen(false);
+          }}
+          onClearSelection={() => setSelectedConversation(null)}
+          onRefresh={loadConversations}
+        >
+          <ConversationPage
+            conversations={conversations}
+            onUpdateConversation={(updatedConv) => {
+              setSelectedConversation(updatedConv);
+              loadConversations();
             }}
-            selectedId={selectedConversation?.id}
           />
-        </div>
-      )}
+        </ConversationsShell>
+      } />
 
-      {/* ── MAIN CONTENT ── */}
-      <div className="main-content" style={{ marginLeft: view === 'home' ? 0 : undefined }}>
-        <div className="admin-navbar-fixed">
-          <div className="admin-navbar-left" />
-          <div className="admin-navbar-right">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <button className="theme-toggle-nav" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
-                {theme === 'light' ? <MoonIcon /> : <SunIcon />}
-              </button>
-              <div className="admin-nav-user" onClick={() => setAdminMenuOpen(!adminMenuOpen)}>
-                <UserIcon size={16} />
-                <span className="admin-nav-label">Administrateur</span>
-              </div>
-            </div>
-            {adminMenuOpen && (
-              <div className="admin-dropdown-menu">
-                <div className="admin-dropdown-email">admin</div>
-                <button className="admin-dropdown-logout" onClick={handleLogout}>
-                  <LogoutIcon />
-                  Se déconnecter
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Vue Accueil */}
-        {view === 'home' && (
-          <HomePage
-            tenants={tenants}
-            onSelectTenant={handleSelectTenant}
-            theme={theme}
-          />
-        )}
-
-        {/* Vue Projet */}
-        {view === 'project' && (
-          <Routes>
-            <Route path="/" element={
-              selectedConversation ? (
-                <ConversationDetail
-                  conversation={selectedConversation}
-                  onUpdate={(updatedConv) => {
-                    setSelectedConversation(updatedConv);
-                    loadConversations();
-                  }}
-                />
-              ) : (
-                <div className="empty-state">
-                  <ChatIcon />
-                  <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '12px' }}>
-                    Sélectionnez une conversation
-                  </p>
-                </div>
-              )
-            } />
-          </Routes>
-        )}
-      </div>
-    </div>
+      {/* Toute autre URL → accueil des projets */}
+      <Route path="*" element={<Navigate to="/projets" replace />} />
+    </Routes>
   );
 }
 
