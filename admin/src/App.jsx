@@ -17,6 +17,9 @@ const API_BASE = import.meta.env.VITE_API_BASE || 'https://support-platform-api-
 // Email de contact affiché dans le pied de page (optionnel)
 const SUPPORT_EMAIL = import.meta.env.VITE_SUPPORT_EMAIL || '';
 
+// Couleur de marque "Easy Desk" (bleu support)
+const BRAND_BLUE = '#0284C7';
+
 // ============================================================
 // HELPERS PROJETS (slug + couleur d'accent)
 // "EasyCoop" → "easycoop" | "Easy Events" → "easy-events" | "Easy Suite Pro" → "easy-suite-pro"
@@ -166,7 +169,7 @@ function LoginPage({ onLogin, theme }) {
         <h1 style={{ fontSize: isMobile ? 'clamp(24px, 6.5vw, 32px)' : 'clamp(30px, 3.2vw, 44px)', fontWeight: '900', color: isDark ? '#F5F0E8' : '#1A1A1A', margin: '0 0 18px 0', lineHeight: '1.25', maxWidth: '100%' }}>
           Espace Support Admin AI {' '}
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', verticalAlign: 'middle' }}>
-            <span style={{ background: '#FF9900', color: 'white', padding: '2px 10px', borderRadius: '6px', fontWeight: '800' }}>Easy</span>
+            <span style={{ background: BRAND_BLUE, color: 'white', padding: '2px 10px', borderRadius: '6px', fontWeight: '800' }}>Easy</span>
             <span style={{ color: isDark ? '#F5F0E8' : '#1A1A1A', fontWeight: '800' }}>Desk</span>
           </span>
           !
@@ -196,7 +199,7 @@ function LoginPage({ onLogin, theme }) {
         <div style={{ width: '100%', background: isDark ? '#243028' : 'white', borderRadius: '20px', padding: isMobile ? '24px 22px' : '32px 36px', boxShadow: isDark ? '0 4px 32px rgba(0,0,0,0.4)' : '0 4px 32px rgba(0,0,0,0.08)' }}>
           <div style={{ textAlign: 'center', marginBottom: '4px' }}>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', marginBottom: '8px' }}>
-              <span style={{ background: '#FF9900', color: 'white', padding: '3px 10px', borderRadius: '6px', fontSize: '18px', fontWeight: '800' }}>Easy</span>
+              <span style={{ background: BRAND_BLUE, color: 'white', padding: '3px 10px', borderRadius: '6px', fontSize: '18px', fontWeight: '800' }}>Easy</span>
               <span style={{ color: isDark ? '#F5F0E8' : '#1A1A1A', fontSize: '18px', fontWeight: '800' }}>Desk</span>
             </div>
           </div>
@@ -404,6 +407,68 @@ function AdminNavbar({ theme, setTheme, adminMenuOpen, setAdminMenuOpen, onLogou
 // ============================================================
 // PAGE D'ACCUEIL /projets — grille de cartes (style Easy Suite)
 // ============================================================
+// Thème visuel de chaque carte projet
+function getProjectStyle(name, isDark, base) {
+  const slug = slugify(name);
+  if (slug === 'easycoop') {
+    // Charte EasyCoop : fond sombre + or
+    return {
+      accent: '#E5A93C', cardBg: '#161616', border: '#2A2A2A',
+      title: '#FFFFFF', muted: '#9CA3AF', strong: '#FFFFFF', iconBg: '#232323',
+      btnBg: '#E5A93C', btnText: '#0B0B0C', topBar: null,
+    };
+  }
+  if (/^easy-?events?$/.test(slug)) {
+    // Charte Easy Events : vert + orange
+    return {
+      accent: '#15AD84', cardBg: base.cardBg, border: base.cardBorder,
+      title: base.textMain, muted: base.textMuted, strong: base.textMain, iconBg: '#15AD8422',
+      btnBg: 'linear-gradient(90deg, #15AD84 0%, #FF9900 100%)', btnText: '#FFFFFF',
+      topBar: 'linear-gradient(90deg, #15AD84, #FF9900)',
+    };
+  }
+  return {
+    accent: '#888888', cardBg: base.cardBg, border: base.cardBorder,
+    title: base.cardTitle, muted: base.textMuted, strong: base.textMain, iconBg: '#88888822',
+    btnBg: '#888888', btnText: '#FFFFFF', topBar: null,
+  };
+}
+
+// Logo du projet : /public/logos/<slug>.png (ou tenant.logo si l'API le fournit)
+// Si l'image est introuvable, on retombe sur l'initiale du projet.
+function ProjectLogo({ tenant, accent, bg }) {
+  const [failed, setFailed] = useState(false);
+  const src = tenant.logo || `${import.meta.env.BASE_URL}logos/${slugify(tenant.name)}.png`;
+  return (
+    <div style={{
+      width: '64px', height: '64px', borderRadius: '14px', background: bg,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      overflow: 'hidden', flexShrink: 0,
+    }}>
+      {failed ? (
+        <span className="ps-heading" style={{ color: accent, fontSize: '26px', fontWeight: 800 }}>
+          {(tenant.name || '?').charAt(0).toUpperCase()}
+        </span>
+      ) : (
+        <img
+          src={src}
+          alt={`Logo ${tenant.name}`}
+          onError={() => setFailed(true)}
+          style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '8px', boxSizing: 'border-box' }}
+        />
+      )}
+    </div>
+  );
+}
+
+const SocialIcon = ({ name }) => {
+  const p = { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' };
+  if (name === 'facebook') return <svg {...p}><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>;
+  if (name === 'x') return <svg {...p}><path d="M4 4l11.7 16H20L8.3 4H4z"/><path d="M4.5 20l6.2-6.6M13.3 10.6L19.5 4"/></svg>;
+  if (name === 'linkedin') return <svg {...p}><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>;
+  return <svg {...p}><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>;
+};
+
 function ProjectsHome({ tenants, tenantsLoaded, conversations, theme, setTheme, onOpenProject, onLogout }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const isDark = theme === 'dark';
@@ -416,10 +481,26 @@ function ProjectsHome({ tenants, tenantsLoaded, conversations, theme, setTheme, 
   const textMuted = isDark ? '#9AB3A5' : '#6B7280';
   const cardTitle = isDark ? '#F5F0E8' : '#0B4F8A';
   const userBoxBg = isDark ? '#243028' : '#F3F4F6';
+  const footerBg = isDark ? '#1A2420' : '#FFFFFF';
+  const socialBg = isDark ? '#243028' : '#ECEDF1';
+  const base = { cardBg, cardBorder, textMain, textMuted, cardTitle };
 
   const countFor = (tenantId) =>
     conversations.filter(c => Number(c.tenant_id) === Number(tenantId)).length;
 
+  const socials = [
+    { name: 'facebook', label: 'Facebook', href: import.meta.env.VITE_FACEBOOK_URL },
+    { name: 'x', label: 'X', href: import.meta.env.VITE_X_URL },
+    { name: 'linkedin', label: 'LinkedIn', href: import.meta.env.VITE_LINKEDIN_URL },
+    { name: 'instagram', label: 'Instagram', href: import.meta.env.VITE_INSTAGRAM_URL },
+  ];
+
+  const Brand = ({ size, footer }) => (
+    <span className="ps-heading" style={{ fontSize: size, fontWeight: 800, letterSpacing: '-0.3px' }}>
+      <span style={{ color: BRAND_BLUE }}>Easy</span>{' '}
+      <span style={{ color: textMain }}>Desk</span>
+    </span>
+  );
 
   return (
     <div className="ps-page" style={{
@@ -451,12 +532,13 @@ function ProjectsHome({ tenants, tenantsLoaded, conversations, theme, setTheme, 
         @media (min-width: 640px)  { .projects-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (min-width: 1024px) { .projects-grid { grid-template-columns: repeat(4, 1fr); } }
         .project-card { text-align: left; transition: box-shadow 0.2s, transform 0.2s; cursor: pointer; }
-        .project-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(0,0,0,0.12); }
-        .project-card:focus-visible { outline: 3px solid #15AD84; outline-offset: 2px; }
+        .project-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(0,0,0,0.14); }
+        .project-card:focus-visible { outline: 3px solid ${BRAND_BLUE}; outline-offset: 2px; }
         .ps-footer-grid { display: grid; grid-template-columns: 1fr; gap: 28px; }
-        @media (min-width: 768px) { .ps-footer-grid { grid-template-columns: 2fr 1fr 1fr; } }
-        .ps-footer a { color: #D1D5DB; text-decoration: none; font-size: 14px; }
-        .ps-footer a:hover { color: #FFFFFF; text-decoration: underline; }
+        @media (min-width: 768px) { .ps-footer-grid { grid-template-columns: 1.4fr 1fr 1fr; } }
+        .ps-footer a.ps-link { color: ${textMuted}; text-decoration: none; font-size: 15px; }
+        .ps-footer a.ps-link:hover { color: ${textMain}; text-decoration: underline; }
+        .ps-social:hover { filter: brightness(0.94); }
       `}</style>
 
       {/* Barre du haut */}
@@ -464,12 +546,7 @@ function ProjectsHome({ tenants, tenantsLoaded, conversations, theme, setTheme, 
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '14px 32px', borderBottom: `1px solid ${cardBorder}`,
       }}>
-        <div style={{ display: 'inline-flex', alignItems: 'baseline', gap: '6px' }}>
-          <span className="ps-heading" style={{ fontSize: '24px', fontWeight: '800', letterSpacing: '-0.3px' }}>
-            <span style={{ color: '#FF9900' }}>Easy</span>{' '}
-            <span style={{ color: textMain }}>Desk</span>
-          </span>
-        </div>
+        <Brand size="24px" />
 
         <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px' }}>
           <button
@@ -509,17 +586,17 @@ function ProjectsHome({ tenants, tenantsLoaded, conversations, theme, setTheme, 
         </div>
       </div>
 
-      {/* Titre + courbe décorative */}
+      {/* Titre + trait décoratif neutre */}
       <div style={{ padding: '52px 24px 40px' }}>
         <div role="heading" aria-level="1" className="ps-title">Tous les projets support</div>
-        <svg width="300" height="40" viewBox="0 0 300 40" style={{ display: 'block', margin: '0 auto 12px', maxWidth: '80%' }}>
-          <defs>
-            <linearGradient id="projectsCurveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#15AD84" />
-              <stop offset="100%" stopColor="#FF9900" />
-            </linearGradient>
-          </defs>
-          <path d="M 0 30 Q 75 5 150 20 Q 225 35 300 15" fill="none" stroke="url(#projectsCurveGrad)" strokeWidth="6" strokeLinecap="round" />
+        <svg width="140" height="16" viewBox="0 0 140 16" style={{ display: 'block', margin: '4px auto 14px' }} aria-hidden="true">
+          <path
+            d="M2 8 Q 14 0 26 8 T 50 8 T 74 8 T 98 8 T 122 8 T 138 8"
+            fill="none"
+            stroke={isDark ? '#6B7280' : '#94A3B8'}
+            strokeWidth="3.5"
+            strokeLinecap="round"
+          />
         </svg>
         <p className="ps-subtitle">Choisissez un projet pour suivre ses conversations escaladées.</p>
       </div>
@@ -534,7 +611,7 @@ function ProjectsHome({ tenants, tenantsLoaded, conversations, theme, setTheme, 
           ) : (
             <div className="projects-grid">
               {tenants.map(t => {
-                const accent = getAccentColor(t.name);
+                const st = getProjectStyle(t.name, isDark, base);
                 const count = countFor(t.id);
                 const open = () => onOpenProject(t);
                 return (
@@ -546,37 +623,40 @@ function ProjectsHome({ tenants, tenantsLoaded, conversations, theme, setTheme, 
                     onClick={open}
                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } }}
                     style={{
-                      background: cardBg,
-                      border: `1px solid ${cardBorder}`,
+                      position: 'relative',
+                      overflow: 'hidden',
+                      background: st.cardBg,
+                      border: `1px solid ${st.border}`,
                       borderRadius: '16px',
                       padding: '24px',
-                      boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
+                      boxShadow: '0 2px 10px rgba(0,0,0,0.06)',
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'flex-start',
                       gap: '14px',
-                      minHeight: '250px',
+                      minHeight: '270px',
                       boxSizing: 'border-box',
                     }}
                   >
-                    <div className="ps-heading" style={{
-                      width: '56px', height: '56px', borderRadius: '12px',
-                      background: `${accent}22`, color: accent,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: '24px', fontWeight: '800', flexShrink: 0,
-                    }}>
-                      {(t.name || '?').charAt(0).toUpperCase()}
-                    </div>
-                    <div role="heading" aria-level="3" className="ps-heading" style={{ fontSize: '24px', fontWeight: 800, color: cardTitle, lineHeight: 1.25, textAlign: 'left' }}>
+                    {st.topBar && (
+                      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: st.topBar }} />
+                    )}
+                    <ProjectLogo tenant={t} accent={st.accent} bg={st.iconBg} />
+                    <div role="heading" aria-level="3" className="ps-heading" style={{ fontSize: '24px', fontWeight: 800, color: st.title, lineHeight: 1.25, textAlign: 'left' }}>
                       {t.name}
                     </div>
-                    <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.6, color: textMuted, flex: 1, textAlign: 'left' }}>
+                    <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.6, color: st.muted, flex: 1, textAlign: 'left' }}>
                       Support et conversations escaladées de {t.name}.{' '}
-                      <strong style={{ color: textMain }}>
+                      <strong style={{ color: st.strong }}>
                         {count} conversation{count > 1 ? 's' : ''}
                       </strong>
                     </p>
-                    <span style={{ fontSize: '14px', fontWeight: '700', color: accent }}>
+                    <span style={{
+                      display: 'inline-flex', alignItems: 'center', gap: '6px',
+                      background: st.btnBg, color: st.btnText,
+                      padding: '10px 16px', borderRadius: '10px',
+                      fontSize: '14px', fontWeight: 700,
+                    }}>
                       Accéder aux conversations →
                     </span>
                   </div>
@@ -588,32 +668,49 @@ function ProjectsHome({ tenants, tenantsLoaded, conversations, theme, setTheme, 
       </div>
 
       {/* Pied de page (collé en bas) */}
-      <footer className="ps-footer" style={{ marginTop: 'auto', background: '#111827', color: '#FFFFFF', padding: '40px 32px 24px' }}>
+      <footer className="ps-footer" style={{ marginTop: 'auto', background: footerBg, color: textMain, padding: '48px 32px 24px', borderTop: `1px solid ${cardBorder}` }}>
         <div className="ps-footer-grid" style={{ maxWidth: '1280px', margin: '0 auto' }}>
           <div style={{ textAlign: 'left' }}>
-            <div className="ps-heading" style={{ fontSize: '22px', fontWeight: 800, marginBottom: '10px' }}>
-              <span style={{ color: '#FF9900' }}>Easy</span> <span style={{ color: '#FFFFFF' }}>Desk</span>
-            </div>
-            <p style={{ margin: 0, color: '#D1D5DB', fontSize: '14px', lineHeight: 1.7, maxWidth: '420px' }}>
+            <div style={{ marginBottom: '12px' }}><Brand size="24px" /></div>
+            <p style={{ margin: '0 0 18px', color: textMuted, fontSize: '15px', lineHeight: 1.7, maxWidth: '380px' }}>
               Le centre de support intelligent de vos applications Easy : suivez les conversations, répondez et résolvez, propulsé par l'IA.
             </p>
+            <div style={{ display: 'flex', gap: '14px' }}>
+              {socials.map(s => (
+                <a
+                  key={s.name}
+                  className="ps-social"
+                  href={s.href || '#'}
+                  target={s.href ? '_blank' : undefined}
+                  rel="noopener noreferrer"
+                  aria-label={s.label}
+                  title={s.label}
+                  style={{ width: '40px', height: '40px', borderRadius: '10px', background: socialBg, color: textMuted, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  <SocialIcon name={s.name} />
+                </a>
+              ))}
+            </div>
           </div>
+
           <div style={{ textAlign: 'left' }}>
-            <div className="ps-heading" style={{ fontSize: '15px', fontWeight: 700, marginBottom: '12px' }}>Liens rapides</div>
-            <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <li><a href="/projets">Tous les projets</a></li>
-              {SUPPORT_EMAIL && <li><a href={`mailto:${SUPPORT_EMAIL}`}>Nous écrire</a></li>}
+            <div className="ps-heading" style={{ fontSize: '16px', fontWeight: 600, marginBottom: '14px', color: textMain }}>Liens rapides</div>
+            <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <li><a className="ps-link" href="/projets">Tous les projets</a></li>
+              {SUPPORT_EMAIL && <li><a className="ps-link" href={`mailto:${SUPPORT_EMAIL}`}>Nous écrire</a></li>}
             </ul>
           </div>
+
           <div style={{ textAlign: 'left' }}>
-            <div className="ps-heading" style={{ fontSize: '15px', fontWeight: 700, marginBottom: '12px' }}>Contact</div>
-            <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {SUPPORT_EMAIL && <li><a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a></li>}
-              <li style={{ color: '#D1D5DB', fontSize: '14px' }}>Dakar, Sénégal</li>
+            <div className="ps-heading" style={{ fontSize: '16px', fontWeight: 600, marginBottom: '14px', color: textMain }}>Contact</div>
+            <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {SUPPORT_EMAIL && <li><a className="ps-link" href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a></li>}
+              <li style={{ color: textMuted, fontSize: '15px' }}>Dakar, Sénégal</li>
             </ul>
           </div>
         </div>
-        <div style={{ maxWidth: '1280px', margin: '28px auto 0', paddingTop: '18px', borderTop: '1px solid #374151', textAlign: 'center', color: '#9CA3AF', fontSize: '13px' }}>
+
+        <div style={{ maxWidth: '1280px', margin: '32px auto 0', paddingTop: '20px', borderTop: `1px solid ${cardBorder}`, textAlign: 'center', color: textMuted, fontSize: '15px' }}>
           © {new Date().getFullYear()} Easy Desk. Tous droits réservés. Made with ❤️ in Africa.
         </div>
       </footer>
@@ -670,7 +767,7 @@ function ConversationsShell({
           {/* Ligne : logo à gauche, Rafraîchir + Retour conversation à droite */}
           <div className="sidebar-header-top">
             <div className="sidebar-logo">
-              <span className="logo-easy">Easy</span>
+              <span className="logo-easy" style={{ color: BRAND_BLUE, background: 'transparent' }}>Easy</span>
               <span className="logo-event" style={{ color: 'var(--content)' }}>Desk</span>
               <span className="logo-support">· Support</span>
             </div>
@@ -912,7 +1009,7 @@ function App() {
       <div className={`login-container ${theme}`}>
         <div className="login-card">
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', marginBottom: '12px' }}>
-            <span style={{ background: '#FF9900', color: 'white', padding: '2px 8px', borderRadius: '5px', fontSize: '15px', fontWeight: '800' }}>Easy</span>
+            <span style={{ background: BRAND_BLUE, color: 'white', padding: '2px 8px', borderRadius: '5px', fontSize: '15px', fontWeight: '800' }}>Easy</span>
             <span style={{ color: 'var(--content, #1A1A1A)', fontSize: '15px', fontWeight: '800' }}>Desk</span>
           </div>
           <p style={{ color: 'var(--text-secondary, #555)', fontSize: '14px' }}>Chargement des conversations...</p>
