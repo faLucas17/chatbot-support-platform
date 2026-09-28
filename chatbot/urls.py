@@ -30,4 +30,5 @@ urlpatterns = [
     path('dashboard/full/', views.full_dashboard_view, name='full_dashboard'),
     # Tenants
     path('api/tenants/', views.TenantsListView.as_view(), name='tenants-list'),
+    path('admin/conversations/<int:conversation_id>/delete/', csrf_exempt(views.DeleteConversationView.as_view()), name='admin_conversation_delete'),
 ]

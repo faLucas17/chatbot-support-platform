@@ -31,7 +31,7 @@ SUPPORT_URL = os.getenv('SUPPORT_URL', 'https://support-platform-admin.onrender.
 
 
 # ============================================================
-# FONCTION POUR ENVOYER UN EMAIL PROFESSIONNEL AVEC COULEURS
+# EMAIL PROFESSIONNEL
 # ============================================================
 def send_fancy_email(subject, user_name, user_email, conversation_id, conversation_title, message_content, created_at):
     admin_email = settings.ADMIN_EMAIL
@@ -46,11 +46,9 @@ def send_fancy_email(subject, user_name, user_email, conversation_id, conversati
   <title>Assistance requise</title>
 </head>
 <body style="margin:0; padding:0; background-color:#f4f4f4; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">
-
   <table width="100%" cellpadding="0" cellspacing="0" border="0">
     <tr><td style="background: linear-gradient(90deg, #15AD84 0%, #FF9900 100%); height: 6px;"></td></tr>
   </table>
-
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff;">
     <tr><td style="padding: 36px 48px 28px 48px;">
         <table width="100%" cellpadding="0" cellspacing="0" border="0">
@@ -62,11 +60,9 @@ def send_fancy_email(subject, user_name, user_email, conversation_id, conversati
       </td>
     </tr>
   </table>
-
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff;">
     <tr><td style="padding: 0 48px;"><div style="height: 1px; background-color: #EEEEEE;"></div></td></tr>
   </table>
-
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff;">
     <tr><td style="padding: 36px 48px 12px 48px;">
         <p style="margin: 0; font-size: 13px; font-weight: 600; color: #15AD84; text-transform: uppercase; letter-spacing: 1px;">Support client</p>
@@ -74,7 +70,6 @@ def send_fancy_email(subject, user_name, user_email, conversation_id, conversati
       </td>
     </tr>
   </table>
-
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff;">
     <tr><td style="padding: 28px 48px 12px 48px;">
         <div style="display: inline-block; background: linear-gradient(135deg, #15AD84 0%, #FF9900 100%); color: white; font-size: 13px; font-weight: 600; padding: 4px 12px; border-radius: 20px;">Sujet de la conversation</div>
@@ -82,7 +77,6 @@ def send_fancy_email(subject, user_name, user_email, conversation_id, conversati
       </td>
     </tr>
   </table>
-
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff;">
     <tr><td style="padding: 28px 48px 0 48px;">
         <div style="border-left: 3px solid #FF9900; padding: 16px 20px; background-color: #FAFAFA;">
@@ -92,7 +86,6 @@ def send_fancy_email(subject, user_name, user_email, conversation_id, conversati
       </td>
     </tr>
   </table>
-
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff;">
     <tr><td style="padding: 32px 48px 0 48px;">
         <p style="margin: 0 0 16px 0; font-size: 11px; font-weight: 600; color: #999999; text-transform: uppercase;">Détails</p>
@@ -121,11 +114,9 @@ def send_fancy_email(subject, user_name, user_email, conversation_id, conversati
       </td>
     </tr>
   </table>
-
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff;">
     <tr><td style="padding: 0 48px;"><div style="height: 1px; background-color: #EEEEEE;"></div></td></tr>
   </table>
-
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff;">
     <tr><td style="padding: 32px 48px 48px 48px;">
         <table cellpadding="0" cellspacing="0" border="0">
@@ -138,7 +129,6 @@ def send_fancy_email(subject, user_name, user_email, conversation_id, conversati
       </td>
     </tr>
   </table>
-
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #F8F8F8; border-top: 1px solid #EEEEEE;">
     <tr><td style="padding: 24px 48px;">
         <table width="100%">
@@ -150,11 +140,9 @@ def send_fancy_email(subject, user_name, user_email, conversation_id, conversati
       </td>
     </tr>
   </table>
-
   <table width="100%">
     <tr><td style="background: linear-gradient(90deg, #15AD84 0%, #FF9900 100%); height: 4px;"></td></tr>
   </table>
-
 </body>
 </html>
     """
@@ -190,7 +178,7 @@ EasyEvent Support
 
 
 # ============================================================
-# FONCTION POUR RÉCUPÉRER L'UTILISATEUR DJANGO DEPUIS LE TOKEN SANCTUM
+# UTILISATEUR DJANGO DEPUIS TOKEN SANCTUM
 # ============================================================
 def get_django_user_from_token(sanctum_token):
     if not sanctum_token:
@@ -279,22 +267,34 @@ class SendMessageView(APIView):
 
         django_user = get_django_user_from_token(sanctum_token)
 
+        # ==============================
+        # Gestion de la conversation
+        # ==============================
         if conversation_id:
             try:
                 conversation = Conversation.objects.get(id=conversation_id, tenant=tenant)
-                if django_user and not conversation.user:
-                    conversation.user = django_user
-                    conversation.save()
-                    print(f"✅ Utilisateur {django_user.email} associé à la conversation {conversation.id}")
             except Conversation.DoesNotExist:
                 return Response({"error": "Conversation non trouvée"}, status=status.HTTP_404_NOT_FOUND)
+
+            # Mise à jour du user_name même si le user existe déjà
+            if django_user:
+                conversation.user = django_user
+                conversation.user_name = django_user.username
+                conversation.user_email = django_user.email
+                conversation.save()
+                print(f"✅ Utilisateur {django_user.email} associé à la conversation {conversation.id}")
         else:
-            conversation = Conversation.objects.create(tenant=tenant, user=django_user)
+            conversation = Conversation.objects.create(
+                tenant=tenant,
+                user=django_user,
+                user_name=django_user.username if django_user else None,
+                user_email=django_user.email if django_user else None,
+            )
             print(f"✅ Nouvelle conversation créée avec l'utilisateur {django_user.email if django_user else 'Anonyme'}")
 
         user_message = Message.objects.create(conversation=conversation, role='user', content=content)
 
-        # Routage selon le tenant : EasyCoop utilise son propre moteur
+        # Routage selon le tenant
         if tenant.api_key == 'easycoop-2026':
             bot_response_text, bot_success = get_bot_response_easycoop(content, tenant, sanctum_token)
         else:
@@ -322,14 +322,12 @@ class SendMessageView(APIView):
         direct_conversation_link = f"{SUPPORT_URL}/conversations/{conversation.id}?username={user_name}"
 
         # ========== 1. NOTIFICATION DISCORD ==========
-        # Choix du webhook selon le tenant
         if tenant.api_key == 'easycoop-2026':
             webhook_url = getattr(settings, 'DISCORD_WEBHOOK_EASYCOOP', '')
         else:
             webhook_url = getattr(settings, 'DISCORD_WEBHOOK_URL', '')
 
         print(f"🔍 DEBUG Discord webhook_url longueur: {len(webhook_url)}")
-        print(f"🔍 DEBUG Discord webhook_url: '{webhook_url[:60]}...'")
 
         if webhook_url:
             discord_message = {
@@ -351,15 +349,12 @@ class SendMessageView(APIView):
             }
             try:
                 resp = requests.post(webhook_url, json=discord_message, timeout=10)
-                print(f"🔍 DEBUG Discord réponse status: {resp.status_code}")
                 if resp.status_code == 204:
                     print(f"✅ Discord notification envoyée pour conversation {conversation.id}")
                 else:
                     print(f"⚠️ Discord status inattendu: {resp.status_code} — {resp.text}")
             except Exception as e:
                 print(f"❌ Erreur envoi Discord: {e}")
-        else:
-            print("⚠️ DISCORD_WEBHOOK_URL est vide — notification ignorée")
 
         # ========== 2. NOTIFICATION EMAIL — thread async ==========
         _conv_id       = conversation.id
@@ -464,19 +459,23 @@ class AdminConversationsListView(APIView):
 
         if not support_username or support_username in ['anonymous', 'null', '', 'Anonyme', 'None']:
             conversations = Conversation.objects.all().order_by('-updated_at')
-            print(f"📋 User anonyme → {conversations.count()} conversations escaladées retournées")
+            print(f"📋 User anonyme → {conversations.count()} conversations retournées")
         else:
-            try:
-                user = User.objects.get(username=support_username)
-                conversations = Conversation.objects.filter(user=user).order_by('-updated_at')
-                print(f"📋 {conversations.count()} conversations trouvées pour '{support_username}'")
-            except User.DoesNotExist:
+            # Recherche par user_name OU par user.username
+            from django.db.models import Q
+            conversations = Conversation.objects.filter(
+                Q(user_name=support_username) | Q(user__username=support_username)
+            ).order_by('-updated_at')
+            if conversations.count() == 0:
                 conversations = Conversation.objects.all().order_by('-updated_at')
-                print(f"⚠️ '{support_username}' non trouvé → conversations escaladées retournées")
+                print(f"⚠️ '{support_username}' non trouvé → conversations retournées")
+            else:
+                print(f"📋 {conversations.count()} conversations trouvées pour '{support_username}'")
 
         data = []
         for conv in conversations:
-            user_name = conv.user.username if conv.user else "Anonyme"
+            # Priorité au user_name stocké
+            user_name = conv.user_name or (conv.user.username if conv.user else "Anonyme")
             messages_data = MessageSerializer(conv.messages.all()[:50], many=True).data
             title = generate_conversation_title(conv)
             data.append({
@@ -488,9 +487,9 @@ class AdminConversationsListView(APIView):
                 'updated_at': conv.updated_at,
                 'escalated': conv.escalated,
                 'messages': messages_data,
-                'tenant_id': conv.tenant.id,          
-                'tenant_name': conv.tenant.name,      
-                'tenant_api_key': conv.tenant.api_key, 
+                'tenant_id': conv.tenant.id,
+                'tenant_name': conv.tenant.name,
+                'tenant_api_key': conv.tenant.api_key,
             })
         return Response(data)
 
@@ -516,7 +515,7 @@ class AdminConversationDetailView(APIView):
         except Conversation.DoesNotExist:
             return Response({'error': 'Conversation non trouvée'}, status=status.HTTP_404_NOT_FOUND)
         data = ConversationSerializer(conversation).data
-        data['user_name'] = conversation.user.username if conversation.user else "Anonyme"
+        data['user_name'] = conversation.user_name or (conversation.user.username if conversation.user else "Anonyme")
         return Response(data)
 
     def post(self, request, conversation_id):
@@ -543,6 +542,22 @@ class AdminConversationDetailView(APIView):
         except Exception as e:
             print(f"❌ Erreur appel Laravel pour resolved: {e}")
         return Response({'success': True, 'message': MessageSerializer(agent_message).data})
+
+
+@csrf_exempt_view
+class DeleteConversationView(APIView):
+    """Supprime une conversation et tous ses messages (cascade)."""
+    def delete(self, request, conversation_id):
+        try:
+            conversation = Conversation.objects.get(id=conversation_id)
+        except Conversation.DoesNotExist:
+            return Response({'error': 'Conversation non trouvée'}, status=status.HTTP_404_NOT_FOUND)
+
+        conv_id = conversation.id
+        conversation.delete()
+
+        print(f"🗑️ Conversation #{conv_id} supprimée")
+        return Response({'success': True, 'message': f'Conversation #{conv_id} supprimée'}, status=status.HTTP_200_OK)
 
 
 @csrf_exempt_view
@@ -702,6 +717,7 @@ def home_view(request):
     if request.user.is_authenticated:
         return redirect('dashboard')
     return redirect('login')
+
 
 @csrf_exempt_view
 class TenantsListView(APIView):

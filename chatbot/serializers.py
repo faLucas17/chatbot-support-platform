@@ -8,10 +8,14 @@ class MessageSerializer(serializers.ModelSerializer):
 
 class ConversationSerializer(serializers.ModelSerializer):
     messages = MessageSerializer(many=True, read_only=True)
+    user_name = serializers.SerializerMethodField()
     
     class Meta:
         model = Conversation
-        fields = ['id', 'tenant', 'created_at', 'updated_at', 'escalated', 'messages']
+        fields = ['id', 'tenant', 'user_name', 'created_at', 'updated_at', 'escalated', 'messages']
+    
+    def get_user_name(self, obj):
+        return obj.user_name or (obj.user.username if obj.user else "Anonyme")
 
 class SendMessageSerializer(serializers.Serializer):
     api_key = serializers.CharField()

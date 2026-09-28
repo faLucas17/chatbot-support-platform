@@ -25,6 +25,8 @@ class Conversation(models.Model):
     """Une conversation entre un client et le bot/agent"""
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='conversations', null=True, blank=True)
     tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name='conversations')
+    user_name = models.CharField(max_length=255, blank=True, null=True)     # ← AJOUT
+    user_email = models.EmailField(blank=True, null=True) 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     escalated = models.BooleanField(default=False)

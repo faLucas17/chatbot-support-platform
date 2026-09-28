@@ -781,10 +781,28 @@ function ConversationsShell({
 
         {/* Liste des conversations (déjà filtrées) */}
         <ConversationList
-          conversations={conversations}
-          onSelect={onSelect}
-          selectedId={selectedConversation?.id}
-        />
+  conversations={projectConversations}
+  onSelect={(conv) => {
+    setSelectedConversation(conv);
+    if (shellProps.isMobile) shellProps.setSidebarOpen(false);
+  }}
+  selectedId={selectedConversation?.id}
+  onDeleteConversation={async (convId) => {
+    try {
+      await fetch(`${API_BASE}/admin/conversations/${convId}/delete/`, {
+        method: 'DELETE',
+      });
+      // Recharger la liste
+      loadConversations();
+      // Si la conversation supprimée était sélectionnée, désélectionner
+      if (selectedConversation?.id === convId) {
+        setSelectedConversation(null);
+      }
+    } catch (err) {
+      console.error('Erreur suppression:', err);
+    }
+  }}
+/>
       </div>
 
       {/* ── MAIN CONTENT ── */}
