@@ -322,39 +322,39 @@ class SendMessageView(APIView):
         direct_conversation_link = f"{SUPPORT_URL}/conversations/{conversation.id}?username={user_name}"
 
         # ========== 1. NOTIFICATION DISCORD ==========
-webhook_url = getattr(settings, 'DISCORD_WEBHOOK_URL', '')
-print(f"🔍 DEBUG Discord webhook_url longueur: {len(webhook_url)}")
-print(f"🔍 DEBUG Discord webhook_url: '{webhook_url[:60]}...'")
+        webhook_url = getattr(settings, 'DISCORD_WEBHOOK_URL', '')
+        print(f"🔍 DEBUG Discord webhook_url longueur: {len(webhook_url)}")
+        print(f"🔍 DEBUG Discord webhook_url: '{webhook_url[:60]}...'")
 
-if webhook_url:
-    discord_message = {
-        "embeds": [{
-            "title": f"Nouvelle conversation escaladée — {tenant.name}",
-            "color": 1420420,
-            "fields": [
-                {"name": "Tenant", "value": tenant.name, "inline": True},
-                {"name": "Utilisateur", "value": user_name, "inline": True},
-                {"name": "Email", "value": user_email, "inline": True},
-                {"name": "Conversation", "value": f"#{conversation.id}", "inline": True},
-                {"name": "Date", "value": conversation.created_at.strftime('%d/%m/%Y à %H:%M'), "inline": True},
-                {"name": "Message", "value": f'"{content}"', "inline": False},
-                {"name": "Lien direct", "value": direct_conversation_link, "inline": False}
-            ],
-            "footer": {"text": f"{tenant.name} Support"},
-            "timestamp": conversation.created_at.isoformat()
-        }]
-    }
-    try:
-        resp = requests.post(webhook_url, json=discord_message, timeout=10)
-        print(f"🔍 DEBUG Discord réponse status: {resp.status_code}")
-        if resp.status_code == 204:
-            print(f"✅ Discord notification envoyée pour conversation {conversation.id}")
+        if webhook_url:
+            discord_message = {
+                "embeds": [{
+                    "title": f"Nouvelle conversation escaladée — {tenant.name}",
+                    "color": 1420420,
+                    "fields": [
+                        {"name": "Tenant", "value": tenant.name, "inline": True},
+                        {"name": "Utilisateur", "value": user_name, "inline": True},
+                        {"name": "Email", "value": user_email, "inline": True},
+                        {"name": "Conversation", "value": f"#{conversation.id}", "inline": True},
+                        {"name": "Date", "value": conversation.created_at.strftime('%d/%m/%Y à %H:%M'), "inline": True},
+                        {"name": "Message", "value": f'"{content}"', "inline": False},
+                        {"name": "Lien direct", "value": direct_conversation_link, "inline": False}
+                    ],
+                    "footer": {"text": f"{tenant.name} Support"},
+                    "timestamp": conversation.created_at.isoformat()
+                }]
+            }
+            try:
+                resp = requests.post(webhook_url, json=discord_message, timeout=10)
+                print(f"🔍 DEBUG Discord réponse status: {resp.status_code}")
+                if resp.status_code == 204:
+                    print(f"✅ Discord notification envoyée pour conversation {conversation.id}")
+                else:
+                    print(f"⚠️ Discord status inattendu: {resp.status_code} — {resp.text}")
+            except Exception as e:
+                print(f"❌ Erreur envoi Discord: {e}")
         else:
-            print(f"⚠️ Discord status inattendu: {resp.status_code} — {resp.text}")
-    except Exception as e:
-        print(f"❌ Erreur envoi Discord: {e}")
-else:
-    print("⚠️ DISCORD_WEBHOOK_URL est vide — notification ignorée")
+            print("⚠️ DISCORD_WEBHOOK_URL est vide — notification ignorée")
 
         # ========== 2. NOTIFICATION EMAIL — thread async ==========
         _conv_id       = conversation.id
