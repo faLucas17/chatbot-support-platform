@@ -151,7 +151,7 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:8001',
 ]
 
-# ✅ Configuration Brevo
+#  Configuration Brevo
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp-relay.brevo.com'
 EMAIL_PORT = 587
@@ -175,3 +175,5 @@ LOGGING = {
         'level': 'INFO',
     },
 }
+
+DISCORD_WEBHOOK_EASYCOOP = os.getenv('DISCORD_WEBHOOK_EASYCOOP', '')

@@ -322,7 +322,12 @@ class SendMessageView(APIView):
         direct_conversation_link = f"{SUPPORT_URL}/conversations/{conversation.id}?username={user_name}"
 
         # ========== 1. NOTIFICATION DISCORD ==========
-        webhook_url = getattr(settings, 'DISCORD_WEBHOOK_URL', '')
+        # Choix du webhook selon le tenant
+        if tenant.api_key == 'easycoop-2026':
+            webhook_url = getattr(settings, 'DISCORD_WEBHOOK_EASYCOOP', '')
+        else:
+            webhook_url = getattr(settings, 'DISCORD_WEBHOOK_URL', '')
+
         print(f"🔍 DEBUG Discord webhook_url longueur: {len(webhook_url)}")
         print(f"🔍 DEBUG Discord webhook_url: '{webhook_url[:60]}...'")
 

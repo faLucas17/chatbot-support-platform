@@ -43,3 +43,4 @@ Plateforme de customer support IA multi-applications avec escalade humaine autom
 - **Frontend participant** : https://easy-event.bakeli.tech
 - **Support Admin** : https://support-platform-admin.onrender.com
 
+
