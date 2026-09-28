@@ -14,15 +14,16 @@ const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'passer@12';
 // URL de base de l'API
 const API_BASE = import.meta.env.VITE_API_BASE || 'https://support-platform-api-0h06.onrender.com';
 
-// Email de contact affiché dans le pied de page (optionnel)
+// Email de contact affiché dans le pied de page 
 const SUPPORT_EMAIL = import.meta.env.VITE_SUPPORT_EMAIL || '';
+const SUPPORT_SITE_URL = 'https://www.bakeli.tech';
+const SUPPORT_SITE_LABEL = 'www.bakeli.tech';
 
 // Couleur de marque "Easy Desk" (bleu support)
 const BRAND_BLUE = '#0284C7';
 
 // ============================================================
 // HELPERS PROJETS (slug + couleur d'accent)
-// "EasyCoop" → "easycoop" | "Easy Events" → "easy-events" | "Easy Suite Pro" → "easy-suite-pro"
 // ============================================================
 const slugify = (name = '') =>
   String(name)
@@ -116,7 +117,7 @@ function LoginPage({ onLogin, theme }) {
   );
 
   const CheckIcon = () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#15AD84" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="20 6 9 17 4 12"/>
     </svg>
   );
@@ -149,8 +150,8 @@ function LoginPage({ onLogin, theme }) {
     }}>
       {!isMobile && (
         <>
-          <div style={{ position: 'absolute', top: '60px', right: '460px', width: '12px', height: '12px', borderRadius: '50%', background: '#15AD84', opacity: 0.5 }} />
-          <div style={{ position: 'absolute', top: '30px', right: '60px', width: '10px', height: '10px', borderRadius: '50%', background: '#FF9900', opacity: 0.5 }} />
+          <div style={{ position: 'absolute', top: '60px', right: '460px', width: '12px', height: '12px', borderRadius: '50%', background: BRAND_BLUE, opacity: 0.5 }} />
+          <div style={{ position: 'absolute', top: '30px', right: '60px', width: '10px', height: '10px', borderRadius: '50%', background: '#38BDF8', opacity: 0.5 }} />
         </>
       )}
 
@@ -181,17 +182,17 @@ function LoginPage({ onLogin, theme }) {
           Suivez les conversations, répondez à vos utilisateurs et pilotez tout votre support client depuis une seule interface pensée pour les administrateurs.
         </p>
         <div style={{ position: 'relative', width: isMobile ? '100%' : '340px', maxWidth: '100%', textAlign: 'center', paddingTop: '14px', paddingBottom: '14px' }}>
-          <div style={{ position: 'absolute', top: '0px', left: '50%', transform: 'translateX(-50%)', width: '14px', height: '14px', borderRadius: '50%', background: '#15AD84' }} />
+          <div style={{ position: 'absolute', top: '0px', left: '50%', transform: 'translateX(-50%)', width: '14px', height: '14px', borderRadius: '50%', background: BRAND_BLUE }} />
           <svg width="260" height="34" viewBox="0 0 300 40" style={{ display: 'inline-block' }}>
             <path d="M 0 30 Q 75 5 150 20 Q 225 35 300 15" fill="none" stroke="url(#curveGrad)" strokeWidth="6" strokeLinecap="round" />
             <defs>
               <linearGradient id="curveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#15AD84" />
-                <stop offset="100%" stopColor="#FF9900" />
+                <stop offset="0%" stopColor={BRAND_BLUE} />
+                <stop offset="100%" stopColor="#38BDF8" />
               </linearGradient>
             </defs>
           </svg>
-          <div style={{ position: 'absolute', bottom: '0px', left: isMobile ? '20%' : '10px', width: '12px', height: '12px', borderRadius: '50%', background: '#FF9900' }} />
+          <div style={{ position: 'absolute', bottom: '0px', left: isMobile ? '20%' : '10px', width: '12px', height: '12px', borderRadius: '50%', background: '#38BDF8' }} />
         </div>
       </div>
 
@@ -210,14 +211,14 @@ function LoginPage({ onLogin, theme }) {
             <div style={{ marginBottom: '10px', position: 'relative' }}>
               <div style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}><EmailIcon /></div>
               <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Entrez votre email..." required style={inputStyle}
-                onFocus={(e) => { e.target.style.borderColor = '#15AD84'; e.target.style.boxShadow = '0 0 0 3px rgba(21,173,132,0.1)'; }}
+                onFocus={(e) => { e.target.style.borderColor = BRAND_BLUE; e.target.style.boxShadow = '0 0 0 3px rgba(2,132,199,0.15)'; }}
                 onBlur={(e) => { e.target.style.borderColor = isDark ? '#3A4A42' : '#E0E0E0'; e.target.style.boxShadow = 'none'; }}
               />
             </div>
             <div style={{ marginBottom: '10px', position: 'relative' }}>
               <div style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}><LockIcon /></div>
               <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Entrez votre mot de passe..." required style={{ ...inputStyle, paddingRight: '44px' }}
-                onFocus={(e) => { e.target.style.borderColor = '#15AD84'; e.target.style.boxShadow = '0 0 0 3px rgba(21,173,132,0.1)'; }}
+                onFocus={(e) => { e.target.style.borderColor = BRAND_BLUE; e.target.style.boxShadow = '0 0 0 3px rgba(2,132,199,0.15)'; }}
                 onBlur={(e) => { e.target.style.borderColor = isDark ? '#3A4A42' : '#E0E0E0'; e.target.style.boxShadow = 'none'; }}
               />
               <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '4px' }}>
@@ -226,7 +227,7 @@ function LoginPage({ onLogin, theme }) {
             </div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '13px', fontWeight: '500', color: isDark ? '#C5C9C6' : '#555' }}>
-                <div onClick={() => setRememberMe(!rememberMe)} style={{ width: '18px', height: '18px', borderRadius: '4px', border: `2px solid ${rememberMe ? '#15AD84' : isDark ? '#4A5A52' : '#CCC'}`, background: rememberMe ? '#15AD84' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', cursor: 'pointer', flexShrink: 0 }}>
+                <div onClick={() => setRememberMe(!rememberMe)} style={{ width: '18px', height: '18px', borderRadius: '4px', border: `2px solid ${rememberMe ? BRAND_BLUE : isDark ? '#4A5A52' : '#CCC'}`, background: rememberMe ? BRAND_BLUE : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', cursor: 'pointer', flexShrink: 0 }}>
                   {rememberMe && <CheckIcon />}
                 </div>
                 Se souvenir de moi
@@ -238,7 +239,7 @@ function LoginPage({ onLogin, theme }) {
               </div>
             )}
             <button type="submit" disabled={loading}
-              style={{ width: '100%', padding: '13px', background: loading ? '#ccc' : '#15AD84', color: 'white', border: 'none', borderRadius: '8px', fontSize: '15px', fontWeight: '700', cursor: loading ? 'not-allowed' : 'pointer', transition: 'opacity 0.2s, transform 0.1s', letterSpacing: '0.3px' }}
+              style={{ width: '100%', padding: '13px', background: loading ? '#ccc' : BRAND_BLUE, color: 'white', border: 'none', borderRadius: '8px', fontSize: '15px', fontWeight: '700', cursor: loading ? 'not-allowed' : 'pointer', transition: 'opacity 0.2s, transform 0.1s', letterSpacing: '0.3px' }}
               onMouseEnter={(e) => { if (!loading) e.target.style.opacity = '0.92'; }}
               onMouseLeave={(e) => { if (!loading) e.target.style.opacity = '1'; }}
             >
@@ -359,7 +360,7 @@ function ConversationPage({ conversations, onUpdateConversation }) {
 }
 
 // ============================================================
-// NAVBAR ADMIN (identique à l'original) — utilisée dans la vue conversations
+// NAVBAR ADMIN 
 // ============================================================
 function AdminNavbar({ theme, setTheme, adminMenuOpen, setAdminMenuOpen, onLogout }) {
   return (
@@ -405,9 +406,8 @@ function AdminNavbar({ theme, setTheme, adminMenuOpen, setAdminMenuOpen, onLogou
 }
 
 // ============================================================
-// PAGE D'ACCUEIL /projets — grille de cartes (style Easy Suite)
+// PAGE D'ACCUEIL /projets — grille de cartes 
 // ============================================================
-// Style de chaque carte : cadres identiques pour tous, seul le bouton change de couleur
 function getProjectStyle(name, isDark, base) {
   const slug = slugify(name);
   let btnBg = '#888888';
@@ -578,14 +578,8 @@ function ProjectsHome({ tenants, tenantsLoaded, conversations, theme, setTheme, 
       {/* Titre + trait décoratif neutre */}
       <div style={{ padding: '52px 24px 40px' }}>
         <div role="heading" aria-level="1" className="ps-title">Tous les projets support</div>
-        <svg width="140" height="16" viewBox="0 0 140 16" style={{ display: 'block', margin: '4px auto 14px' }} aria-hidden="true">
-          <path
-            d="M2 8 Q 14 0 26 8 T 50 8 T 74 8 T 98 8 T 122 8 T 138 8"
-            fill="none"
-            stroke={isDark ? '#6B7280' : '#94A3B8'}
-            strokeWidth="3.5"
-            strokeLinecap="round"
-          />
+        <svg width="300" height="24" viewBox="0 0 300 24" style={{ display: 'block', margin: '6px auto 16px', maxWidth: '80%' }} aria-hidden="true">
+          <path d="M 4 22 A 600 600 0 0 1 296 22" fill="none" stroke={BRAND_BLUE} strokeWidth="7" strokeLinecap="round" />
         </svg>
         <p className="ps-subtitle">Choisissez un projet pour suivre ses conversations escaladées.</p>
       </div>
@@ -689,6 +683,7 @@ function ProjectsHome({ tenants, tenantsLoaded, conversations, theme, setTheme, 
           <div style={{ textAlign: 'left' }}>
             <div className="ps-heading" style={{ fontSize: '16px', fontWeight: 600, marginBottom: '14px', color: textMain }}>Contact</div>
             <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <li><a className="ps-link" href={SUPPORT_SITE_URL} target="_blank" rel="noopener noreferrer">{SUPPORT_SITE_LABEL}</a></li>
               {SUPPORT_EMAIL && <li><a className="ps-link" href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a></li>}
               <li style={{ color: textMuted, fontSize: '15px' }}>Dakar, Sénégal</li>
             </ul>
@@ -696,7 +691,7 @@ function ProjectsHome({ tenants, tenantsLoaded, conversations, theme, setTheme, 
         </div>
 
         <div style={{ maxWidth: '1280px', margin: '32px auto 0', paddingTop: '20px', borderTop: `1px solid ${cardBorder}`, textAlign: 'center', color: textMuted, fontSize: '15px' }}>
-          © {new Date().getFullYear()} Easy Desk. Tous droits réservés. Made with ❤️ in Africa.
+          © {new Date().getFullYear()} Easy Desk. Tous droits réservés. Made in Sénégal .
         </div>
       </footer>
     </div>
