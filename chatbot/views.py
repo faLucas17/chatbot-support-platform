@@ -27,6 +27,7 @@ from django.template.loader import render_to_string
 
 # Configuration
 LARAVEL_URL = os.getenv('LARAVEL_URL', 'https://api-easyevent.bakeli.tech')
+EASYCOOP_API_URL = getattr(settings, 'EASYCOOP_API_URL', os.getenv('EASYCOOP_API_URL', 'https://easy-coop-api.onrender.com'))
 SUPPORT_URL = os.getenv('SUPPORT_URL', 'https://support-platform-admin.onrender.com')
 
 
@@ -178,7 +179,7 @@ EasyEvent Support
 
 
 # ============================================================
-# UTILISATEUR DJANGO DEPUIS TOKEN SANCTUM
+# UTILISATEUR DJANGO DEPUIS TOKEN SANCTUM — EASY EVENT
 # ============================================================
 def get_django_user_from_token(sanctum_token):
     if not sanctum_token:
@@ -233,6 +234,61 @@ def get_django_user_from_token(sanctum_token):
     return None
 
 
+# ============================================================
+# UTILISATEUR DJANGO DEPUIS TOKEN SANCTUM — EASYCOOP
+# ⚠️ NOUVEAU : symétrique à get_django_user_from_token(), mais interroge
+# l'API EasyCoop (EASYCOOP_API_URL) au lieu de l'API Easy Event (LARAVEL_URL).
+# Sans cette fonction, un membre EasyCoop connecté était toujours enregistré
+# comme "Anonyme" dans le tableau de bord admin, même si le bot le reconnaissait
+# déjà côté ai_engine_easycoop.py.
+# ============================================================
+def get_easycoop_user_from_token(sanctum_token):
+    if not sanctum_token:
+        return None
+    try:
+        response = requests.get(
+            f"{EASYCOOP_API_URL}/api/user",
+            headers={
+                "Authorization": f"Bearer {sanctum_token}",
+                "Accept": "application/json",
+            },
+            timeout=5
+        )
+        if response.status_code == 200:
+            user_data = response.json()
+            if not isinstance(user_data, dict):
+                user_data = {}
+
+            user_email = user_data.get('email')
+            user_name = user_data.get('name', '')
+
+            if user_email:
+                username = user_email.split('@')[0]
+                user, created = User.objects.get_or_create(
+                    email=user_email,
+                    defaults={
+                        'username': username,
+                        'first_name': user_name,
+                        'email': user_email
+                    }
+                )
+                if created:
+                    print(f"✅ [EasyCoop] Nouvel utilisateur Django créé: {user_email} ({user_name})")
+                else:
+                    if user.first_name != user_name and user_name:
+                        user.first_name = user_name
+                        user.save()
+                        print(f"✅ [EasyCoop] Nom utilisateur mis à jour: {user_name}")
+                return user
+            else:
+                print(f"⚠️ [EasyCoop] Pas d'email dans la réponse : {user_data}")
+        else:
+            print(f"⚠️ [EasyCoop] /api/user a retourné {response.status_code}")
+    except Exception as e:
+        print(f"❌ [EasyCoop] Erreur récupération utilisateur depuis token: {e}")
+    return None
+
+
 def csrf_exempt_view(cls):
     cls.dispatch = method_decorator(csrf_exempt)(cls.dispatch)
     return cls
@@ -280,7 +336,12 @@ class SendMessageView(APIView):
         except Tenant.DoesNotExist:
             return Response({"error": "Clé API invalide"}, status=status.HTTP_401_UNAUTHORIZED)
 
-        django_user = get_django_user_from_token(sanctum_token)
+        # ⚠️ CHANGEMENT : on route vers la bonne API d'authentification
+        # selon le tenant, exactement comme pour le choix du moteur IA plus bas.
+        if tenant.api_key == 'easycoop-2026':
+            django_user = get_easycoop_user_from_token(sanctum_token)
+        else:
+            django_user = get_django_user_from_token(sanctum_token)
         print(f" django_user après get_django_user_from_token: {django_user}")
 
         # ==============================
@@ -293,17 +354,23 @@ class SendMessageView(APIView):
                 return Response({"error": "Conversation non trouvée"}, status=status.HTTP_404_NOT_FOUND)
 
             # Mise à jour du user_name même si le user existe déjà
+            # ⚠️ CHANGEMENT : on stocke le nom complet (first_name, ex. "Khalil
+            # Cissé" ou "Fatou Fall") plutôt que le pseudo dérivé de l'email
+            # (username), pour l'affichage dans le dashboard admin — pour tous
+            # les tenants (EasyCoop et Easy Event).
             if django_user:
+                display_name = django_user.first_name or django_user.username
                 conversation.user = django_user
-                conversation.user_name = django_user.username
+                conversation.user_name = display_name
                 conversation.user_email = django_user.email
                 conversation.save()
                 print(f"✅ Utilisateur {django_user.email} associé à la conversation {conversation.id}")
         else:
+            display_name = (django_user.first_name or django_user.username) if django_user else None
             conversation = Conversation.objects.create(
                 tenant=tenant,
                 user=django_user,
-                user_name=django_user.username if django_user else None,
+                user_name=display_name,
                 user_email=django_user.email if django_user else None,
             )
             print(f"✅ Nouvelle conversation créée avec l'utilisateur {django_user.email if django_user else 'Anonyme'}")
@@ -473,20 +540,32 @@ class AdminConversationsListView(APIView):
         support_username = request.headers.get('X-Support-Username')
         print(f"🔍 AdminConversationsListView - Header X-Support-Username: '{support_username}'")
 
+        from django.db.models import Q
+
+        # ⚠️ NOUVEAU : le dashboard admin ne doit montrer que les conversations
+        # escaladées — pas celles entièrement répondues par le mock/FAQ.
+        # On inclut deux cas :
+        #   - escalated=True : escaladée en ce moment (en attente d'un agent)
+        #   - un message contient le texte d'attente d'escalade : elle l'a été
+        #     à un moment, même si un agent a depuis répondu (escalated=False)
+        #     — on garde l'historique visible plutôt que de le faire disparaître.
+        escalated_filter = Q(escalated=True) | Q(
+            messages__content__startswith="⏳ Un agent va prendre en charge"
+        )
+
         if not support_username or support_username in ['anonymous', 'null', '', 'Anonyme', 'None']:
-            conversations = Conversation.objects.all().order_by('-updated_at')
-            print(f"📋 User anonyme → {conversations.count()} conversations retournées")
+            conversations = Conversation.objects.filter(escalated_filter).distinct().order_by('-updated_at')
+            print(f"📋 User anonyme → {conversations.count()} conversations escaladées retournées")
         else:
-            # Recherche par user_name OU par user.username
-            from django.db.models import Q
+            # Recherche par user_name OU par user.username, restreinte aux escaladées
             conversations = Conversation.objects.filter(
-                Q(user_name=support_username) | Q(user__username=support_username)
-            ).order_by('-updated_at')
+                (Q(user_name=support_username) | Q(user__username=support_username)) & escalated_filter
+            ).distinct().order_by('-updated_at')
             if conversations.count() == 0:
-                conversations = Conversation.objects.all().order_by('-updated_at')
-                print(f"⚠️ '{support_username}' non trouvé → conversations retournées")
+                conversations = Conversation.objects.filter(escalated_filter).distinct().order_by('-updated_at')
+                print(f"⚠️ '{support_username}' non trouvé → conversations escaladées retournées")
             else:
-                print(f"📋 {conversations.count()} conversations trouvées pour '{support_username}'")
+                print(f"📋 {conversations.count()} conversations escaladées trouvées pour '{support_username}'")
 
         data = []
         for conv in conversations:
