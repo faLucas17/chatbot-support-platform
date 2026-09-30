@@ -12,8 +12,49 @@ import requests
 # SANS modifier ai_engine.py
 from .ai_engine import (
     normalize_text, word_matches, contains_fuzzy, any_keyword_match,
-    verify_sanctum_token, LARAVEL_URL,
 )
+
+# ============================================================
+# API D'AUTHENTIFICATION EASYCOOP (distincte d'Easy Event)
+# ============================================================
+# ⚠️ À DÉFINIR dans settings.py et dans les variables d'environnement Render :
+#    EASYCOOP_API_URL = os.getenv('EASYCOOP_API_URL', 'https://api-easycoop.bakeli.tech')
+from django.conf import settings
+
+EASYCOOP_API_URL = getattr(settings, 'EASYCOOP_API_URL', 'https://REMPLACER-PAR-URL-EASYCOOP-API.bakeli.tech')
+
+
+def verify_easycoop_token(sanctum_token):
+    """
+    Vérifie un token Sanctum émis par easy-coop-api et récupère les
+    informations du membre connecté (nom, rôle, coopérative).
+
+    Retourne un dict {'user': {...}} identique à ce qu'attend mock_easycoop(),
+    ou None si le token est absent/invalide.
+    """
+    if not sanctum_token:
+        return None
+    try:
+        response = requests.get(
+            f"{EASYCOOP_API_URL}/api/user/chatbot-data",
+            headers={
+                "Authorization": f"Bearer {sanctum_token}",
+                "Accept": "application/json",
+            },
+            timeout=5,
+        )
+        if response.status_code == 200:
+            data = response.json()
+            # La route Laravel renvoie déjà {'user': {...}}
+            if isinstance(data, dict) and 'user' in data:
+                print(f"[EasyCoop] Utilisateur vérifié : {data['user'].get('name')}")
+                return data
+            print(f"[EasyCoop] Réponse inattendue de l'API EasyCoop : {data}")
+        else:
+            print(f"[EasyCoop] /api/user/chatbot-data a retourné {response.status_code} : {response.text[:200]}")
+    except Exception as e:
+        print(f"[EasyCoop] Erreur vérification token EasyCoop : {e}")
+    return None
 
 
 # ============================================================
@@ -324,7 +365,9 @@ def get_bot_response_easycoop(message_content, tenant, sanctum_token=None):
     print(f"[EasyCoop] Message : {message_content}")
     print(f"[EasyCoop] Tenant : {tenant.name}")
 
-    user_data = verify_sanctum_token(sanctum_token)
+    # ⚠️ CHANGEMENT : on vérifie le token auprès de l'API EasyCoop,
+    # pas auprès de celle d'Easy Event.
+    user_data = verify_easycoop_token(sanctum_token)
     message_norm = normalize_text(message_content)
 
     # 1. KnowledgeItem en priorité

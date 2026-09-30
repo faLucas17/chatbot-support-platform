@@ -12,7 +12,9 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-l7wj*4r0etn1xhqs5yfturbuc*
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 LARAVEL_URL = os.getenv('LARAVEL_URL', 'https://api-easyevent.bakeli.tech')
+EASYCOOP_API_URL = os.getenv('EASYCOOP_API_URL', 'https://easy-coop-api.onrender.com')
 SUPPORT_URL = os.getenv('SUPPORT_URL', 'https://support-platform-admin.onrender.com')
+
 
 ALLOWED_HOSTS = ['*']
 
