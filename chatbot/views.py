@@ -403,41 +403,60 @@ class SendMessageView(APIView):
         user_name = django_user.username if django_user else "Anonyme"
         user_email = django_user.email if django_user else "Non renseigné"
         direct_conversation_link = f"{SUPPORT_URL}/conversations/{conversation.id}?username={user_name}"
+        
+                # ========== 1. NOTIFICATION DISCORD ==========
+        print("=" * 60)
+        print(f"🔔 [DISCORD] === DÉBUT BLOC DISCORD ===")
+        print(f"🔔 [DISCORD] tenant.api_key = '{tenant.api_key}'")
+        print(f"🔔 [DISCORD] tenant.name = '{tenant.name}'")
+        print(f"🔔 [DISCORD] conversation.id = {conversation.id}")
 
-        # ========== 1. NOTIFICATION DISCORD ==========
-        if tenant.api_key == 'easycoop-2026':
-            webhook_url = getattr(settings, 'DISCORD_WEBHOOK_EASYCOOP', '')
-        else:
-            webhook_url = getattr(settings, 'DISCORD_WEBHOOK_URL', '')
+        try:
+            if tenant.api_key == 'easycoop-2026':
+                webhook_url = getattr(settings, 'DISCORD_WEBHOOK_EASYCOOP', '')
+                print(f"🔔 [DISCORD] Branche EASYCOOP → DISCORD_WEBHOOK_EASYCOOP")
+            else:
+                webhook_url = getattr(settings, 'DISCORD_WEBHOOK_URL', '')
+                print(f"🔔 [DISCORD] Branche EASY EVENT → DISCORD_WEBHOOK_URL")
 
-        print(f"🔍 DEBUG Discord webhook_url longueur: {len(webhook_url)}")
+            print(f"🔔 [DISCORD] webhook_url longueur = {len(webhook_url)}")
+            print(f"🔔 [DISCORD] webhook_url début = '{webhook_url[:70]}'")
 
-        if webhook_url:
-            discord_message = {
-                "embeds": [{
-                    "title": f"Nouvelle conversation escaladée — {tenant.name}",
-                    "color": 1420420,
-                    "fields": [
-                        {"name": "Tenant", "value": tenant.name, "inline": True},
-                        {"name": "Utilisateur", "value": user_name, "inline": True},
-                        {"name": "Email", "value": user_email, "inline": True},
-                        {"name": "Conversation", "value": f"#{conversation.id}", "inline": True},
-                        {"name": "Date", "value": conversation.created_at.strftime('%d/%m/%Y à %H:%M'), "inline": True},
-                        {"name": "Message", "value": f'"{content}"', "inline": False},
-                        {"name": "Lien direct", "value": direct_conversation_link, "inline": False}
-                    ],
-                    "footer": {"text": f"{tenant.name} Support"},
-                    "timestamp": conversation.created_at.isoformat()
-                }]
-            }
-            try:
-                resp = requests.post(webhook_url, json=discord_message, timeout=10)
+            if not webhook_url:
+                print(f"❌ [DISCORD] webhook_url est VIDE — abandon de l'envoi")
+            else:
+                discord_message = {
+                    "embeds": [{
+                        "title": f"Nouvelle conversation escaladée — {tenant.name}",
+                        "color": 1420420,
+                        "fields": [
+                            {"name": "Tenant", "value": tenant.name, "inline": True},
+                            {"name": "Utilisateur", "value": user_name, "inline": True},
+                            {"name": "Email", "value": user_email, "inline": True},
+                            {"name": "Conversation", "value": f"#{conversation.id}", "inline": True},
+                            {"name": "Date", "value": conversation.created_at.strftime('%d/%m/%Y à %H:%M'), "inline": True},
+                            {"name": "Message", "value": f'"{content}"', "inline": False},
+                            {"name": "Lien direct", "value": direct_conversation_link, "inline": False}
+                        ],
+                        "footer": {"text": f"{tenant.name} Support"},
+                        "timestamp": conversation.created_at.isoformat()
+                    }]
+                }
+                print(f"🔔 [DISCORD] Payload construit, envoi en cours...")
+                resp = requests.post(webhook_url, json=discord_message, timeout=8)
+                print(f"🔔 [DISCORD] Réponse status = {resp.status_code}")
+                print(f"🔔 [DISCORD] Réponse body = {resp.text[:200]}")
                 if resp.status_code == 204:
-                    print(f"✅ Discord notification envoyée pour conversation {conversation.id}")
+                    print(f"✅ [DISCORD] Notification envoyée pour conversation {conversation.id}")
                 else:
-                    print(f"⚠️ Discord status inattendu: {resp.status_code} — {resp.text}")
-            except Exception as e:
-                print(f"❌ Erreur envoi Discord: {e}")
+                    print(f"⚠️ [DISCORD] Status inattendu: {resp.status_code} — {resp.text[:300]}")
+        except Exception as e:
+            print(f"❌ [DISCORD] EXCEPTION: {type(e).__name__} — {e}")
+            import traceback
+            traceback.print_exc()
+
+        print(f"🔔 [DISCORD] === FIN BLOC DISCORD ===")
+        print("=" * 60)
 
         # ========== 2. NOTIFICATION EMAIL — thread async ==========
         _conv_id       = conversation.id
