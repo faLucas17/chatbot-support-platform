@@ -10,6 +10,7 @@ from .models import Tenant, Conversation, Message, KnowledgeItem, Document
 from .serializers import SendMessageSerializer, MessageSerializer, ConversationSerializer
 from .ai_engine import get_bot_response
 from .ai_engine_easycoop import get_bot_response_easycoop
+from .emails import send_fancy_email
 import PyPDF2
 from PIL import Image
 import pytesseract
@@ -33,188 +34,7 @@ EASYCOOP_TENANT_KEY = os.getenv('EASYCOOP_TENANT_KEY', 'easycoop-2026')
 
 
 # ============================================================
-# EMAIL PROFESSIONNEL
-# ============================================================
-def send_fancy_email(subject, user_name, user_email, conversation_id, conversation_title, message_content, created_at):
-    admin_email = settings.ADMIN_EMAIL
-    support_link = f"{SUPPORT_URL}/conversations/{conversation_id}?username={user_name}"
-
-    html_content = f"""
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Assistance requise</title>
-</head>
-<body style="margin:0; padding:0; background-color:#f4f4f4; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" border="0">
-    <tr><td style="background: linear-gradient(90deg, #15AD84 0%, #FF9900 100%); height: 6px;"></td></tr>
-  </table>
-  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff;">
-    <tr><td style="padding: 36px 48px 28px 48px;">
-        <table width="100%" cellpadding="0" cellspacing="0" border="0">
-          <tr>
-            <td width="50%"><span style="font-size: 22px; font-weight: 700; color: #15AD84; letter-spacing: -0.5px;">Easy</span><span style="font-size: 22px; font-weight: 700; color: #FF9900;">Event</span></td>
-            <td width="50%" align="right"><span style="display: inline-block; background-color: #FFF4E0; color: #CC7A00; font-size: 12px; font-weight: 600; padding: 5px 14px; border-radius: 20px;">Assistance requise</span></td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff;">
-    <tr><td style="padding: 0 48px;"><div style="height: 1px; background-color: #EEEEEE;"></div></td></tr>
-  </table>
-  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff;">
-    <tr><td style="padding: 36px 48px 12px 48px;">
-        <p style="margin: 0; font-size: 13px; font-weight: 600; color: #15AD84; text-transform: uppercase; letter-spacing: 1px;">Support client</p>
-        <h1 style="margin: 8px 0 0 0; font-size: 28px; font-weight: 700; color: #1A1A1A; line-height: 1.2;">Un utilisateur a besoin<br>d'une assistance humaine</h1>
-      </td>
-    </tr>
-  </table>
-  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff;">
-    <tr><td style="padding: 28px 48px 12px 48px;">
-        <div style="display: inline-block; background: linear-gradient(135deg, #15AD84 0%, #FF9900 100%); color: white; font-size: 13px; font-weight: 600; padding: 4px 12px; border-radius: 20px;">Sujet de la conversation</div>
-        <h2 style="margin: 12px 0 0 0; font-size: 20px; font-weight: 600; color: #15AD84; line-height: 1.3;">{conversation_title}</h2>
-      </td>
-    </tr>
-  </table>
-  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff;">
-    <tr><td style="padding: 28px 48px 0 48px;">
-        <div style="border-left: 3px solid #FF9900; padding: 16px 20px; background-color: #FAFAFA;">
-          <p style="margin: 0 0 6px 0; font-size: 11px; font-weight: 600; color: #999999; text-transform: uppercase;">Message de l'utilisateur</p>
-          <p style="margin: 0; font-size: 16px; color: #333333; line-height: 1.6; font-style: italic;">"{message_content}"</p>
-        </div>
-      </td>
-    </tr>
-  </table>
-  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff;">
-    <tr><td style="padding: 32px 48px 0 48px;">
-        <p style="margin: 0 0 16px 0; font-size: 11px; font-weight: 600; color: #999999; text-transform: uppercase;">Détails</p>
-        <table width="100%" cellpadding="0" cellspacing="0" border="0">
-          <tr>
-            <td width="50%" style="padding-bottom: 20px;">
-              <p style="margin: 0 0 4px 0; font-size: 11px; color: #999999;">Nom</p>
-              <p style="margin: 0; font-size: 15px; color: #1A1A1A; font-weight: 600;">{user_name}</p>
-            </td>
-            <td width="50%" style="padding-bottom: 20px;">
-              <p style="margin: 0 0 4px 0; font-size: 11px; color: #999999;">Email</p>
-              <p style="margin: 0; font-size: 15px; color: #1A1A1A; font-weight: 600;">{user_email}</p>
-            </td>
-          </tr>
-          <tr>
-            <td width="50%" style="padding-bottom: 20px;">
-              <p style="margin: 0 0 4px 0; font-size: 11px; color: #999999;">Date</p>
-              <p style="margin: 0; font-size: 15px; color: #1A1A1A; font-weight: 600;">{created_at}</p>
-            </td>
-            <td width="50%" style="padding-bottom: 20px;">
-              <p style="margin: 0 0 4px 0; font-size: 11px; color: #999999;">Référence</p>
-              <p style="margin: 0; font-size: 15px; color: #1A1A1A; font-weight: 600;">#{conversation_id}</p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff;">
-    <tr><td style="padding: 0 48px;"><div style="height: 1px; background-color: #EEEEEE;"></div></td></tr>
-  </table>
-  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff;">
-    <tr><td style="padding: 32px 48px 48px 48px;">
-        <table cellpadding="0" cellspacing="0" border="0">
-          <tr><td style="background: linear-gradient(90deg, #15AD84 0%, #FF9900 100%); border-radius: 8px;">
-              <a href="{support_link}" style="display: inline-block; padding: 14px 32px; font-size: 15px; font-weight: 600; color: #ffffff; text-decoration: none;">Voir la conversation</a>
-            </td>
-          </tr>
-        </table>
-        <p style="margin: 16px 0 0 0; font-size: 12px; color: #AAAAAA;">Ou copiez ce lien : <a href="{support_link}" style="color: #15AD84;">{support_link}</a></p>
-      </td>
-    </tr>
-  </table>
-  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #F8F8F8; border-top: 1px solid #EEEEEE;">
-    <tr><td style="padding: 24px 48px;">
-        <table width="100%">
-          <tr>
-            <td align="left"><p style="margin: 0; font-size: 12px; color: #AAAAAA;">EasyEvent Support — Assistance client automatisée</p></td>
-            <td align="right"><a href="{SUPPORT_URL}" style="font-size: 12px; color: #15AD84; text-decoration: none;">Tableau de bord support</a></td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-  <table width="100%">
-    <tr><td style="background: linear-gradient(90deg, #15AD84 0%, #FF9900 100%); height: 4px;"></td></tr>
-  </table>
-</body>
-</html>
-    """
-
-    text_content = f"""
-EASY EVENT — SUPPORT CLIENT
-Assistance requise
-
-Sujet : {conversation_title}
-
-Utilisateur : {user_name}
-Email       : {user_email}
-Référence   : #{conversation_id}
-Date        : {created_at}
-
-Message de l'utilisateur :
-"{message_content}"
-
-Lien direct : {support_link}
-
---
-EasyEvent Support
-    """
-
-    envoyer_email_brevo(admin_email, subject, html_content, text_content)
-
-
-def envoyer_email_brevo(destinataire, sujet, html, texte):
-    """Envoie un e-mail via l'API HTTPS de Brevo (port 443).
-
-    Render (offre gratuite) bloque les ports SMTP, d'où ce passage par l'API.
-    Lève une exception si l'envoi échoue, pour que l'erreur apparaisse dans les logs.
-    """
-    api_key = getattr(settings, 'BREVO_API_KEY', '')
-    expediteur = getattr(settings, 'BREVO_SENDER_EMAIL', '')
-    if not api_key:
-        raise RuntimeError("BREVO_API_KEY manquante dans les variables d'environnement")
-    if not expediteur:
-        raise RuntimeError("BREVO_SENDER_EMAIL manquante dans les variables d'environnement")
-    if not destinataire:
-        raise RuntimeError("ADMIN_EMAIL manquante dans les variables d'environnement")
-
-    resp = requests.post(
-        "https://api.brevo.com/v3/smtp/email",
-        headers={
-            "api-key": api_key,
-            "accept": "application/json",
-            "content-type": "application/json",
-        },
-        json={
-            "sender": {"email": expediteur, "name": getattr(settings, 'BREVO_SENDER_NAME', 'Easy Desk Support')},
-            "to": [{"email": destinataire}],
-            "subject": sujet,
-            "htmlContent": html,
-            "textContent": texte,
-        },
-        timeout=15,
-    )
-    print(f"📧 [BREVO] Réponse status = {resp.status_code} — {resp.text[:300]}")
-    if resp.status_code not in (200, 201, 202):
-        raise RuntimeError(f"Brevo a refusé l'envoi ({resp.status_code}) : {resp.text[:300]}")
-
-
-
-# ============================================================
 # OUTIL COMMUN : retrouver ou créer l'utilisateur Django
-# - recherche d'abord par e-mail ;
-# - sinon (membre EasyCoop inscrit par téléphone, sans e-mail),
-#   par un identifiant stable "prefixe_id" ;
-# - évite les collisions de username (deux e-mails avec le même début).
 # ============================================================
 def _get_or_create_django_user(email, name, identifiant_secours):
     user = None
@@ -231,7 +51,7 @@ def _get_or_create_django_user(email, name, identifiant_secours):
             n += 1
             username = f"{base}{n}"
         user = User.objects.create(username=username, email=email or '', first_name=(name or '')[:150])
-        print(f"✅ Nouvel utilisateur Django créé : {username} ({name})")
+        print(f"Nouvel utilisateur Django créé : {username} ({name})")
     elif name and user.first_name != name[:150]:
         user.first_name = name[:150]
         user.save(update_fields=['first_name'])
@@ -278,21 +98,16 @@ def get_django_user_from_token(sanctum_token):
             uid = user_data.get('id')
             if user_email or uid:
                 return _get_or_create_django_user(user_email, user_name, f"easyevent_{uid}" if uid else None)
-            print(f"⚠️ Ni e-mail ni id dans la réponse Laravel: {user_data}")
+            print(f"Ni e-mail ni id dans la réponse Laravel: {user_data}")
         else:
-            print(f"⚠️ /api/user a retourné {response.status_code}")
+            print(f"/api/user a retourné {response.status_code}")
     except Exception as e:
-        print(f"❌ Erreur récupération utilisateur depuis token: {e}")
+        print(f"Erreur récupération utilisateur depuis token: {e}")
     return None
 
 
 # ============================================================
 # UTILISATEUR DJANGO DEPUIS TOKEN SANCTUM — EASYCOOP
-# ⚠️ NOUVEAU : symétrique à get_django_user_from_token(), mais interroge
-# l'API EasyCoop (EASYCOOP_API_URL) au lieu de l'API Easy Event (LARAVEL_URL).
-# Sans cette fonction, un membre EasyCoop connecté était toujours enregistré
-# comme "Anonyme" dans le tableau de bord admin, même si le bot le reconnaissait
-# déjà côté ai_engine_easycoop.py.
 # ============================================================
 def get_easycoop_user_from_token(sanctum_token):
     if not sanctum_token:
@@ -315,11 +130,11 @@ def get_easycoop_user_from_token(sanctum_token):
             # on l'identifie alors par son id EasyCoop au lieu de le laisser "Anonyme".
             if user_email or uid:
                 return _get_or_create_django_user(user_email, user_name, f"easycoop_{uid}" if uid else None)
-            print(f"⚠️ [EasyCoop] Ni e-mail ni id dans la réponse : {user_data}")
+            print(f"[EasyCoop] Ni e-mail ni id dans la réponse : {user_data}")
         else:
-            print(f"⚠️ [EasyCoop] /api/user a retourné {response.status_code}")
+            print(f"[EasyCoop] /api/user a retourné {response.status_code}")
     except Exception as e:
-        print(f"❌ [EasyCoop] Erreur récupération utilisateur depuis token: {e}")
+        print(f"[EasyCoop] Erreur récupération utilisateur depuis token: {e}")
     return None
 
 
@@ -363,14 +178,13 @@ class SendMessageView(APIView):
         conversation_id = data.get('conversation_id')
 
         sanctum_token = data.get('sanctum_token') or request.headers.get('Authorization', '').replace('Bearer ', '')
-        print(f"🔑 Token reçu par Django : {sanctum_token[:30] if sanctum_token else 'None'}...")
+        print(f"Token reçu par Django : {sanctum_token[:30] if sanctum_token else 'None'}...")
 
         try:
             tenant = Tenant.objects.get(api_key=api_key)
         except Tenant.DoesNotExist:
             return Response({"error": "Clé API invalide"}, status=status.HTTP_401_UNAUTHORIZED)
 
-        # ⚠️ CHANGEMENT : on route vers la bonne API d'authentification
         # selon le tenant, exactement comme pour le choix du moteur IA plus bas.
         if tenant.api_key == EASYCOOP_TENANT_KEY:
             django_user = get_easycoop_user_from_token(sanctum_token)
@@ -386,19 +200,13 @@ class SendMessageView(APIView):
                 conversation = Conversation.objects.get(id=conversation_id, tenant=tenant)
             except Conversation.DoesNotExist:
                 return Response({"error": "Conversation non trouvée"}, status=status.HTTP_404_NOT_FOUND)
-
-            # Mise à jour du user_name même si le user existe déjà
-            # ⚠️ CHANGEMENT : on stocke le nom complet (first_name, ex. "Khalil
-            # Cissé" ou "Fatou Fall") plutôt que le pseudo dérivé de l'email
-            # (username), pour l'affichage dans le dashboard admin — pour tous
-            # les tenants (EasyCoop et Easy Event).
             if django_user:
                 display_name = django_user.first_name or django_user.username
                 conversation.user = django_user
                 conversation.user_name = display_name
                 conversation.user_email = django_user.email
                 conversation.save()
-                print(f"✅ Utilisateur {django_user.email} associé à la conversation {conversation.id}")
+                print(f"Utilisateur {django_user.email} associé à la conversation {conversation.id}")
         else:
             display_name = (django_user.first_name or django_user.username) if django_user else None
             conversation = Conversation.objects.create(
@@ -407,7 +215,7 @@ class SendMessageView(APIView):
                 user_name=display_name,
                 user_email=django_user.email if django_user else None,
             )
-            print(f"✅ Nouvelle conversation créée avec l'utilisateur {django_user.email if django_user else 'Anonyme'}")
+            print(f"Nouvelle conversation créée avec l'utilisateur {django_user.email if django_user else 'Anonyme'}")
 
         user_message = Message.objects.create(conversation=conversation, role='user', content=content)
 
@@ -441,29 +249,29 @@ class SendMessageView(APIView):
 
         # ========== 1. NOTIFICATION DISCORD ==========
         print("=" * 60)
-        print(f"🔔 [DISCORD] === DÉBUT BLOC DISCORD ===")
-        print(f"🔔 [DISCORD] tenant.api_key = '{tenant.api_key}'")
-        print(f"🔔 [DISCORD] tenant.name = '{tenant.name}'")
-        print(f"🔔 [DISCORD] conversation.id = {conversation.id}")
+        print(f"[DISCORD] === DÉBUT BLOC DISCORD ===")
+        print(f"[DISCORD] tenant.api_key = '{tenant.api_key}'")
+        print(f"[DISCORD] tenant.name = '{tenant.name}'")
+        print(f"[DISCORD] conversation.id = {conversation.id}")
 
         try:
             if est_easycoop:
                 webhook_url = getattr(settings, 'DISCORD_WEBHOOK_EASYCOOP', '')
-                print(f"🔔 [DISCORD] Branche EASYCOOP → DISCORD_WEBHOOK_EASYCOOP")
+                print(f"[DISCORD] Branche EASYCOOP → DISCORD_WEBHOOK_EASYCOOP")
             else:
                 webhook_url = getattr(settings, 'DISCORD_WEBHOOK_URL', '')
-                print(f"🔔 [DISCORD] Branche EASY EVENT → DISCORD_WEBHOOK_URL")
+                print(f"[DISCORD] Branche EASY EVENT → DISCORD_WEBHOOK_URL")
 
-            print(f"🔔 [DISCORD] webhook_url longueur = {len(webhook_url)}")
-            print(f"🔔 [DISCORD] webhook_url début = '{webhook_url[:70]}'")
+            print(f"[DISCORD] webhook_url longueur = {len(webhook_url)}")
+            print(f"[DISCORD] webhook_url début = '{webhook_url[:70]}'")
 
             if not webhook_url:
-                print(f"❌ [DISCORD] webhook_url est VIDE — abandon de l'envoi")
+                print(f"[DISCORD] webhook_url est VIDE — abandon de l'envoi")
             else:
                 discord_message = {
                     "embeds": [{
                         "title": f"Nouvelle conversation escaladée — {tenant.name}",
-                        "color": 1420420,
+                        "color": 15051068 if est_easycoop else 1420420,  # doré EasyCoop / vert Easy Events
                         "fields": [
                             {"name": "Tenant", "value": tenant.name, "inline": True},
                             {"name": "Utilisateur", "value": user_name, "inline": True},
@@ -477,20 +285,20 @@ class SendMessageView(APIView):
                         "timestamp": conversation.created_at.isoformat()
                     }]
                 }
-                print(f"🔔 [DISCORD] Payload construit, envoi en cours...")
+                print(f"[DISCORD] Payload construit, envoi en cours...")
                 resp = requests.post(webhook_url, json=discord_message, timeout=8)
-                print(f"🔔 [DISCORD] Réponse status = {resp.status_code}")
-                print(f"🔔 [DISCORD] Réponse body = {resp.text[:200]}")
+                print(f"[DISCORD] Réponse status = {resp.status_code}")
+                print(f"[DISCORD] Réponse body = {resp.text[:200]}")
                 if resp.status_code == 204:
-                    print(f"✅ [DISCORD] Notification envoyée pour conversation {conversation.id}")
+                    print(f"[DISCORD] Notification envoyée pour conversation {conversation.id}")
                 else:
-                    print(f"⚠️ [DISCORD] Status inattendu: {resp.status_code} — {resp.text[:300]}")
+                    print(f"[DISCORD] Status inattendu: {resp.status_code} — {resp.text[:300]}")
         except Exception as e:
-            print(f"❌ [DISCORD] EXCEPTION: {type(e).__name__} — {e}")
+            print(f"[DISCORD] EXCEPTION: {type(e).__name__} — {e}")
             import traceback
             traceback.print_exc()
 
-        print(f"🔔 [DISCORD] === FIN BLOC DISCORD ===")
+        print(f"[DISCORD] === FIN BLOC DISCORD ===")
         print("=" * 60)
 
         # ========== 2. NOTIFICATION EMAIL — thread async ==========
@@ -500,22 +308,22 @@ class SendMessageView(APIView):
         _user_email    = user_email
         _content       = content
         _tenant_name   = tenant.name
+        _lien          = direct_conversation_link
 
         def envoyer_email_async():
             try:
-                title = generate_conversation_title(_conv_obj)
                 send_fancy_email(
-                    subject=f"[{_tenant_name} Support] Assistance requise - {_user_name}",
+                    tenant_name=_tenant_name,
                     user_name=_user_name,
                     user_email=_user_email,
                     conversation_id=_conv_id,
-                    conversation_title=title,
                     message_content=_content,
-                    created_at=_conv_obj.created_at.strftime('%d/%m/%Y à %H:%M:%S')
+                    created_at=_conv_obj.created_at.strftime('%d/%m/%Y à %H:%M'),
+                    lien=_lien,
                 )
-                print(f"✅ Email professionnel envoyé à l'admin")
+                print(f"Email professionnel envoyé à l'admin")
             except Exception as e:
-                print(f"❌ Erreur envoi email: {e}")
+                print(f"Erreur envoi email: {e}")
 
         email_thread = threading.Thread(target=envoyer_email_async)
         email_thread.daemon = True
@@ -543,9 +351,9 @@ class SendMessageView(APIView):
                         headers={'Content-Type': 'application/json'},
                         timeout=30
                     )
-                    print(f"✅ Notification envoyée à Laravel Filament (status {resp.status_code})")
+                    print(f"Notification envoyée à Laravel Filament (status {resp.status_code})")
                 except Exception as e:
-                    print(f"❌ Erreur envoi à Laravel: {e}")
+                    print(f"Erreur envoi à Laravel: {e}")
 
             threading.Thread(target=notifier_laravel, daemon=True).start()
 
@@ -599,24 +407,16 @@ class AgentReplyView(APIView):
 class AdminConversationsListView(APIView):
     def get(self, request):
         support_username = request.headers.get('X-Support-Username')
-        print(f"🔍 AdminConversationsListView - Header X-Support-Username: '{support_username}'")
+        print(f"AdminConversationsListView - Header X-Support-Username: '{support_username}'")
 
         from django.db.models import Q
-
-        # ⚠️ NOUVEAU : le dashboard admin ne doit montrer que les conversations
-        # escaladées — pas celles entièrement répondues par le mock/FAQ.
-        # On inclut deux cas :
-        #   - escalated=True : escaladée en ce moment (en attente d'un agent)
-        #   - un message contient le texte d'attente d'escalade : elle l'a été
-        #     à un moment, même si un agent a depuis répondu (escalated=False)
-        #     — on garde l'historique visible plutôt que de le faire disparaître.
         escalated_filter = Q(escalated=True) | Q(
             messages__content__startswith="⏳ Un agent va prendre en charge"
         )
 
         if not support_username or support_username in ['anonymous', 'null', '', 'Anonyme', 'None']:
             conversations = Conversation.objects.filter(escalated_filter).distinct().order_by('-updated_at')
-            print(f"📋 User anonyme → {conversations.count()} conversations escaladées retournées")
+            print(f"User anonyme → {conversations.count()} conversations escaladées retournées")
         else:
             # Recherche par user_name OU par user.username, restreinte aux escaladées
             conversations = Conversation.objects.filter(
@@ -624,9 +424,9 @@ class AdminConversationsListView(APIView):
             ).distinct().order_by('-updated_at')
             if conversations.count() == 0:
                 conversations = Conversation.objects.filter(escalated_filter).distinct().order_by('-updated_at')
-                print(f"⚠️ '{support_username}' non trouvé → conversations escaladées retournées")
+                print(f"'{support_username}' non trouvé → conversations escaladées retournées")
             else:
-                print(f"📋 {conversations.count()} conversations escaladées trouvées pour '{support_username}'")
+                print(f"{conversations.count()} conversations escaladées trouvées pour '{support_username}'")
 
         data = []
         for conv in conversations:
@@ -728,9 +528,9 @@ class AdminConversationDetailView(APIView):
                 timeout=10
             )
             if resp.status_code == 200:
-                print(f"✅ Escalade #{conversation.id} marquée resolved dans Laravel")
+                print(f"Escalade #{conversation.id} marquée resolved dans Laravel")
         except Exception as e:
-            print(f"❌ Erreur appel Laravel pour resolved: {e}")
+            print(f"Erreur appel Laravel pour resolved: {e}")
         return Response({'success': True, 'message': MessageSerializer(agent_message).data})
 
 
@@ -746,7 +546,7 @@ class DeleteConversationView(APIView):
         conv_id = conversation.id
         conversation.delete()
 
-        print(f"🗑️ Conversation #{conv_id} supprimée")
+        print(f"Conversation #{conv_id} supprimée")
         return Response({'success': True, 'message': f'Conversation #{conv_id} supprimée'}, status=status.HTTP_200_OK)
 
 
