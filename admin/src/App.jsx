@@ -1,18 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, Navigate, useSearchParams, useParams, useNavigate, useLocation } from 'react-router-dom';
-import { getConversations, getConversation, setUsername } from './api';
+import { Routes, Route, Navigate, useParams, useNavigate, useLocation } from 'react-router-dom';
+import {
+  login, logout, isLoggedIn as aUnJeton,
+  getTenants, getConversations, getConversation, deleteConversation,
+} from './api';
 import ConversationList from './components/ConversationList';
 import ConversationDetail from './components/ConversationDetail';
 import './App.css';
 
 // ============================================================
-// CREDENTIALS ADMIN - via variables d'environnement
+// CONNEXION : vérifiée par le serveur Django (voir api.js).
+// Plus aucun identifiant n'est écrit dans ce code.
 // ============================================================
-const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || 'admin@admin.com';
-const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'passer@12';
-
-// URL de base de l'API
-const API_BASE = import.meta.env.VITE_API_BASE || 'https://support-platform-api-0h06.onrender.com';
 
 // Email de contact affiché dans le pied de page 
 const SUPPORT_EMAIL = import.meta.env.VITE_SUPPORT_EMAIL || '';
@@ -60,25 +59,31 @@ function LoginPage({ onLogin, theme }) {
 
   const isDark = theme === 'dark';
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
-    setTimeout(() => {
-      if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-        localStorage.setItem('support_admin_logged', 'true');
-        if (rememberMe) {
-          localStorage.setItem('support_remember_email', email);
-        } else {
-          localStorage.removeItem('support_remember_email');
-        }
-        onLogin();
+    try {
+      await login(email.trim(), password);
+      if (rememberMe) {
+        localStorage.setItem('support_remember_email', email.trim());
       } else {
-        setError('Email ou mot de passe incorrect.');
+        localStorage.removeItem('support_remember_email');
       }
+      onLogin();
+    } catch (err) {
+      const status = err.response?.status;
+      if (status === 401 || status === 400) {
+        setError('Email ou mot de passe incorrect.');
+      } else if (status === 429) {
+        setError('Trop de tentatives. Réessayez dans une minute.');
+      } else {
+        setError('Serveur injoignable. Réessayez dans quelques secondes.');
+      }
+    } finally {
       setLoading(false);
-    }, 600);
+    }
   };
 
   useEffect(() => {
@@ -835,7 +840,7 @@ function ProjectPage({
   // ✅ AJOUT : gestion de la suppression
   const handleDeleteConversation = async (convId) => {
     try {
-      await fetch(`${API_BASE}/admin/conversations/${convId}/delete/`, { method: 'DELETE' });
+      await deleteConversation(convId);
       loadConversations();
       if (selectedConversation?.id === convId) setSelectedConversation(null);
     } catch (err) {
@@ -887,9 +892,7 @@ function ProjectPage({
 // APP PRINCIPALE
 // ============================================================
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    return localStorage.getItem('support_admin_logged') === 'true';
-  });
+  const [isLoggedIn, setIsLoggedIn] = useState(() => aUnJeton());
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -901,23 +904,24 @@ function App() {
   const [tenants, setTenants] = useState([]);
   const [tenantsLoaded, setTenantsLoaded] = useState(false);
 
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ✅ CORRECTION : persist le username
+  // Nettoyage des anciennes clés de l'ancienne connexion (côté navigateur)
   useEffect(() => {
-    const username = searchParams.get('username');
-    const token = searchParams.get('token');
-    if (username) {
-      setUsername(username);
-      localStorage.setItem('support_username', username);   // ← AJOUT
-      console.log(`✅ Username stocké: ${username}`);
-    }
-    if (token) {
-      localStorage.setItem('sanctum_token', token);
-    }
-  }, [searchParams]);
+    ['support_admin_logged', 'support_username', 'sanctum_token'].forEach(k => localStorage.removeItem(k));
+  }, []);
+
+  // Jeton refusé ou expiré (api.js) : retour à l'écran de connexion
+  useEffect(() => {
+    const onExpire = () => {
+      setIsLoggedIn(false);
+      setConversations([]);
+      setSelectedConversation(null);
+    };
+    window.addEventListener('easydesk:session-expiree', onExpire);
+    return () => window.removeEventListener('easydesk:session-expiree', onExpire);
+  }, []);
 
   useEffect(() => {
     document.body.className = theme;
@@ -935,9 +939,8 @@ function App() {
 
   useEffect(() => {
     if (!isLoggedIn) return;
-    fetch(`${API_BASE}/api/tenants/`)
-      .then(res => res.json())
-      .then(data => setTenants(Array.isArray(data) ? data : []))
+    getTenants()
+      .then(res => setTenants(Array.isArray(res.data) ? res.data : []))
       .catch(err => console.error('Erreur chargement tenants:', err))
       .finally(() => setTenantsLoaded(true));
   }, [isLoggedIn]);
@@ -950,14 +953,9 @@ function App() {
     return () => { clearTimeout(timer); clearInterval(interval); };
   }, [isLoggedIn, selectedConversation]);
 
-  // ✅ CORRECTION : utilise le username persisté
   const loadConversations = async () => {
     try {
-      const username = localStorage.getItem('support_username') ||
-                       new URLSearchParams(window.location.search).get('username') ||
-                       'Anonyme';
-      console.log('🔍 Chargement conversations pour username:', username);
-      const res = await getConversations(username);
+      const res = await getConversations();
       setConversations(res.data);
     } catch (err) {
       console.error('Erreur chargement conversations', err);
@@ -966,11 +964,13 @@ function App() {
     }
   };
 
-  const handleLogin = () => setIsLoggedIn(true);
+  const handleLogin = () => {
+    setLoading(true);
+    setIsLoggedIn(true);
+  };
 
-  const handleLogout = () => {
-    localStorage.removeItem('support_admin_logged');
-    localStorage.removeItem('support_username');
+  const handleLogout = async () => {
+    await logout();
     setIsLoggedIn(false);
     setConversations([]);
     setSelectedConversation(null);
@@ -1057,7 +1057,7 @@ function App() {
           onRefresh={loadConversations}
           onDelete={async (convId) => {
             try {
-              await fetch(`${API_BASE}/admin/conversations/${convId}/delete/`, { method: 'DELETE' });
+              await deleteConversation(convId);
               loadConversations();
               if (selectedConversation?.id === convId) setSelectedConversation(null);
             } catch (err) {

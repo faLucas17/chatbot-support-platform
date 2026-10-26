@@ -1,8 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getConversation, replyToConversation } from '../api';
-import axios from 'axios';
-
-const LARAVEL_BASE = 'https://api-easyevent.bakeli.tech';
 
 // ── Couleur de marque Easy Desk (bleu) ──
 const BRAND_BLUE = '#0284C7';
@@ -135,15 +132,9 @@ function ConversationDetail({ conversation, onUpdate }) {
     setTextareaKey(prev => prev + 1);
 
     try {
+      // Le serveur Django prévient lui-même Laravel (Easy Event uniquement)
+      // que l'escalade est résolue : plus besoin d'appeler Laravel d'ici.
       await replyToConversation(conversation.id, replyContent);
-
-      try {
-        await axios.post(`${LARAVEL_BASE}/api/chatbot/escalations/mark-resolved`, {
-          conversation_id: conversation.id
-        });
-      } catch (laravelErr) {
-        console.warn('Erreur Laravel (non bloquante):', laravelErr.message);
-      }
 
       const res = await getConversation(conversation.id);
       setMessages(res.data.messages);

@@ -1,19 +1,25 @@
 from django.urls import path
 from . import views
+from .admin_auth import AdminLoginView, AdminLogoutView, AdminMeView
 from django.contrib.auth import views as auth_views
 from django.views.decorators.csrf import csrf_exempt
 
 urlpatterns = [
     # API endpoints (avec csrf_exempt)
     path('api/message/', csrf_exempt(views.SendMessageView.as_view()), name='send_message'),
-    path('api/conversation/<int:conversation_id>/', csrf_exempt(views.ConversationDetailView.as_view()), name='conversation_detail'),
+    path('api/conversation/<str:conversation_id>/', csrf_exempt(views.ConversationDetailView.as_view()), name='conversation_detail'),
     path('api/agent/reply/', csrf_exempt(views.AgentReplyView.as_view()), name='agent_reply'),
     path('admin/conversations/', csrf_exempt(views.AdminConversationsListView.as_view()), name='admin_conversations'),
-    path('admin/conversations/<int:conversation_id>/', csrf_exempt(views.AdminConversationDetailView.as_view()), name='admin_conversation_detail'),
+    path('admin/conversations/<str:conversation_id>/', csrf_exempt(views.AdminConversationDetailView.as_view()), name='admin_conversation_detail'),
     path('api/documents/upload/', csrf_exempt(views.UploadDocumentView.as_view()), name='upload_document'),
     path('api/documents/', csrf_exempt(views.ListDocumentsView.as_view()), name='list_documents'),
     path('api/documents/<int:document_id>/', csrf_exempt(views.DeleteDocumentView.as_view()), name='delete_document'),
     path('api/user/conversations/', csrf_exempt(views.UserConversationsView.as_view()), name='user_conversations'),
+
+    # Connexion des agents Easy Desk (jeton vérifié par le serveur)
+    path('api/admin/login/', csrf_exempt(AdminLoginView.as_view()), name='admin_login'),
+    path('api/admin/logout/', csrf_exempt(AdminLogoutView.as_view()), name='admin_logout'),
+    path('api/admin/me/', csrf_exempt(AdminMeView.as_view()), name='admin_me'),
     
     # Authentification
     path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
@@ -30,5 +36,5 @@ urlpatterns = [
     path('dashboard/full/', views.full_dashboard_view, name='full_dashboard'),
     # Tenants
     path('api/tenants/', views.TenantsListView.as_view(), name='tenants-list'),
-    path('admin/conversations/<int:conversation_id>/delete/', csrf_exempt(views.DeleteConversationView.as_view()), name='admin_conversation_delete'),
+    path('admin/conversations/<str:conversation_id>/delete/', csrf_exempt(views.DeleteConversationView.as_view()), name='admin_conversation_delete'),
 ]

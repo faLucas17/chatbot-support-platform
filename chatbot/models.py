@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -27,6 +29,9 @@ class Conversation(models.Model):
     tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name='conversations')
     user_name = models.CharField(max_length=255, blank=True, null=True)     # ← AJOUT
     user_email = models.EmailField(blank=True, null=True) 
+    # Identifiant public, impossible à deviner, utilisé dans les liens et par les widgets.
+    # L'id numérique reste interne (Laravel, affichage "#161").
+    public_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     escalated = models.BooleanField(default=False)

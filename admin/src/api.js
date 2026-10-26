@@ -1,74 +1,71 @@
 import axios from 'axios';
 
-// ✅ URL de l'API BACKEND Django (pas le frontend admin !)
-const API_BASE = import.meta.env.VITE_API_BASE || 'https://support-platform-api-0h06.onrender.com';
+// URL de l'API Django (pas le frontend admin)
+export const API_BASE = import.meta.env.VITE_API_BASE || 'https://support-platform-api-0h06.onrender.com';
 
-// Gestion du username pour le filtrage
-export const setUsername = (username) => {
-  if (username) {
-    localStorage.setItem('support_username', username);
-  } else {
-    localStorage.removeItem('support_username');
-  }
-};
+// ============================================================
+// JETON DE CONNEXION
+// Donné par Django après vérification de l'identifiant et du mot de passe.
+// Sans lui, l'API d'administration répond 401.
+// ============================================================
+const CLE_JETON = 'easydesk_token';
 
-export const setSupportUsername = setUsername;
+export const getToken = () => localStorage.getItem(CLE_JETON);
+const setToken = (token) => localStorage.setItem(CLE_JETON, token);
+const clearToken = () => localStorage.removeItem(CLE_JETON);
 
-export const getUsername = () => {
-  return localStorage.getItem('support_username');
-};
+export const isLoggedIn = () => Boolean(getToken());
 
-// Instance axios avec header username automatique
-const axiosInstance = axios.create({ baseURL: API_BASE });
+// Instance axios : ajoute le jeton à chaque requête
+const api = axios.create({ baseURL: API_BASE });
 
-axiosInstance.interceptors.request.use((config) => {
-  const username = getUsername();
-  if (username) {
-    config.headers['X-Support-Username'] = username;
-  }
+api.interceptors.request.use((config) => {
+  const token = getToken();
+  if (token) config.headers.Authorization = `Token ${token}`;
   return config;
 });
 
-export const getConversations = async () => {
-  try {
-    const response = await axiosInstance.get('/admin/conversations/');
-    console.log('Conversations chargées:', response.data.length);
-    return response;
-  } catch (error) {
-    console.error('Erreur getConversations:', error);
-    throw error;
+// Jeton refusé ou expiré : on efface la session et on prévient l'application
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401 && getToken()) {
+      clearToken();
+      window.dispatchEvent(new Event('easydesk:session-expiree'));
+    }
+    return Promise.reject(error);
   }
+);
+
+// ============================================================
+// CONNEXION / DÉCONNEXION
+// ============================================================
+export const login = async (email, password) => {
+  const res = await axios.post(`${API_BASE}/api/admin/login/`, { email, password });
+  setToken(res.data.token);
+  return res.data;
 };
 
-export const getConversation = async (id) => {
+export const logout = async () => {
   try {
-    const response = await axiosInstance.get(`/admin/conversations/${id}/`);
-    console.log(`✅ Conversation ${id} chargée`);
-    return response;
-  } catch (error) {
-    console.error('Erreur getConversation:', error);
-    throw error;
+    await api.post('/api/admin/logout/');
+  } catch {
+    // Même si le serveur ne répond pas, on ferme la session côté navigateur
   }
+  clearToken();
 };
 
-export const replyToConversation = async (id, content) => {
-  try {
-    const response = await axiosInstance.post(`/admin/conversations/${id}/`, { content });
-    console.log(`✅ Réponse envoyée pour la conversation ${id}`);
-    return response;
-  } catch (error) {
-    console.error('Erreur replyToConversation:', error);
-    throw error;
-  }
-};
+// ============================================================
+// DONNÉES
+// Les conversations sont identifiées par leur identifiant public (UUID).
+// ============================================================
+export const getTenants = () => api.get('/api/tenants/');
 
-export const deleteConversation = async (id) => {
-  try {
-    const response = await axiosInstance.delete(`/admin/conversations/${id}/delete/`);
-    console.log(`🗑️ Conversation ${id} supprimée`);
-    return response;
-  } catch (error) {
-    console.error('Erreur deleteConversation:', error);
-    throw error;
-  }
-};
+export const getConversations = () => api.get('/admin/conversations/');
+
+export const getConversation = (id) => api.get(`/admin/conversations/${id}/`);
+
+export const replyToConversation = (id, content) =>
+  api.post(`/admin/conversations/${id}/`, { content });
+
+export const deleteConversation = (id) => api.delete(`/admin/conversations/${id}/delete/`);

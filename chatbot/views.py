@@ -1,4 +1,4 @@
-import os, re
+import os, re, uuid
 import threading
 import requests
 from django.conf import settings
@@ -11,6 +11,7 @@ from .serializers import SendMessageSerializer, MessageSerializer, ConversationS
 from .ai_engine import get_bot_response
 from .ai_engine_easycoop import get_bot_response_easycoop
 from .emails import send_fancy_email
+from .admin_auth import AdminSeulement
 import PyPDF2
 from PIL import Image
 import pytesseract
@@ -163,6 +164,22 @@ def generate_conversation_title(conversation):
     return f"Conversation du {conversation.created_at.strftime('%d/%m/%Y')}"
 
 
+def trouver_conversation(public_id, **filtres):
+    """Retrouve une conversation par son identifiant public (UUID).
+
+    Renvoie None si l'identifiant est absent, mal formé (par exemple un ancien
+    numéro) ou inconnu. Les numéros internes ne sont plus acceptés : ils se
+    devinent trop facilement.
+    """
+    if not public_id:
+        return None
+    try:
+        public_id = uuid.UUID(str(public_id))
+    except (ValueError, TypeError, AttributeError):
+        return None
+    return Conversation.objects.filter(public_id=public_id, **filtres).first()
+
+
 # ==================== API VIEWS ====================
 
 @csrf_exempt_view
@@ -195,11 +212,12 @@ class SendMessageView(APIView):
         # ==============================
         # Gestion de la conversation
         # ==============================
-        if conversation_id:
-            try:
-                conversation = Conversation.objects.get(id=conversation_id, tenant=tenant)
-            except Conversation.DoesNotExist:
-                return Response({"error": "Conversation non trouvée"}, status=status.HTTP_404_NOT_FOUND)
+        conversation = trouver_conversation(conversation_id, tenant=tenant) if conversation_id else None
+        if conversation_id and conversation is None:
+            # Identifiant inconnu ou ancien numéro : on démarre une nouvelle conversation
+            print(f"conversation_id '{conversation_id}' inconnu → nouvelle conversation")
+
+        if conversation is not None:
             if django_user:
                 display_name = django_user.first_name or django_user.username
                 conversation.user = django_user
@@ -228,7 +246,7 @@ class SendMessageView(APIView):
         if bot_success and bot_response_text:
             bot_message = Message.objects.create(conversation=conversation, role='bot', content=bot_response_text)
             return Response({
-                'conversation_id': conversation.id,
+                'conversation_id': str(conversation.public_id),
                 'user_message': MessageSerializer(user_message).data,
                 'bot_message': MessageSerializer(bot_message).data
             }, status=status.HTTP_200_OK)
@@ -245,7 +263,8 @@ class SendMessageView(APIView):
         est_easycoop = tenant.api_key == EASYCOOP_TENANT_KEY
         user_name = (django_user.first_name or django_user.username) if django_user else "Anonyme"
         user_email = (django_user.email or "Non renseigné") if django_user else "Non renseigné"
-        direct_conversation_link = f"{SUPPORT_URL}/conversations/{conversation.id}?username={user_name}"
+        # Lien avec l'identifiant public : impossible à deviner, et sans nom dans l'adresse
+        direct_conversation_link = f"{SUPPORT_URL}/conversations/{conversation.public_id}"
 
         # ========== 1. NOTIFICATION DISCORD ==========
         print("=" * 60)
@@ -358,7 +377,7 @@ class SendMessageView(APIView):
             threading.Thread(target=notifier_laravel, daemon=True).start()
 
         return Response({
-            'conversation_id': conversation.id,
+            'conversation_id': str(conversation.public_id),
             'user_message': MessageSerializer(user_message).data,
             'bot_message': MessageSerializer(waiting_message).data
         }, status=status.HTTP_200_OK)
@@ -374,15 +393,14 @@ class ConversationDetailView(APIView):
             tenant = Tenant.objects.get(api_key=api_key)
         except Tenant.DoesNotExist:
             return Response({"error": "Clé API invalide"}, status=status.HTTP_401_UNAUTHORIZED)
-        try:
-            conversation = Conversation.objects.get(id=conversation_id, tenant=tenant)
-        except Conversation.DoesNotExist:
+        conversation = trouver_conversation(conversation_id, tenant=tenant)
+        if conversation is None:
             return Response({"error": "Conversation non trouvée"}, status=status.HTTP_404_NOT_FOUND)
         return Response(ConversationSerializer(conversation).data)
 
 
 @csrf_exempt_view
-class AgentReplyView(APIView):
+class AgentReplyView(AdminSeulement, APIView):
     def post(self, request):
         api_key = request.data.get('api_key')
         conversation_id = request.data.get('conversation_id')
@@ -393,9 +411,8 @@ class AgentReplyView(APIView):
             tenant = Tenant.objects.get(api_key=api_key)
         except Tenant.DoesNotExist:
             return Response({"error": "Clé API invalide"}, status=status.HTTP_401_UNAUTHORIZED)
-        try:
-            conversation = Conversation.objects.get(id=conversation_id, tenant=tenant)
-        except Conversation.DoesNotExist:
+        conversation = trouver_conversation(conversation_id, tenant=tenant)
+        if conversation is None:
             return Response({"error": "Conversation non trouvée"}, status=status.HTTP_404_NOT_FOUND)
         agent_message = Message.objects.create(conversation=conversation, role='bot', content=content)
         conversation.escalated = False
@@ -404,39 +421,36 @@ class AgentReplyView(APIView):
 
 
 @csrf_exempt_view
-class AdminConversationsListView(APIView):
-    def get(self, request):
-        support_username = request.headers.get('X-Support-Username')
-        print(f"AdminConversationsListView - Header X-Support-Username: '{support_username}'")
+class AdminConversationsListView(AdminSeulement, APIView):
+    """Liste des conversations escaladées, réservée aux agents connectés.
 
+    On inclut deux cas :
+      - escalated=True : escaladée en ce moment (en attente d'un agent) ;
+      - un message contient le texte d'attente d'escalade : elle l'a été à un
+        moment, même si un agent a depuis répondu (escalated=False). On garde
+        ainsi l'historique visible.
+    """
+    def get(self, request):
         from django.db.models import Q
+
         escalated_filter = Q(escalated=True) | Q(
             messages__content__startswith="⏳ Un agent va prendre en charge"
         )
-
-        if not support_username or support_username in ['anonymous', 'null', '', 'Anonyme', 'None']:
-            conversations = Conversation.objects.filter(escalated_filter).distinct().order_by('-updated_at')
-            print(f"User anonyme → {conversations.count()} conversations escaladées retournées")
-        else:
-            # Recherche par user_name OU par user.username, restreinte aux escaladées
-            conversations = Conversation.objects.filter(
-                (Q(user_name=support_username) | Q(user__username=support_username)) & escalated_filter
-            ).distinct().order_by('-updated_at')
-            if conversations.count() == 0:
-                conversations = Conversation.objects.filter(escalated_filter).distinct().order_by('-updated_at')
-                print(f"'{support_username}' non trouvé → conversations escaladées retournées")
-            else:
-                print(f"{conversations.count()} conversations escaladées trouvées pour '{support_username}'")
+        conversations = (
+            Conversation.objects.filter(escalated_filter)
+            .select_related('tenant', 'user')
+            .distinct()
+            .order_by('-updated_at')
+        )
 
         data = []
         for conv in conversations:
-            # Priorité au user_name stocké
             user_name = conv.user_name or (conv.user.username if conv.user else "Anonyme")
             messages_data = MessageSerializer(conv.messages.all()[:50], many=True).data
-            title = generate_conversation_title(conv)
             data.append({
-                'id': conv.id,
-                'title': title,
+                'id': str(conv.public_id),
+                'numero': conv.id,
+                'title': generate_conversation_title(conv),
                 'user_name': user_name,
                 'user_id': conv.user.id if conv.user else None,
                 'created_at': conv.created_at,
@@ -445,7 +459,6 @@ class AdminConversationsListView(APIView):
                 'messages': messages_data,
                 'tenant_id': conv.tenant.id,
                 'tenant_name': conv.tenant.name,
-                'tenant_api_key': conv.tenant.api_key,
             })
         return Response(data)
 
@@ -496,20 +509,18 @@ class UserConversationsView(APIView):
 
 
 @csrf_exempt_view
-class AdminConversationDetailView(APIView):
+class AdminConversationDetailView(AdminSeulement, APIView):
     def get(self, request, conversation_id):
-        try:
-            conversation = Conversation.objects.get(id=conversation_id)
-        except Conversation.DoesNotExist:
+        conversation = trouver_conversation(conversation_id)
+        if conversation is None:
             return Response({'error': 'Conversation non trouvée'}, status=status.HTTP_404_NOT_FOUND)
         data = ConversationSerializer(conversation).data
         data['user_name'] = conversation.user_name or (conversation.user.username if conversation.user else "Anonyme")
         return Response(data)
 
     def post(self, request, conversation_id):
-        try:
-            conversation = Conversation.objects.get(id=conversation_id)
-        except Conversation.DoesNotExist:
+        conversation = trouver_conversation(conversation_id)
+        if conversation is None:
             return Response({'error': 'Conversation non trouvée'}, status=status.HTTP_404_NOT_FOUND)
         content = request.data.get('content')
         if not content:
@@ -535,18 +546,17 @@ class AdminConversationDetailView(APIView):
 
 
 @csrf_exempt_view
-class DeleteConversationView(APIView):
+class DeleteConversationView(AdminSeulement, APIView):
     """Supprime une conversation et tous ses messages (cascade)."""
     def delete(self, request, conversation_id):
-        try:
-            conversation = Conversation.objects.get(id=conversation_id)
-        except Conversation.DoesNotExist:
+        conversation = trouver_conversation(conversation_id)
+        if conversation is None:
             return Response({'error': 'Conversation non trouvée'}, status=status.HTTP_404_NOT_FOUND)
 
         conv_id = conversation.id
         conversation.delete()
 
-        print(f"Conversation #{conv_id} supprimée")
+        print(f"🗑️ Conversation #{conv_id} supprimée")
         return Response({'success': True, 'message': f'Conversation #{conv_id} supprimée'}, status=status.HTTP_200_OK)
 
 
@@ -710,7 +720,8 @@ def home_view(request):
 
 
 @csrf_exempt_view
-class TenantsListView(APIView):
+class TenantsListView(AdminSeulement, APIView):
+    """Liste des projets, réservée aux agents (elle contient les clés d'API)."""
     def get(self, request):
         tenants = Tenant.objects.all().order_by('name')
         data = [
