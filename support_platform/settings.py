@@ -138,6 +138,7 @@ CORS_ALLOW_HEADERS = [
     'x-csrftoken',
     'x-requested-with',
     'x-support-username',
+    'x-api-key',
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -153,16 +154,29 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:8001',
 ]
 
-#  Configuration Brevo
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp-relay.brevo.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_USE_SSL = False
-EMAIL_HOST_USER = os.getenv('BREVO_LOGIN')
-EMAIL_HOST_PASSWORD = os.getenv('BREVO_API_KEY')
-DEFAULT_FROM_EMAIL = os.getenv('BREVO_LOGIN')
+# ============================================================
+# E-MAILS : API HTTP de Brevo
+# Render (offre gratuite) bloque les ports SMTP sortants (25, 465, 587).
+# On passe donc par l'API HTTPS de Brevo (port 443), qui n'est pas bloquée.
+# Variables à définir sur Render :
+#   BREVO_API_KEY       clé d'API Brevo (commence par "xkeysib-"), PAS la clé SMTP
+#   BREVO_SENDER_EMAIL  adresse d'expéditeur VALIDÉE dans Brevo (Senders & IP)
+#   BREVO_SENDER_NAME   nom affiché (facultatif)
+#   ADMIN_EMAIL         adresse qui reçoit les escalades
+# ============================================================
+BREVO_API_KEY = os.getenv('BREVO_API_KEY', '')
+BREVO_SENDER_EMAIL = os.getenv('BREVO_SENDER_EMAIL', '')
+BREVO_SENDER_NAME = os.getenv('BREVO_SENDER_NAME', 'Easy Desk Support')
 ADMIN_EMAIL = os.getenv('ADMIN_EMAIL')
+
+# SMTP gardé seulement pour le local (réinitialisation de mot de passe, etc.)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = BREVO_SENDER_EMAIL or EMAIL_HOST_USER
 
 LOGGING = {
     'version': 1,

@@ -29,6 +29,7 @@ from django.template.loader import render_to_string
 LARAVEL_URL = os.getenv('LARAVEL_URL', 'https://api-easyevent.bakeli.tech')
 EASYCOOP_API_URL = getattr(settings, 'EASYCOOP_API_URL', os.getenv('EASYCOOP_API_URL', 'https://easy-coop-api.onrender.com'))
 SUPPORT_URL = os.getenv('SUPPORT_URL', 'https://support-platform-admin.onrender.com')
+EASYCOOP_TENANT_KEY = os.getenv('EASYCOOP_TENANT_KEY', 'easycoop-2026')
 
 
 # ============================================================
@@ -168,15 +169,92 @@ Lien direct : {support_link}
 EasyEvent Support
     """
 
-    send_mail(
-        subject=subject,
-        message=text_content,
-        html_message=html_content,
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[admin_email],
-        fail_silently=False,
-    )
+    envoyer_email_brevo(admin_email, subject, html_content, text_content)
 
+
+def envoyer_email_brevo(destinataire, sujet, html, texte):
+    """Envoie un e-mail via l'API HTTPS de Brevo (port 443).
+
+    Render (offre gratuite) bloque les ports SMTP, d'où ce passage par l'API.
+    Lève une exception si l'envoi échoue, pour que l'erreur apparaisse dans les logs.
+    """
+    api_key = getattr(settings, 'BREVO_API_KEY', '')
+    expediteur = getattr(settings, 'BREVO_SENDER_EMAIL', '')
+    if not api_key:
+        raise RuntimeError("BREVO_API_KEY manquante dans les variables d'environnement")
+    if not expediteur:
+        raise RuntimeError("BREVO_SENDER_EMAIL manquante dans les variables d'environnement")
+    if not destinataire:
+        raise RuntimeError("ADMIN_EMAIL manquante dans les variables d'environnement")
+
+    resp = requests.post(
+        "https://api.brevo.com/v3/smtp/email",
+        headers={
+            "api-key": api_key,
+            "accept": "application/json",
+            "content-type": "application/json",
+        },
+        json={
+            "sender": {"email": expediteur, "name": getattr(settings, 'BREVO_SENDER_NAME', 'Easy Desk Support')},
+            "to": [{"email": destinataire}],
+            "subject": sujet,
+            "htmlContent": html,
+            "textContent": texte,
+        },
+        timeout=15,
+    )
+    print(f"📧 [BREVO] Réponse status = {resp.status_code} — {resp.text[:300]}")
+    if resp.status_code not in (200, 201, 202):
+        raise RuntimeError(f"Brevo a refusé l'envoi ({resp.status_code}) : {resp.text[:300]}")
+
+
+
+# ============================================================
+# OUTIL COMMUN : retrouver ou créer l'utilisateur Django
+# - recherche d'abord par e-mail ;
+# - sinon (membre EasyCoop inscrit par téléphone, sans e-mail),
+#   par un identifiant stable "prefixe_id" ;
+# - évite les collisions de username (deux e-mails avec le même début).
+# ============================================================
+def _get_or_create_django_user(email, name, identifiant_secours):
+    user = None
+    if email:
+        user = User.objects.filter(email__iexact=email).first()
+    if user is None and identifiant_secours:
+        user = User.objects.filter(username=identifiant_secours).first()
+
+    if user is None:
+        base = (email.split('@')[0] if email else identifiant_secours) or 'utilisateur'
+        username = base
+        n = 1
+        while User.objects.filter(username=username).exists():
+            n += 1
+            username = f"{base}{n}"
+        user = User.objects.create(username=username, email=email or '', first_name=(name or '')[:150])
+        print(f"✅ Nouvel utilisateur Django créé : {username} ({name})")
+    elif name and user.first_name != name[:150]:
+        user.first_name = name[:150]
+        user.save(update_fields=['first_name'])
+    return user
+
+
+def _extraire_user_data(raw):
+    """Accepte {user: {...}}, {data: {...}} ou {...} à plat."""
+    if isinstance(raw, dict):
+        for cle in ('user', 'data'):
+            if isinstance(raw.get(cle), dict):
+                return raw[cle]
+        return raw
+    return {}
+
+
+def _nom_complet(user_data):
+    nom = user_data.get('name') or user_data.get('full_name')
+    if not nom:
+        prenom = user_data.get('first_name') or user_data.get('prenom') or ''
+        nom_famille = user_data.get('last_name') or user_data.get('nom') or ''
+        nom = f"{prenom} {nom_famille}".strip()
+    return nom or ''
 
 # ============================================================
 # UTILISATEUR DJANGO DEPUIS TOKEN SANCTUM — EASY EVENT
@@ -194,39 +272,13 @@ def get_django_user_from_token(sanctum_token):
             timeout=5
         )
         if response.status_code == 200:
-            raw = response.json()
-
-            # Certaines API renvoient {user: {...}}, d'autres {...} à plat
-            if isinstance(raw, dict) and isinstance(raw.get('user'), dict):
-                user_data = raw['user']
-            elif isinstance(raw, dict):
-                user_data = raw
-            else:
-                user_data = {}
-
+            user_data = _extraire_user_data(response.json())
             user_email = user_data.get('email')
-            user_name = user_data.get('name', '')
-
-            if user_email:
-                username = user_email.split('@')[0]
-                user, created = User.objects.get_or_create(
-                    email=user_email,
-                    defaults={
-                        'username': username,
-                        'first_name': user_name,
-                        'email': user_email
-                    }
-                )
-                if created:
-                    print(f"✅ Nouvel utilisateur Django créé: {user_email} ({user_name})")
-                else:
-                    if user.first_name != user_name and user_name:
-                        user.first_name = user_name
-                        user.save()
-                        print(f"✅ Nom utilisateur mis à jour: {user_name}")
-                return user
-            else:
-                print(f"⚠️ Pas d'email dans la réponse Laravel: {user_data}")
+            user_name = _nom_complet(user_data)
+            uid = user_data.get('id')
+            if user_email or uid:
+                return _get_or_create_django_user(user_email, user_name, f"easyevent_{uid}" if uid else None)
+            print(f"⚠️ Ni e-mail ni id dans la réponse Laravel: {user_data}")
         else:
             print(f"⚠️ /api/user a retourné {response.status_code}")
     except Exception as e:
@@ -255,33 +307,15 @@ def get_easycoop_user_from_token(sanctum_token):
             timeout=5
         )
         if response.status_code == 200:
-            user_data = response.json()
-            if not isinstance(user_data, dict):
-                user_data = {}
-
+            user_data = _extraire_user_data(response.json())
             user_email = user_data.get('email')
-            user_name = user_data.get('name', '')
-
-            if user_email:
-                username = user_email.split('@')[0]
-                user, created = User.objects.get_or_create(
-                    email=user_email,
-                    defaults={
-                        'username': username,
-                        'first_name': user_name,
-                        'email': user_email
-                    }
-                )
-                if created:
-                    print(f"✅ [EasyCoop] Nouvel utilisateur Django créé: {user_email} ({user_name})")
-                else:
-                    if user.first_name != user_name and user_name:
-                        user.first_name = user_name
-                        user.save()
-                        print(f"✅ [EasyCoop] Nom utilisateur mis à jour: {user_name}")
-                return user
-            else:
-                print(f"⚠️ [EasyCoop] Pas d'email dans la réponse : {user_data}")
+            user_name = _nom_complet(user_data)
+            uid = user_data.get('id') or user_data.get('telephone') or user_data.get('phone')
+            # Un membre EasyCoop peut s'être inscrit par téléphone, sans e-mail :
+            # on l'identifie alors par son id EasyCoop au lieu de le laisser "Anonyme".
+            if user_email or uid:
+                return _get_or_create_django_user(user_email, user_name, f"easycoop_{uid}" if uid else None)
+            print(f"⚠️ [EasyCoop] Ni e-mail ni id dans la réponse : {user_data}")
         else:
             print(f"⚠️ [EasyCoop] /api/user a retourné {response.status_code}")
     except Exception as e:
@@ -338,7 +372,7 @@ class SendMessageView(APIView):
 
         # ⚠️ CHANGEMENT : on route vers la bonne API d'authentification
         # selon le tenant, exactement comme pour le choix du moteur IA plus bas.
-        if tenant.api_key == 'easycoop-2026':
+        if tenant.api_key == EASYCOOP_TENANT_KEY:
             django_user = get_easycoop_user_from_token(sanctum_token)
         else:
             django_user = get_django_user_from_token(sanctum_token)
@@ -378,7 +412,7 @@ class SendMessageView(APIView):
         user_message = Message.objects.create(conversation=conversation, role='user', content=content)
 
         # Routage selon le tenant
-        if tenant.api_key == 'easycoop-2026':
+        if tenant.api_key == EASYCOOP_TENANT_KEY:
             bot_response_text, bot_success = get_bot_response_easycoop(content, tenant, sanctum_token)
         else:
             bot_response_text, bot_success = get_bot_response(content, tenant, sanctum_token)
@@ -400,11 +434,12 @@ class SendMessageView(APIView):
         conversation.escalated = True
         conversation.save()
 
-        user_name = django_user.username if django_user else "Anonyme"
-        user_email = django_user.email if django_user else "Non renseigné"
+        est_easycoop = tenant.api_key == EASYCOOP_TENANT_KEY
+        user_name = (django_user.first_name or django_user.username) if django_user else "Anonyme"
+        user_email = (django_user.email or "Non renseigné") if django_user else "Non renseigné"
         direct_conversation_link = f"{SUPPORT_URL}/conversations/{conversation.id}?username={user_name}"
-        
-                # ========== 1. NOTIFICATION DISCORD ==========
+
+        # ========== 1. NOTIFICATION DISCORD ==========
         print("=" * 60)
         print(f"🔔 [DISCORD] === DÉBUT BLOC DISCORD ===")
         print(f"🔔 [DISCORD] tenant.api_key = '{tenant.api_key}'")
@@ -412,7 +447,7 @@ class SendMessageView(APIView):
         print(f"🔔 [DISCORD] conversation.id = {conversation.id}")
 
         try:
-            if tenant.api_key == 'easycoop-2026':
+            if est_easycoop:
                 webhook_url = getattr(settings, 'DISCORD_WEBHOOK_EASYCOOP', '')
                 print(f"🔔 [DISCORD] Branche EASYCOOP → DISCORD_WEBHOOK_EASYCOOP")
             else:
@@ -464,12 +499,13 @@ class SendMessageView(APIView):
         _user_name     = user_name
         _user_email    = user_email
         _content       = content
+        _tenant_name   = tenant.name
 
         def envoyer_email_async():
             try:
                 title = generate_conversation_title(_conv_obj)
                 send_fancy_email(
-                    subject=f"[EasyEvent Support] Assistance requise - {_user_name}",
+                    subject=f"[{_tenant_name} Support] Assistance requise - {_user_name}",
                     user_name=_user_name,
                     user_email=_user_email,
                     conversation_id=_conv_id,
@@ -485,9 +521,10 @@ class SendMessageView(APIView):
         email_thread.daemon = True
         email_thread.start()
 
-        # ========== 3. NOTIFICATION À LARAVEL (FILAMENT) ==========
-        try:
-            laravel_notification_url = f"{LARAVEL_URL}/api/chatbot/escalations"
+        # ========== 3. NOTIFICATION À LARAVEL (FILAMENT) — Easy Event uniquement ==========
+        # Les escalades EasyCoop ne doivent pas arriver dans le Filament d'Easy Event.
+        # Envoi dans un thread pour ne pas faire attendre l'utilisateur.
+        if not est_easycoop:
             escalation_data = {
                 'conversation_id': conversation.id,
                 'user_id': django_user.id if django_user else None,
@@ -497,15 +534,20 @@ class SendMessageView(APIView):
                 'created_at': conversation.created_at.isoformat(),
                 'status': 'pending'
             }
-            resp = requests.post(
-                laravel_notification_url,
-                json=escalation_data,
-                headers={'Content-Type': 'application/json'},
-                timeout=30
-            )
-            print(f"✅ Notification envoyée à Laravel Filament (status {resp.status_code})")
-        except Exception as e:
-            print(f"❌ Erreur envoi à Laravel: {e}")
+
+            def notifier_laravel():
+                try:
+                    resp = requests.post(
+                        f"{LARAVEL_URL}/api/chatbot/escalations",
+                        json=escalation_data,
+                        headers={'Content-Type': 'application/json'},
+                        timeout=30
+                    )
+                    print(f"✅ Notification envoyée à Laravel Filament (status {resp.status_code})")
+                except Exception as e:
+                    print(f"❌ Erreur envoi à Laravel: {e}")
+
+            threading.Thread(target=notifier_laravel, daemon=True).start()
 
         return Response({
             'conversation_id': conversation.id,
@@ -610,15 +652,47 @@ class AdminConversationsListView(APIView):
 
 @csrf_exempt_view
 class UserConversationsView(APIView):
+    """Historique des conversations de l'utilisateur connecté.
+
+    Le widget peut envoyer la clé du projet (?api_key=... ou en-tête X-API-Key).
+    - avec la clé : on vérifie le jeton auprès de la bonne API (Easy Event ou
+      EasyCoop) et on ne renvoie que les conversations de ce projet ;
+    - sans la clé (ancien widget) : on essaie Easy Event, puis EasyCoop.
+    Avant, seule l'API Easy Event était interrogée : un membre EasyCoop
+    recevait toujours "Authentification requise".
+    """
     def get(self, request):
-        auth_header = request.headers.get('Authorization', '')
-        sanctum_token = auth_header.replace('Bearer ', '')
-        if sanctum_token:
+        sanctum_token = request.headers.get('Authorization', '').replace('Bearer ', '').strip()
+        if not sanctum_token:
+            return Response({"error": "Authentification requise"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        api_key = request.query_params.get('api_key') or request.headers.get('X-API-Key')
+        tenant = Tenant.objects.filter(api_key=api_key).first() if api_key else None
+
+        if tenant is not None:
+            if tenant.api_key == EASYCOOP_TENANT_KEY:
+                django_user = get_easycoop_user_from_token(sanctum_token)
+            else:
+                django_user = get_django_user_from_token(sanctum_token)
+            if django_user is None:
+                return Response({"error": "Authentification requise"}, status=status.HTTP_401_UNAUTHORIZED)
+            conversations = Conversation.objects.filter(user=django_user, tenant=tenant)
+        else:
             django_user = get_django_user_from_token(sanctum_token)
-            if django_user:
-                conversations = Conversation.objects.filter(user=django_user).order_by('-updated_at')
-                return Response(ConversationSerializer(conversations, many=True).data)
-        return Response({"error": "Authentification requise"}, status=status.HTTP_401_UNAUTHORIZED)
+            if django_user is not None:
+                conversations = Conversation.objects.filter(user=django_user).exclude(tenant__api_key=EASYCOOP_TENANT_KEY)
+            else:
+                django_user = get_easycoop_user_from_token(sanctum_token)
+                if django_user is None:
+                    return Response({"error": "Authentification requise"}, status=status.HTTP_401_UNAUTHORIZED)
+                conversations = Conversation.objects.filter(user=django_user, tenant__api_key=EASYCOOP_TENANT_KEY)
+
+        conversations = conversations.order_by('-updated_at')
+        data = ConversationSerializer(conversations, many=True).data
+        # Titre lisible pour la liste du widget (premier message de la conversation)
+        for item, conv in zip(data, conversations):
+            item['title'] = generate_conversation_title(conv)
+        return Response(data)
 
 
 @csrf_exempt_view
@@ -643,6 +717,8 @@ class AdminConversationDetailView(APIView):
         agent_message = Message.objects.create(conversation=conversation, role='bot', content=content)
         conversation.escalated = False
         conversation.save()
+        if conversation.tenant.api_key == EASYCOOP_TENANT_KEY:
+            return Response({'success': True, 'message': MessageSerializer(agent_message).data})
         try:
             laravel_url = f"{LARAVEL_URL}/api/chatbot/escalations/mark-resolved-by-conversation"
             resp = requests.post(
